@@ -19,7 +19,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install --production
 COPY . .
-COPY --from=development /usr/src/app/dist ./dist/
+COPY --from=development /app/dist ./dist/
 
 EXPOSE 3000
 CMD node dist/main
