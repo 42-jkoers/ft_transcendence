@@ -6,11 +6,9 @@ services:
       context: ./backend
       target: development
     volumes:
-      - ./backend:/usr/src/app/
-      - /usr/src/app/node_modules
+      - ./backend:/app/
     ports:
       - "3000:3000"
-    command: npm run start:dev
     env_file:
       - ./backend/.env
     networks:
