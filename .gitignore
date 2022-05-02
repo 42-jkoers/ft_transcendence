@@ -1,1 +1,14 @@
-**/.DS_Store
+# OS
+.DS_Store
+
+# compiled output
+dist/
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Tests
+coverage/
+.nyc_output
