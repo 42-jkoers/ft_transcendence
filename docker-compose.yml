@@ -17,6 +17,7 @@ services:
       - api
     depends_on:
       - postgres
+
   postgres:
     image: postgres:13
     container_name: postgres
