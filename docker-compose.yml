@@ -4,7 +4,7 @@ services:
     container_name: backend
     build:
       context: ./backend
-      # target: development
+      target: development
     volumes:
       - ./backend:/usr/src/app/
       - /usr/src/app/node_modules
