@@ -1,7 +1,6 @@
 version: '3'
 services:
   backend:
-    container_name: backend
     build:
       context: ./backend
       target: development
@@ -11,16 +10,11 @@ services:
       - "3000:3000"
     env_file:
       - ./backend/.env
-    networks:
-      - api
     depends_on:
       - postgres
 
   postgres:
     image: postgres:13
-    container_name: postgres
-    networks:
-      - api
     env_file:
       - ./backend/.env
     ports:
@@ -28,8 +22,5 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-networks:
- api:
-
 volumes:
- pgdata:
+  pgdata:
