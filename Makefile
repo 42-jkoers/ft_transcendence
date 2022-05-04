@@ -1,12 +1,14 @@
-# color setting
+###### color setting ######
 RESET = \033[0;0m
 MAGENTA = \033[1;35m\033[47m
 
+###### names ######
 PROJECT = ft_transcendence
 SERVICES = backend postgres
 CONTAINERS = $(addprefix $(PROJECT)_, $(SERVICES))
 IMAGES = ft_transcendence_backend postgres
 
+###### compilation ######
 all:
 	@echo "$(MAGENTA)start docker-compose...$(RESET)"
 	docker-compose -f ./docker-compose.yml up --build -d
@@ -20,6 +22,9 @@ stop:
 	docker stop $(CONTAINERS)
 
 restart: stop start
+
+postgres:
+	docker-compose up -d --no-deps --build postgres
 
 clean:
 	@echo "$(MAGENTA)remove all containers/images/volumes...$(RESET)"

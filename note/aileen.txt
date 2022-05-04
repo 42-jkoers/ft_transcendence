@@ -2,12 +2,15 @@
 **		Schedules		**
 **************************
 (Wed) 2022-05-04
-- install @nestjs/config, @nestjs/typeorm
+	- install @nestjs/config, @nestjs/typeorm
+	- create user/auth (work in progress)
+	- set up run.sh for postgres only
 
 **************************
 **		Next To To		**
 **************************
-
+- RegisterDto to add validation
+- login process
 
 ******************************
 **		General To To		**
