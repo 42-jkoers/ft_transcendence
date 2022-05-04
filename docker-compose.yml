@@ -3,7 +3,7 @@ services:
   backend:
     build:
       context: ./backend
-      target: development
+      # target: development 
     volumes:
       - ./backend:/app/
       - /app/node_modules
