@@ -1,4 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import PostgresErrorCode from '../database/postgresErrorCode.enum';
 import { UserService } from '../user/user.service';
@@ -8,10 +10,12 @@ import RegisterDto from './dto/register.dto';
 @Injectable()
 export class AuthService {
 	constructor(
-		private readonly userService: UserService
+		private readonly userService: UserService,
+		private readonly jwt: JwtService,
+		private readonly config: ConfigService,
 	) {}
 
-	public async register(registrationData: RegisterDto) {
+	async register(registrationData: RegisterDto) {
 		// 1: generate the password hash
 		const hashedPassword = await bcrypt.hash(registrationData.password, 10);
 		try {
@@ -22,21 +26,21 @@ export class AuthService {
 			});
 			newUser.password = undefined; // TODO: to improve
 			// 3: return the saved user
-			return newUser;
+			return this.signToken(newUser.id, newUser.email);
 		} catch (error) {
 			if (error?.code === PostgresErrorCode.UniqueViolation) {
-				throw new ForbiddenException('User with this email already exists');
+				throw new ForbiddenException('User already exists');
 			}
 			throw error;
 		}
 	}
 
-	public async login(loginDto: LoginDto) {
+	async login(loginDto: LoginDto) {
 		try {
 			const user = await this.userService.getByEmail(loginDto.email);
 			await this.verifyPassword(loginDto.password, user.password);
 			user.password = undefined; // TODO: to improve
-			return user;
+			return this.signToken(user.id, user.email);
 			
 		} catch (error) {
 			throw new ForbiddenException('Wrong credentials provided'); // if email user does not exist
@@ -51,5 +55,24 @@ export class AuthService {
 		if (!isPasswordCorrect) {
 			throw new ForbiddenException('Wrong credentials provided');
 		}
+	}
+
+	async signToken(userId: number, email: string): Promise<{ access_token: string }> {
+		const payload = {
+			sub: userId,
+			email
+		};
+
+		const secret = this.config.get('JWT_SECRET');
+		const expireTime = this.config.get('JWT_EXPIRATION_TIME');
+
+		const token = await this.jwt.signAsync(
+			payload, {
+				expiresIn: expireTime,
+				secret: secret
+			}
+		);
+
+		return { access_token: token };
 	}
 }

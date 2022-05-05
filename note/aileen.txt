@@ -1,16 +1,35 @@
 **************************
 **		Schedules		**
 **************************
+Tutorial: 
+	https://wanago.io/2020/05/11/nestjs-api-controllers-routing-module/
+
 (Wed) 2022-05-04
 	- install @nestjs/config, @nestjs/typeorm
 	- create user/auth (work in progress)
 	- set up run.sh for postgres only
+	- build authservice - register with bcrypt
+
+(Thu) 2022-05-05
+	- install class validator https://docs.nestjs.com/pipes + make validation global in main.ts
+	- build authservice - login
+	- integrating auth with Passport, JSON Web Token:
+		- install @nestjs/passport, @nestjs/jwt
+		- build authservice - signToken() with jwt (check token at: https://jwt.io/)
+		- build jwtStrategy, jwtGuard
+		- build getMe() in user.controller, using jwtGuard
+		- build @GetUser customized decorator
+
+
 
 **************************
 **		Next To To		**
 **************************
-- RegisterDto to add validation
-- login process
+- install pgadmin
+- 2-factor authentication
+- login with IntraID
+- login replace email with IntraID
+- test
 
 ******************************
 **		General To To		**

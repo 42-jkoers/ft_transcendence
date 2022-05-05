@@ -11,7 +11,7 @@ IMAGES = ft_transcendence_backend postgres
 ###### compilation ######
 all:
 	@echo "$(MAGENTA)start docker-compose...$(RESET)"
-	docker-compose -f ./docker-compose.yml up --build -d
+	docker-compose up --build -d
 
 start:
 	@echo "$(MAGENTA)start all containers...$(RESET)"
@@ -28,7 +28,7 @@ postgres:
 
 clean:
 	@echo "$(MAGENTA)remove all containers/images/volumes...$(RESET)"
-	docker-compose -f ./docker-compose.yml down --rmi all --volumes --remove-orphans
+	docker-compose down --rmi all --volumes --remove-orphans
 
 fclean: clean
 
