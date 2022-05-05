@@ -4,7 +4,7 @@ FROM node:18 As development
 # Set working directory inside container
 WORKDIR /app
 
-# Sets "NODE_ENV" env variable to "development" value
+# Set "NODE_ENV" env variable to "development" value
 ENV NODE_ENV=development
 
 # Copy package files from host inside the containers working directory
