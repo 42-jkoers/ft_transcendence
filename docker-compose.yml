@@ -1,12 +1,13 @@
 version: '3'
 services:
   backend:
+    container_name: ft_transcendence_backend
     build:
       context: ./backend
       # target: development 
     volumes:
       - ./backend:/app/
-      - /app/node_modules
+      - node_module:/app/node_modules
     ports:
       - "3000:3000"
     env_file:
@@ -15,6 +16,7 @@ services:
       - postgres
 
   postgres:
+    container_name: ft_transcendence_postgres
     image: postgres:13
     env_file:
       - ./backend/.env
@@ -25,3 +27,4 @@ services:
 
 volumes:
   pgdata:
+  node_module:
