@@ -20,6 +20,10 @@ Tutorial:
 		- build getMe() in user.controller, using jwtGuard
 		- build @GetUser customized decorator
 
+(Fri) 2022-05-06
+	- install pgadmin in docker-compose
+		- how to use: https://hevodata.com/learn/pgadmin-docker/
+			- visit pgadmin at http://localhost:8080
 
 
 **************************

@@ -23,7 +23,7 @@ WHITE='\033[0;37m'
 
 # Start
 if [ "$1" == "clean" ]; then
-	docker stop ft_transcendence_postgres
+	docker stop ft_transcendence_postgres ft_transcendence_pgadmin
 else 
 	make postgres
 	cd backend && npm run start:dev

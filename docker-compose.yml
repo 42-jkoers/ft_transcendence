@@ -24,7 +24,20 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+  
+  pgadmin:
+    links:
+      - postgres:postgres
+    container_name: ft_transcendence_pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    env_file:
+      - ./backend/.env
 
 volumes:
   pgdata:
+  pgadmin:
   node_module:
