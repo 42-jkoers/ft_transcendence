@@ -36,10 +36,10 @@ Tutorial:
 **************************
 **		Next To To		**
 **************************
-- 
-- 2-factor authentication
-- test https://www.youtube.com/watch?v=vGafqCNCCSs&ab_channel=AnsontheDeveloper
+- after intra OAuth, to create user
+- sessions?
 
 ******************************
 **		General To To		**
 ******************************
+- 2-factor authentication
