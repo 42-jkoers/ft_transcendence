@@ -36,7 +36,7 @@ Tutorial:
 **************************
 **		Next To To		**
 **************************
-- after intra OAuth, to create user
+- fixed oauth callback url error
 - sessions?
 
 ******************************

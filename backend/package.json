@@ -36,6 +36,7 @@
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.0",
     "passport": "^0.5.2",
+    "passport-oauth2": "^1.6.1",
     "pg": "^8.7.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

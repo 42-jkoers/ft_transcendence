@@ -1,7 +1,6 @@
 export class CreateUserDto {
-	email: string;
-	name: string;
-	password: string;
+	intraID: string;
+	username: string;
 }
    
 export default CreateUserDto;

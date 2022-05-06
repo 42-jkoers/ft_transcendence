@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../../user/user.service";
 import { Strategy } from "passport-oauth2"
+import { Profile } from "passport";
 
 @Injectable()
 export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
@@ -19,10 +20,17 @@ export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
 		});
 	}
 
-	validate(payload: unknown): unknown {
-		console.log("this is payload:");
-		return payload;
+	async validate(accessToken: string, refreshToken: string, profile: Profile, done: any) {
+		console.log("validate function");
+		console.log( profile );
+		return accessToken;
 	}
+
+	// validate(payload: unknown): unknown {
+	// 	console.log(payload);
+		
+	// 	return payload;
+	// }
 
 	// async validate(
 	// 	payload: {

@@ -11,13 +11,13 @@ export class UserService {
 		private userRepository: Repository<User>,
 		) {}
 
-	async getByEmail(email: string) {
-		const user = await this.userRepository.findOne({ email });
-		if (user) {
-		  return user;
-		}
-		throw new NotFoundException('User not found'); 
-	}
+	// async getByEmail(email: string) {
+	// 	const user = await this.userRepository.findOne({ email });
+	// 	if (user) {
+	// 	  return user;
+	// 	}
+	// 	throw new NotFoundException('User not found'); 
+	// }
 
 	async getByID(id: number) {
 		const user = await this.userRepository.findOne({ id });
@@ -28,7 +28,7 @@ export class UserService {
 	}
 
 	async create(userData: CreateUserDto) {
-		const newUser = await this.userRepository.create(userData);
+		const newUser = this.userRepository.create(userData);
 		await this.userRepository.save(newUser);
 		return newUser;
 	}
