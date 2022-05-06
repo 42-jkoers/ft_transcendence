@@ -23,17 +23,22 @@ Tutorial:
 (Fri) 2022-05-06
 	- install pgadmin in docker-compose
 		- how to use: https://hevodata.com/learn/pgadmin-docker/
-			- visit pgadmin at http://localhost:8080
-
+		- visit pgadmin at http://localhost:8080
+	- AuthO
+		https://auth0.com/blog/developing-a-secure-api-with-nestjs-adding-authorization/
+		- tenant name: codam-aijox
+		- create new API:
+			- name: ft_transcendence
+			- identifier: https://ft-transcendence-api.com
+	- 42 intra: https://api.intra.42.fr/apidoc/guides/getting_started#create-an-application
+	- build oauth strategy and guard
 
 **************************
 **		Next To To		**
 **************************
-- install pgadmin
+- 
 - 2-factor authentication
-- login with IntraID
-- login replace email with IntraID
-- test
+- test https://www.youtube.com/watch?v=vGafqCNCCSs&ab_channel=AnsontheDeveloper
 
 ******************************
 **		General To To		**

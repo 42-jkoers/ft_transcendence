@@ -1,9 +1,9 @@
 import { Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
 import GetUser from 'src/auth/decorator/get-user.decorator';
-import JwtGuard from '../auth/guard/jwt.guard';
+import { OAuthGuard } from '../auth/oauth/oauth.guard';
 import User from './user.entity';
 
-@UseGuards(JwtGuard)
+@UseGuards(OAuthGuard)
 @Controller('user')
 export class UserController {
 	@Get('me')
