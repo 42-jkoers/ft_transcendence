@@ -17,7 +17,7 @@ export class ChatGateway
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
 
-	async handleConnection() {
+	handleConnection() {
 		this.logger.log('Client connected');
 	}
 
@@ -26,12 +26,13 @@ export class ChatGateway
 		this.server.emit('Hey there');
 	}
 
-	async handleDisconnect() {
+	handleDisconnect() {
 		this.logger.log('Client disconnected');
 	}
 
 	@SubscribeMessage('message') //allows to listen to incoming messages
 	handleMessage(client: Socket, payLoad: string): void {
 		this.logger.log(payLoad);
+		// client.send(payLoad);
 	}
 }
