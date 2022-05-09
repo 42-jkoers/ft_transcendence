@@ -8,8 +8,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 #Install dependencies inside container
+RUN npm install -g @vue/cli
 RUN npm install
-RUN npm install -g @vue/cli-service
 
 # Bundle App Sources
 COPY . .
