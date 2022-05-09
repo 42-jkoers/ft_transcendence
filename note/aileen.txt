@@ -32,12 +32,18 @@ Tutorial:
 			- identifier: https://ft-transcendence-api.com
 	- 42 intra: https://api.intra.42.fr/apidoc/guides/getting_started#create-an-application
 	- build oauth strategy and guard
+	- run into callback error (client authrization issue)
+
+(Mon) 2022-05-09
+	- fixed callback error (turned out to be type at clientSecret...)
+	- implement sessions
 
 **************************
 **		Next To To		**
 **************************
-- fixed oauth callback url error
-- sessions?
+- continue with tutorial https://www.youtube.com/watch?v=vGafqCNCCSs&t=2365s
+	at 1:06:00
+- AuthService: create user
 
 ******************************
 **		General To To		**
