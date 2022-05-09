@@ -7,6 +7,7 @@ import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { DatabaseModule } from './database/database.module';
     ChatModule,
     GameModule,
     AuthModule,
+    PassportModule.register({ session: true }),
     ConfigModule.forRoot({isGlobal: true, }),
     DatabaseModule],
   controllers: [AppController],
