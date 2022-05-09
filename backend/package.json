@@ -51,6 +51,7 @@
     "@types/jest": "^27.4.1",
     "@types/mocha": "^9.1.1",
     "@types/node": "^16.0.0",
+    "@types/passport-oauth2": "^1.4.11",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
