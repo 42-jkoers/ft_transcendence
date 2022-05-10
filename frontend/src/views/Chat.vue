@@ -21,7 +21,21 @@ export default {
     },
 
     mounted() {
-        this.socket = io('http://localhost:3000');
+        this.socket = io('http://localhost:3000'); //create a socket instance for connecting client
+
+        // event listeners for the socket instance //
+        this.socket.on('rooms', (args) => {
+            args;
+        }) //to get all rooms of the user?
+
+        this.socket.on('messages', (args) => {
+            args;
+        }) //to get all messages of the user for this room?
+
+        this.socket.on("messageAdded", (args) => {
+            args; //this.messages.push(args)
+        }) //listen to an event coming from the backend gateway for msg sent?
+
     },
 
     beforeUnmount() {
