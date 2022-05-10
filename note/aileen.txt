@@ -40,7 +40,8 @@ Tutorial:
 
 (Tue) 2022-05-10
 	- add validateUser in AuthService, createUser in UserService
-	- 
+	- complete sessions
+	
 **************************
 **		Next To To		**
 **************************

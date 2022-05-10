@@ -5,7 +5,6 @@ import { Strategy } from "passport-oauth2"
 import AuthService from "../auth.service";
 import { HttpService } from "@nestjs/axios";
 import { JwtService } from "@nestjs/jwt";
-import { UserService } from "../../user/user.service";
 
 @Injectable()
 export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
@@ -25,7 +24,7 @@ export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
 	}
 
 	async validate(accessToken: string, refreshToken: string, profile: any, done: any) {
-		const data = await this.httpService.get('https://api.intra.42.fr/v2/me', {
+		const data = await this.httpService.get(this.config.get('INTRA_GET_ME_URL'), {
 			headers: { Authorization: `Bearer ${ accessToken }` }, }
 		).toPromise();
 		const intraID = data.data.id;

@@ -21,17 +21,11 @@ export class AuthService {
 			return user;
 		}
 		const username = userDto.username;
-		const avatar = "default avatar";
+		const avatar = "default avatar"; // TODO: to change to default image
 		const createUserDto = { intraID, username, avatar};
 		return this.userService.createUser(createUserDto);
 	}
 	
-	async createUser(userDto: ValidateUserDto) {
-	}
-
-	findUser(details: any) {
-	}
-
 }
 
 export default AuthService;
