@@ -1,8 +1,7 @@
-import { Controller, Post, Body, ParseIntPipe, HttpCode, HttpStatus, Get, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import RegisterDto from './dto/register.dto';
-import { OAuthGuard } from './oauth/oauth.guard';
+import { AuthenticatedGuard, OAuthGuard } from './oauth/oauth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -21,8 +20,15 @@ export class AuthController {
 	}
 
 	@Get('status')
-	status() {}
+	@UseGuards(AuthenticatedGuard)
+	status(@Req() req: Request) {
+		return req.user;
+	}
 
 	@Get('logout')
-	logout() {}
+	@UseGuards(AuthenticatedGuard)
+	logout(@Req() req: Request) {
+		req.logOut();
+		return "User has logged out. Goodbye!";
+	}
 }

@@ -12,6 +12,9 @@ services:
       - "3000:3000"
     env_file:
       - ./backend/.env
+    environment:
+      POSTGRES_HOST: ft_transcendence_postgres
+      REDIS_URI: "redis://redis"
     depends_on:
       - postgres
 
@@ -37,7 +40,16 @@ services:
     env_file:
       - ./backend/.env
 
+  redis:
+    container_name: ft_transcendence_redis
+    image: 'redis:alpine'
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/data
+
 volumes:
+  node_module:
   pgdata:
   pgadmin:
-  node_module:
+  redis:

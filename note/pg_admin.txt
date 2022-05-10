@@ -1,0 +1,6 @@
+How to use pgadmin:
+
+- Visit pgadmin at http://localhost:8080
+	(login details see .env file)
+- To add server (database) see tutorial at:
+	https://hevodata.com/learn/pgadmin-docker

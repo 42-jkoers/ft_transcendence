@@ -4,9 +4,10 @@ MAGENTA = \033[1;35m\033[47m
 
 ###### names ######
 PROJECT = ft_transcendence
-SERVICES = backend postgres pgadmin
+SERVICES_DATABASE = postgres pgadmin redis
+SERVICES = $(SERVICES_DATABASE) backend 
 CONTAINERS = $(addprefix $(PROJECT)_, $(SERVICES))
-IMAGES = ft_transcendence_backend postgres dpage/pgadmin4
+IMAGES = postgres dpage/pgadmin4 redis ft_transcendence_backend
 
 ###### compilation ######
 all:
@@ -23,8 +24,8 @@ stop:
 
 restart: stop start
 
-postgres:
-	docker-compose up -d --no-deps --build postgres pgadmin
+database:
+	docker-compose up -d --no-deps --build $(SERVICES_DATABASE)
 
 clean:
 	@echo "$(MAGENTA)remove all containers/images/volumes...$(RESET)"
