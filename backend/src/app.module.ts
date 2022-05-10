@@ -8,8 +8,14 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UserModule, ChatModule, GameModule, AuthModule, ConfigModule.forRoot()],
-  controllers: [AppController],
-  providers: [AppService],
+	imports: [
+		UserModule,
+		ChatModule,
+		GameModule,
+		AuthModule,
+		ConfigModule.forRoot(),
+	],
+	controllers: [AppController],
+	providers: [AppService],
 })
 export class AppModule {}
