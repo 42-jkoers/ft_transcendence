@@ -1,4 +1,8 @@
+import { User } from "../user.entity"
+
 export type UserDetails = {
-	username: string;
 	intraID: string;
+	username: string;
 };
+
+export type Done = (err: Error, user: User) => void;

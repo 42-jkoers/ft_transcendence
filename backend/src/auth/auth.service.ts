@@ -1,4 +1,6 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ValidateUserDto } from 'src/user/dto';
+import { UserService } from '../user/user.service';
 // import { ConfigService } from '@nestjs/config';
 // import { JwtService } from '@nestjs/jwt';
 // import * as bcrypt from 'bcrypt';
@@ -9,16 +11,25 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
-	validateUser() {
-		throw new Error('Method not implemented');
+	constructor(
+		private readonly userService: UserService,
+	) {}
+	async validateUser(userDto: ValidateUserDto) {
+		const intraID = userDto.intraID;
+		const user = await this.userService.findByIntraID(intraID);
+		if (user) {
+			return user;
+		}
+		const username = userDto.username;
+		const avatar = "default avatar";
+		const createUserDto = { intraID, username, avatar};
+		return this.userService.createUser(createUserDto);
+	}
+	
+	async createUser(userDto: ValidateUserDto) {
 	}
 
-	createUser() {
-		throw new Error('Method not implemented');
-	}
-
-	findUser() {
-		throw new Error('Method not implemented');
+	findUser(details: any) {
 	}
 
 }

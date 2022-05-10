@@ -38,6 +38,9 @@ Tutorial:
 	- fixed callback error (turned out to be type at clientSecret...)
 	- implement sessions
 
+(Tue) 2022-05-10
+	- add validateUser in AuthService, createUser in UserService
+	- 
 **************************
 **		Next To To		**
 **************************
