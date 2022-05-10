@@ -19,6 +19,8 @@ export class ChatGateway
 
 	handleConnection() {
 		this.logger.log('Client connected');
+		//try catch block here to authenticate user with jwt
+		//push sockets into Socket[] array. + keep id info of socket
 	}
 
 	afterInit(server: Server) {
@@ -28,6 +30,8 @@ export class ChatGateway
 
 	handleDisconnect() {
 		this.logger.log('Client disconnected');
+		//remove sockets from Socket[] array
+		//disconnect socket
 	}
 
 	@SubscribeMessage('message') //allows to listen to incoming messages
