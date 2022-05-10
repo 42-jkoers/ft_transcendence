@@ -3,7 +3,7 @@
     <form @submit.prevent="onSubmit" class="form">
     <textarea v-model="input" placeholder="Type your message..." class="input" />
     <div class="input-group-append">
-         <button class="send-button">Send</button>
+         <button class="send-button" @click="sendMessage">Send</button>
     </div>
     </form>
   </div>
@@ -24,6 +24,7 @@ export default {
         this.socket = io('http://localhost:3000'); //create a socket instance for connecting client
 
         // event listeners for the socket instance //
+        // making use of on() to register an event listener //
         this.socket.on('rooms', (args) => {
             args;
         }) //to get all rooms of the user?
@@ -36,6 +37,18 @@ export default {
             args; //this.messages.push(args)
         }) //listen to an event coming from the backend gateway for msg sent?
 
+       //register a catch-all listener -> useful during development:
+        this.socket.onAny((event, ...args) => {
+            console.log(event, args);
+        })
+    },
+
+    methods: {
+        //binding a click event listener to a method named 'x'
+        sendMessage() {
+            console.log("Send button clicked!");
+            this.socket.emit('addMessage', 'Msg: Send button clicked!');
+        }
     },
 
     beforeUnmount() {
@@ -43,11 +56,6 @@ export default {
             this.socket.disconnect();
         }
     }
-
-       //register a catch-all listener -> useful during development:
-    // this.socket.onAny((event, ...args) => {
-    //   console.log(event, args);
-    // })
 };
 </script>
 <!-- Add "scoped" attribute to limit CSS to this component only -->

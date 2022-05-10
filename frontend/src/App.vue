@@ -7,19 +7,11 @@
 </template>
 
 <script>
-// import ChatApp from './components/chat/ChatApp.vue'
-import SocketioService from './services/socketio.service.js';
 
 export default {
   name: 'App',
   components: {
   },
-  created() {
-    SocketioService.setupSocketConnection();
-  },
-  beforeUnmount() {
-    SocketioService.disconnect();
-  }
 };
 </script>
 
