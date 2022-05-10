@@ -20,17 +20,21 @@ Tutorial:
 		- build getMe() in user.controller, using jwtGuard
 		- build @GetUser customized decorator
 
+Tutorial:
+	https://www.youtube.com/watch?v=vGafqCNCCSs&t=2365s
+
 (Fri) 2022-05-06
 	- install pgadmin in docker-compose
 		- how to use: https://hevodata.com/learn/pgadmin-docker/
 		- visit pgadmin at http://localhost:8080
-	- AuthO
+	- Auth0 (might not be necessary...)
 		https://auth0.com/blog/developing-a-secure-api-with-nestjs-adding-authorization/
 		- tenant name: codam-aijox
 		- create new API:
 			- name: ft_transcendence
 			- identifier: https://ft-transcendence-api.com
-	- 42 intra: https://api.intra.42.fr/apidoc/guides/getting_started#create-an-application
+	- 42 intra api: 
+		- https://api.intra.42.fr/apidoc/guides/getting_started#create-an-application
 	- build oauth strategy and guard
 	- run into callback error (client authrization issue)
 
