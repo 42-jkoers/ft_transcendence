@@ -12,11 +12,13 @@
 <script>
 import { io } from 'socket.io-client';
 
+
 export default {
     name: "ChatPage",
     data() {
         return {
             msg: "Welcome to our Chat",
+            messages: []
         };
     },
 
@@ -34,7 +36,9 @@ export default {
         }) //to get all messages of the user for this room?
 
         this.socket.on("messageAdded", (args) => {
-            args; //this.messages.push(args)
+            console.log("messageAdded event received from backend");
+            this.messages.push(args);
+            console.log(this.messages);
         }) //listen to an event coming from the backend gateway for msg sent?
 
        //register a catch-all listener -> useful during development:
