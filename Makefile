@@ -4,9 +4,9 @@ MAGENTA = \033[1;35m\033[47m
 
 ###### names ######
 PROJECT = ft_transcendence
-SERVICES = backend postgres
+SERVICES = backend frontend postgres
 CONTAINERS = $(addprefix $(PROJECT)_, $(SERVICES))
-IMAGES = ft_transcendence_backend postgres
+IMAGES = ft_transcendence_backend ft_transcendence_frontend postgres
 
 ###### compilation ######
 all:

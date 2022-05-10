@@ -5,11 +5,11 @@ FROM node:18 As development
 WORKDIR /app
 
 # Copy package files from host inside the containers working directory
-COPY package.json package-lock.json ./
+COPY package*.json ./
 
 #Install dependencies inside container
-RUN npm install -g @vue/cli
 RUN npm install
+# RUN npm install -g @vue/cli
 
 # Bundle App Sources
 COPY . .
@@ -31,7 +31,7 @@ CMD npm run serve
 # # FIXME install simple http server for serving static content
 # RUN npm install -g http-server
 
-# COPY package.json package-lock.json ./
+# COPY package*.json ./
 
 # RUN npm install
 
