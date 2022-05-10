@@ -37,6 +37,7 @@ export class ChatGateway
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages
 	handleMessage(client: Socket, payLoad: string): void {
 		this.logger.log(payLoad);
+		client.emit('messageAdded', 'Here is my message?');
 		// client.send(payLoad);
 	}
 }
