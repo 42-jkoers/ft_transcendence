@@ -13,6 +13,12 @@ class SocketioService {
             this.socket.disconnect();
         }
     }
+
+
+    //register a catch-all listener -> useful during development:
+    this.socket.onAny((event, ...args) => {
+      console.log(event, args);
+    })
 }
 
 export default new SocketioService();
