@@ -1,16 +1,33 @@
 <template>
-<div class="container">
-    <form @submit.prevent="onSubmit" class="form">
-    <input v-model="input" @keyup.enter="sendMessage" placeholder="Type your message..." class="input" />
-    <div class="input-group-append">
-         <button class="send-button" @click="sendMessage">Send</button>
-    </div>
+  <div class="container">
+    <form
+      class="form"
+      @submit.prevent="onSubmit"
+    >
+      <input
+        v-model="input"
+        placeholder="Type your message..."
+        class="input"
+        @keyup.enter="sendMessage"
+      >
+      <div class="input-group-append">
+        <button
+          class="send-button"
+          @click="sendMessage"
+        >
+          Send
+        </button>
+      </div>
     </form>
     <div class="messages">
-        <p v-for="(chat, i) in messages" :key="i" class="chat-message">
-            <span class="chat-name"> {{ chat?.name }}:
-            </span> {{ chat?.message }}
-        </p>
+      <p
+        v-for="(chat, i) in messages"
+        :key="i"
+        class="chat-message"
+      >
+        <span class="chat-name"> {{ chat?.name }}:
+        </span> {{ chat?.message }}
+      </p>
     </div>
   </div>
 </template>
@@ -52,6 +69,12 @@ export default {
         // })
     },
 
+    beforeUnmount() {
+        if (this.socket) {
+            this.socket.disconnect();
+        }
+    },
+
     methods: {
         //binding a click event listener to a method named 'sendMessage'
         sendMessage(args) {
@@ -59,12 +82,6 @@ export default {
             args;
             console.log(this.input);
             this.socket.emit('addMessage', 'Msg: Send button clicked!');
-        }
-    },
-
-    beforeUnmount() {
-        if (this.socket) {
-            this.socket.disconnect();
         }
     }
 };
