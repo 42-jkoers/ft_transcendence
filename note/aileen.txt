@@ -1,8 +1,55 @@
 **************************
 **		Schedules		**
 **************************
+Tutorial: 
+	https://wanago.io/2020/05/11/nestjs-api-controllers-routing-module/
+
 (Wed) 2022-05-04
-- install @nestjs/config, @nestjs/typeorm
+	- install @nestjs/config, @nestjs/typeorm
+	- create user/auth (work in progress)
+	- set up run.sh for postgres only
+	- build authservice - register with bcrypt
+
+(Thu) 2022-05-05
+	- install class validator https://docs.nestjs.com/pipes + make validation global in main.ts
+	- build authservice - login
+	- integrating auth with Passport, JSON Web Token:
+		- install @nestjs/passport, @nestjs/jwt
+		- build authservice - signToken() with jwt (check token at: https://jwt.io/)
+		- build jwtStrategy, jwtGuard
+		- build getMe() in user.controller, using jwtGuard
+		- build @GetUser customized decorator
+
+Tutorial:
+	https://www.youtube.com/watch?v=vGafqCNCCSs&t=2365s
+
+(Fri) 2022-05-06
+	- install pgadmin in docker-compose
+		- how to use: https://hevodata.com/learn/pgadmin-docker/
+		- visit pgadmin at http://localhost:8080
+	- Auth0 (might not be necessary...)
+		https://auth0.com/blog/developing-a-secure-api-with-nestjs-adding-authorization/
+		- tenant name: codam-aijox
+		- create new API:
+			- name: ft_transcendence
+			- identifier: https://ft-transcendence-api.com
+	- 42 intra api: 
+		- https://api.intra.42.fr/apidoc/guides/getting_started#create-an-application
+	- build oauth strategy and guard
+	- run into callback error (client authrization issue)
+
+(Mon) 2022-05-09
+	- fixed callback error (turned out to be type at clientSecret...)
+	- implement sessions
+
+(Tue) 2022-05-10
+	- add validateUser in AuthService, createUser in UserService
+	- complete sessions
+	- build AuthenticatedGuard, add to /auth/status
+	- session store: install redis (backend + docker)
+	- logout complete
+(Wed) 2022-05-11
+	- solve conflict with main and pull request
 
 **************************
 **		Next To To		**
@@ -12,3 +59,4 @@
 ******************************
 **		General To To		**
 ******************************
+
