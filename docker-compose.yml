@@ -7,7 +7,7 @@ services:
       # target: development 
     volumes:
       - ./backend:/app/
-      - node_module:/app/node_modules
+      - backend_node_module:/app/node_modules
     ports:
       - "3000:3000"
     env_file:
@@ -16,7 +16,7 @@ services:
       POSTGRES_HOST: ft_transcendence_postgres
       REDIS_URI: "redis://redis"
     depends_on:
-      - postgres
+      - redis
 
   frontend:
       container_name: ft_transcendence_frontend
@@ -25,7 +25,7 @@ services:
           context: ./frontend
       volumes:
           - ./frontend:/app/
-          - /app/node_modules
+          - frontend_node_module:/app/node_modules
       ports:
           - "8080:8080"
       # Link to containers in another service and also express dependency between services in the same way as depends_on.
@@ -48,11 +48,13 @@ services:
     container_name: ft_transcendence_pgadmin
     image: dpage/pgadmin4
     ports:
-      - "8080:80"
+      - "8081:80"
     volumes:
       - pgadmin:/var/lib/pgadmin
     env_file:
       - ./backend/.env
+    depends_on:
+      - postgres
 
   redis:
     container_name: ft_transcendence_redis
@@ -61,9 +63,12 @@ services:
       - "6379:6379"
     volumes:
       - redis:/data
+    depends_on:
+      - pgadmin
 
 volumes:
-  node_module:
+  backend_node_module:
+  frontend_node_module:
   pgdata:
   pgadmin:
   redis:

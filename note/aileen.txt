@@ -48,7 +48,8 @@ Tutorial:
 	- build AuthenticatedGuard, add to /auth/status
 	- session store: install redis (backend + docker)
 	- logout complete
-
+(Wed) 2022-05-11
+	- solve conflict with main and pull request
 
 **************************
 **		Next To To		**
