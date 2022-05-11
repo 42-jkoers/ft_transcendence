@@ -1,15 +1,21 @@
 <template>
 <div class="container">
     <form @submit.prevent="onSubmit" class="form">
-    <textarea v-model="input" placeholder="Type your message..." class="input" />
+    <input v-model="input" @keyup.enter="sendMessage" placeholder="Type your message..." class="input" />
     <div class="input-group-append">
          <button class="send-button" @click="sendMessage">Send</button>
     </div>
     </form>
+    <div class="messages">
+        <p v-for="(chat, i) in messages" :key="i" class="chat-message">
+            <span class="chat-name"> {{ chat?.name }}:
+            </span> {{ chat?.message }}
+        </p>
+    </div>
   </div>
 </template>
 
-<script>
+<script >
 import { io } from 'socket.io-client';
 
 
@@ -38,19 +44,20 @@ export default {
         this.socket.on("messageAdded", (args) => {
             console.log("messageAdded event received from backend");
             this.messages.push(args);
-            console.log(this.messages);
         }) //listen to an event coming from the backend gateway for msg sent?
 
        //register a catch-all listener -> useful during development:
-        this.socket.onAny((event, ...args) => {
-            console.log(event, args);
-        })
+        // this.socket.onAny((event, ...args) => {
+        //     // console.log(event, args);
+        // })
     },
 
     methods: {
-        //binding a click event listener to a method named 'x'
-        sendMessage() {
+        //binding a click event listener to a method named 'sendMessage'
+        sendMessage(args) {
             console.log("Send button clicked!");
+            args;
+            console.log(this.input);
             this.socket.emit('addMessage', 'Msg: Send button clicked!');
         }
     },
