@@ -19,16 +19,6 @@
         </button>
       </div>
     </form>
-    <div class="messages">
-      <p
-        v-for="(chat, i) in messages"
-        :key="i"
-        class="chat-message"
-      >
-        <span class="chat-name"> {{ chat?.name }}:
-        </span> {{ chat?.message }}
-      </p>
-    </div>
   </div>
 </template>
 
@@ -62,11 +52,6 @@ export default {
             console.log("messageAdded event received from backend");
             this.messages.push(args);
         }) //listen to an event coming from the backend gateway for msg sent?
-
-       //register a catch-all listener -> useful during development:
-        // this.socket.onAny((event, ...args) => {
-        //     // console.log(event, args);
-        // })
     },
 
     beforeUnmount() {
