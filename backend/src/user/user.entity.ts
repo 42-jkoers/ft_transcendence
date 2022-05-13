@@ -1,4 +1,4 @@
-import { Room } from 'src/chat/room/entities/room.entity';
+import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
@@ -15,8 +15,8 @@ export class User {
 	@Column({ nullable: true })
 	public avatar: string;
 
-	@ManyToMany(() => Room, (room) => room.users)
-	rooms: Room[];
+	@ManyToMany(() => RoomEntity, (room) => room.users)
+	rooms: RoomEntity[];
 }
 
 export default User;

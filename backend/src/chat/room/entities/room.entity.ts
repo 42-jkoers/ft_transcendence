@@ -14,7 +14,7 @@ export enum RoomVisibilityType {
 }
 
 @Entity()
-export class Room {
+export class RoomEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
