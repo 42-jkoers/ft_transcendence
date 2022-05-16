@@ -27,7 +27,7 @@ export class AuthService {
 		return this.userService.createUser(createUserDto);
 	}
 
-	async getUserIDFromCookie(cookieString: string) {
+	getUserIDFromCookie(cookieString: string) {
 		/* parse session cookie to sid (session id) */
 		const parsedCookie = parse(cookieString);
 		const decodeSid = cookieParser.signedCookie(parsedCookie['connect.sid'], this.configService.get('SESSION_SECRET'));
@@ -38,28 +38,18 @@ export class AuthService {
 		/* retrieve session information from redis store */
 		let RedisStore = connectRedis(session);
 		let redisClient = redis.createClient({ url: this.configService.get('REDIS_URI')});
-		const store = new RedisStore({ client: redisClient, prefix: 'sess:' });
+		// redisClient.on('connect', () => console.log('Connected to Redis'));
+		const store = new RedisStore({ client: redisClient });
 		
 		// Method1: use promisify
 		// const value = await util.promisify(store.get)(String(decodeSid));
 		// console.log(value);
 		// return value;
 		
-		// Method2: use get
-		const ret = store.get(String(decodeSid), function(err, reply): Promise<any>  {
-			if (err) {
-				console.log("err!!!");
-			}
-			else if (!reply) {
-				console.log("Empty!!");
-			}
-			else {
-				const userId = reply['passport']['user']['id'];
-				console.log(">> 1. store.get(): ", userId);
-				return userId;
-			}
+		// Method2: use RedisStore.get()
+		const ret = store.get(String(decodeSid), function(err, sessionInfo) {
+			console.log(">> in RedisStore.get(): ", sessionInfo['passport']['user']);
 		});
-		console.log(">> 2. auth service: ", ret);
 		return ret;
 	}
 }
