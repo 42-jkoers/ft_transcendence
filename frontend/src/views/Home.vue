@@ -1,9 +1,9 @@
 <template>
-  <div class="page">
-    <h1>Home</h1>
-  </div>
+    <div class="page">
+        <h1>Home</h1>
+    </div>
 </template>
-<script>
+<script lang="ts">
 export default {
     name: "HomePage",
     data() {
