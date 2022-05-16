@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
+import { parse } from 'cookie';
 import { ValidateUserDto } from 'src/user/dto';
 import { UserService } from '../user/user.service';
-// import { ConfigService } from '@nestjs/config';
-// import { JwtService } from '@nestjs/jwt';
-// import * as bcrypt from 'bcrypt';
-// import PostgresErrorCode from '../database/postgresErrorCode.enum';
-// import { UserService } from '../user/user.service';
-// import RegisterDto from './dto/register.dto';
-
+import * as cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
+import * as redis from 'redis';
+import * as connectRedis from 'connect-redis';
+import * as session from 'express-session';
+import * as util from 'util';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly userService: UserService,
+		private readonly configService: ConfigService,
 	) {}
 	async validateUser(userDto: ValidateUserDto) {
 		const intraID = userDto.intraID;
@@ -25,78 +26,42 @@ export class AuthService {
 		const createUserDto = { intraID, username, avatar};
 		return this.userService.createUser(createUserDto);
 	}
-	
+
+	async getUserIDFromCookie(cookieString: string) {
+		/* parse session cookie to sid (session id) */
+		const parsedCookie = parse(cookieString);
+		const decodeSid = cookieParser.signedCookie(parsedCookie['connect.sid'], this.configService.get('SESSION_SECRET'));
+		if (!decodeSid) {
+			throw new Error('invalid cookie');
+		}
+
+		/* retrieve session information from redis store */
+		let RedisStore = connectRedis(session);
+		let redisClient = redis.createClient({ url: this.configService.get('REDIS_URI')});
+		const store = new RedisStore({ client: redisClient, prefix: 'sess:' });
+		
+		// Method1: use promisify
+		// const value = await util.promisify(store.get)(String(decodeSid));
+		// console.log(value);
+		// return value;
+		
+		// Method2: use get
+		const ret = store.get(String(decodeSid), function(err, reply): Promise<any>  {
+			if (err) {
+				console.log("err!!!");
+			}
+			else if (!reply) {
+				console.log("Empty!!");
+			}
+			else {
+				const userId = reply['passport']['user']['id'];
+				console.log(">> 1. store.get(): ", userId);
+				return userId;
+			}
+		});
+		console.log(">> 2. auth service: ", ret);
+		return ret;
+	}
 }
 
 export default AuthService;
-/*
-@Injectable()
-export class AuthService {
-	constructor(
-		private readonly userService: UserService,
-		private readonly jwt: JwtService,
-		private readonly config: ConfigService,
-	) {}
-
-	async register(registrationData: RegisterDto) {
-		// 1: generate the password hash
-		const hashedPassword = await bcrypt.hash(registrationData.password, 10);
-		try {
-			// 2: save new user in the db
-			const newUser = await this.userService.create({
-				...registrationData,
-				password: hashedPassword
-			});
-			newUser.password = undefined; // TODO: to improve
-			// 3: return the saved user
-			return this.signToken(newUser.id, newUser.email);
-		} catch (error) {
-			if (error?.code === PostgresErrorCode.UniqueViolation) {
-				throw new ForbiddenException('User already exists');
-			}
-			throw error;
-		}
-	}
-
-	async login(loginDto: LoginDto) {
-		try {
-			const user = await this.userService.getByEmail(loginDto.email);
-			await this.verifyPassword(loginDto.password, user.password);
-			user.password = undefined; // TODO: to improve
-			return this.signToken(user.id, user.email);
-			
-		} catch (error) {
-			throw new ForbiddenException('Wrong credentials provided'); // if email user does not exist
-		}
-	}
-	
-	private async verifyPassword(plainTextPassword: string, hashedPassword: string) {
-		const isPasswordCorrect = await bcrypt.compare(
-			plainTextPassword,
-			hashedPassword
-		);
-		if (!isPasswordCorrect) {
-			throw new ForbiddenException('Wrong credentials provided');
-		}
-	}
-
-	async signToken(userId: number, email: string): Promise<{ access_token: string }> {
-		const payload = {
-			sub: userId,
-			email
-		};
-
-		const secret = this.config.get('JWT_SECRET');
-		const expireTime = this.config.get('JWT_EXPIRATION_TIME');
-
-		const token = await this.jwt.signAsync(
-			payload, {
-				expiresIn: expireTime,
-				secret: secret
-			}
-		);
-
-		return { access_token: token };
-	}
-}
-*/

@@ -6,12 +6,14 @@ import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from 'src/user/user.module';
 import { SessionSerializer } from './utils/Serializer';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
     HttpModule,
     JwtModule.register({}),
-    UserModule
+    UserModule,
+    PassportModule.register({ session: true }),
   ],
   providers: [
     OAuthStrategy,
@@ -19,5 +21,6 @@ import { SessionSerializer } from './utils/Serializer';
     SessionSerializer,
   ],
   controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule {}

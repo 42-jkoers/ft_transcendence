@@ -31,7 +31,7 @@ async function bootstrap() {
 			saveUninitialized: false,
 			store: new RedisStore({ client: redisClient }),
 		}),
-		);
+	);
 	app.use(passport.initialize());
 	app.use(passport.session());
 	
