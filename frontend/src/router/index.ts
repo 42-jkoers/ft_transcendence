@@ -14,6 +14,11 @@ const routes = [
         name: "Chat",
         component: Chat,
     },
+    {
+        path: "/login",
+        name: "Login",
+        component: Home,
+    },
 ];
 
 // Add the  configuration file:
