@@ -21,11 +21,10 @@ import { defineComponent } from "vue";
 import type { PropType } from "vue";
 
 export default defineComponent({
-  props: {
-    messages: { type: Array as PropType<Array<string>> },
-  },
+  props: {},
   data() {
     return {
+      // messages: { type: Array as PropType<Array<string>> },
       msg: "Welcome to our Chat",
     };
   },
