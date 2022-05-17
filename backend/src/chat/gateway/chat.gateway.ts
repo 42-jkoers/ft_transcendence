@@ -28,6 +28,7 @@ export class ChatGateway
 	private logger: Logger = new Logger('ChatGateway');
 
 	async handleConnection(client: Socket) {
+		// TODO should we check if the connection is coming from chat or game?
 		this.logger.log('Client connected');
 		const user: UserI = await this.authService.getUserFromCookie(
 			client.handshake.headers.cookie,
@@ -36,8 +37,8 @@ export class ChatGateway
 			console.log('>> In gateway handleConnection(): user is:\n', user);
 		} else {
 			console.log(
-				'>> In gateway handleConnection(): user not authorized.\n',
-			);
+				'>> In gateway handleConnection(): user not authorized.\n', 
+			); //FIXME throw an exception
 		}
 		client.data.user = user;
 		//try catch block here to authenticate user with jwt
@@ -46,7 +47,7 @@ export class ChatGateway
 			user,
 		}); // save connection to DB
 	}
-
+	
 	afterInit(server: Server) {
 		this.logger.log('Gateway: init');
 		this.server.emit('Hey there');
@@ -59,6 +60,7 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('messages') //allows to listen to incoming messages
+	// @UseGuards(AuthenticatedGuard) //TODO check if it works
 	 handleMessage(client: Socket, payLoad: string) {
 		this.logger.log("button is clicked");
 		client.emit('messageAdded', 'Here is my message?');
