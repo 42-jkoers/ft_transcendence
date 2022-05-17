@@ -13,7 +13,7 @@ export class ConnectedUserEntity {
 	@PrimaryGeneratedColumn()
 	id: number; //uuid?
 
-	// @Column()
+	@Column({ nullable: true })
 	@IsString()
 	socketID?: string; // FIXME can a user connect from different browser, so do we need a unique id here i.e. user.id?
 
