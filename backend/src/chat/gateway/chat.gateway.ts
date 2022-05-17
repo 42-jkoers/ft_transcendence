@@ -36,9 +36,7 @@ export class ChatGateway
 		if (user) {
 			console.log('>> In gateway handleConnection(): user is:\n', user);
 		} else {
-			console.log(
-				'>> In gateway handleConnection(): user not authorized.\n', 
-			); //FIXME throw an exception
+			console.log('>> In gateway handleConnection(): user not authorized.\n', ); //FIXME throw an exception
 		}
 		client.data.user = user;
 		//try catch block here to authenticate user with jwt
@@ -55,8 +53,8 @@ export class ChatGateway
 
 	async handleDisconnect(client: Socket): Promise<any> {
 		this.logger.log('Client disconnected');
-		//remove sockets from Socket[] array
-		//disconnect socket
+		this.connectedUserService.deleteBySocketId(client.id);
+		client.disconnect(); //manually disconnects the socket
 	}
 
 	@SubscribeMessage('messages') //allows to listen to incoming messages
