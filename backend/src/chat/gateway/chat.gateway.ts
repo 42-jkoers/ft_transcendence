@@ -24,9 +24,8 @@ export class ChatGateway
 	async handleConnection(client: Socket) {
 		this.logger.log('Client connected');
 		const cookieString = client.handshake.headers.cookie;
-		const ret =	this.authService.getUserIDFromCookie(cookieString);
-		console.log(">> in gateway: ", ret);
-		// console.log("User id is: ", userID);
+		const user = await this.authService.getUserFromCookie(cookieString);
+		console.log(">> user is:\n", user);
 		//try catch block here to authenticate user with jwt
 		//push sockets into Socket[] array. + keep id info of socket
 	}

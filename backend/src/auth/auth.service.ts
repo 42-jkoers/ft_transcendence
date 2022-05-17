@@ -35,23 +35,28 @@ export class AuthService {
 			throw new Error('invalid cookie');
 		}
 
-		/* retrieve session information from redis store */
+		/* set up redis store to be able to retireve session */
 		let RedisStore = connectRedis(session);
 		let redisClient = redis.createClient({ url: this.configService.get('REDIS_URI')});
-		// redisClient.on('connect', () => console.log('Connected to Redis'));
 		const store = new RedisStore({ client: redisClient });
 		
-		// Method1: use promisify
-		// const value = await util.promisify(store.get)(String(decodeSid));
-		// console.log(value);
-		// return value;
-		
-		// Method2: use RedisStore.get()
-		const ret = store.get(String(decodeSid), function(err, sessionInfo) {
-			console.log(">> in RedisStore.get(): ", sessionInfo['passport']['user']);
+		/*
+		** the RedisStore.get() contains callback function, 
+		** only way to return user ID if to use new Promise(resolve, reject)
+		** see: https://www.youtube.com/watch?v=ranuTFXPgbw&ab_channel=CodingWithChaim
+		*/
+		return new Promise((resolve, reject) => {
+			store.get(String(decodeSid), function(err, sessionInfo) {
+				resolve(sessionInfo['passport']['user']['id']);
+			})
 		});
-		return ret;
 	}
-}
+
+	async getUserFromCookie(cookieString: string) {
+		const userID = await this.getUserIDFromCookie(cookieString);
+		return this.userService.findByID(Number(userID));
+	}
+
+	}
 
 export default AuthService;
