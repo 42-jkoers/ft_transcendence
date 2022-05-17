@@ -8,6 +8,7 @@ import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import * as session from 'express-session';
 import User from '../user/user.entity';
+import { UserI } from '../user/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -15,16 +16,24 @@ export class AuthService {
 		private readonly userService: UserService,
 		private readonly configService: ConfigService,
 	) {}
-	async validateUser(userDto: ValidateUserDto) {
-		const intraID = userDto.intraID;
-		const user = await this.userService.findByIntraID(intraID);
+
+	/*
+	** if user is already in database: return user if it's already registered
+	** if user is not yet in database: create new user (with empty username and default avatar)
+	*/
+	async validateUser(userDto: ValidateUserDto): Promise< UserI > {
+		const user = await this.userService.findByIntraID(userDto.intraID);
 		if (user) {
 			return user;
 		}
-		const username = userDto.username;
+		return await this.registerUser(userDto.intraID);
+	}
+	
+	private async registerUser(intraID: string): Promise< UserI > {
+		const username = null;
 		const avatar = "default avatar"; // TODO: to change to default image
 		const createUserDto = { intraID, username, avatar};
-		return this.userService.createUser(createUserDto);
+		return await this.userService.createUser(createUserDto);
 	}
 
 	parseSessionUserFromCookie(cookieString: string): Promise< User | undefined > {
@@ -61,7 +70,7 @@ export class AuthService {
 			const sessionUser = await this.parseSessionUserFromCookie(cookieString);
 			const userID: number = sessionUser['id'];
 			if (userID) {
-				return this.userService.findByID(Number(userID));
+				return this.userService.findByID(userID);
 			}
 		}
 		return null;

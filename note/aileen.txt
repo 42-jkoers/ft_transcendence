@@ -1,6 +1,6 @@
-**************************
-**		Schedules		**
-**************************
+******************************
+**		Branch - auth		**
+******************************
 Tutorial: 
 	https://wanago.io/2020/05/11/nestjs-api-controllers-routing-module/
 
@@ -41,6 +41,7 @@ Tutorial:
 (Mon) 2022-05-09
 	- fixed callback error (turned out to be type at clientSecret...)
 	- implement sessions
+		https://stackoverflow.com/questions/27637609/understanding-passport-serialize-deserialize
 
 (Tue) 2022-05-10
 	- add validateUser in AuthService, createUser in UserService
@@ -51,12 +52,22 @@ Tutorial:
 (Wed) 2022-05-11
 	- solve conflict with main and pull request
 
+**********************************************
+**		Branch - auth_register_new_user		**
+**********************************************
+(Wed) 2022-05-11 ([deleted branch] register_new_user)
+	- 1. replace validateUser dto with just intraID; 2.redirect login successful page to /user/me
+	- 1. setup route for existed user vs new user; 2. housekeeping
+
+(Tue) 2022-05-17
+	- change validateUser dto with just intraID >> in the future may be add 2-factor-Auth
+	- build method registerUser in AuthServicenew, new user will have empty username which should be redirect to registration page
+
 **************************
 **		Next To To		**
 **************************
-
+- registration form on the front end
 
 ******************************
 **		General To To		**
 ******************************
-

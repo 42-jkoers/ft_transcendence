@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto } from './dto';
+import { UserI } from './user.interface';
 
 @Injectable()
 export class UserService {
@@ -15,7 +16,7 @@ export class UserService {
 		return await this.userRepository.findOne({ id });
 	}
 
-	async findByIntraID(intraID: string): Promise<User | undefined> {
+	async findByIntraID(intraID: string): Promise<UserI | undefined> {
 		return await this.userRepository.findOne({ intraID });
 	}
 

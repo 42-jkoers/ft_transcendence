@@ -1,3 +1,3 @@
-import { User } from "../../user/user.entity"
+import { UserI } from "../../user/user.interface";
 
-export type Done = (err: Error, user: User) => void;
+export type Done = (err: Error, user: UserI) => void;

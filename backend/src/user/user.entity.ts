@@ -10,7 +10,7 @@ export class User {
 	@Column({ name: 'intra_ID', unique: true })
 	public intraID: string;
 
-	@Column({ unique: true })
+	@Column({ unique: true, nullable: true})
 	public username: string;
 
 	@Column({ nullable: true })

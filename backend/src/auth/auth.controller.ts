@@ -1,5 +1,6 @@
 import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { UserI } from 'src/user/user.interface';
 import { AuthService } from './auth.service';
 import { AuthenticatedGuard, OAuthGuard } from './oauth/oauth.guard';
 
@@ -15,8 +16,15 @@ export class AuthController {
 
 	@Get('redirect')
 	@UseGuards(OAuthGuard)
-	redirect(@Res() res: Response) {
-		res.redirect("http://localhost:8080");
+	redirect(@Req() req: Request, @Res() res: Response) {
+		const user: UserI = req.user;
+		if (user.username) {
+			res.redirect("http://localhost:8080");
+		}
+		else {
+			console.log("new user");
+			res.send("new user detected!");
+		}
 	}
 
 	@Get('status')
