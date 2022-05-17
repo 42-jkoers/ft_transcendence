@@ -60,7 +60,7 @@ export class ChatGateway
 
 	@SubscribeMessage('messages') //allows to listen to incoming messages //FIXME is it messages or addMessage event coming from client-side?
 	// @UseGuards(AuthenticatedGuard) //TODO check if it works
-	 handleMessage(client: Socket, payLoad: string) {
+	handleMessage(client: Socket, payLoad: string) {
 		this.logger.log("button is clicked");
 		client.emit('messageAdded', 'Here is my message?');
 
