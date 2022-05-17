@@ -58,9 +58,10 @@ export class ChatGateway
 		//disconnect socket
 	}
 
-	@SubscribeMessage('messages') //allows to listen to incoming messages
-	 handleMessage(client: Socket, payLoad: string) {
-		this.logger.log("button is clicked");
+	@SubscribeMessage('addMessage') //allows to listen to incoming messages
+	handleMessage(client: Socket, payLoad: string) {
+		this.logger.log(payLoad);
+		this.logger.log('button is clicked');
 		client.emit('messageAdded', 'Here is my message?');
 
 		// client.send(payLoad);
