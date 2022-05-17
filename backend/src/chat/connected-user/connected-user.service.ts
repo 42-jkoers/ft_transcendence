@@ -13,7 +13,6 @@ export class ConnectedUserService {
 	) {}
 	//create function
 	async createConnectedUser(connectedUser: ConnectedUserI,): Promise<ConnectedUserI> {
-		//it's already created and this.userService.findOneById helps you get it back in handleConnection;
 		return this.connectedUserRepository.save(connectedUser);
 	}
 
