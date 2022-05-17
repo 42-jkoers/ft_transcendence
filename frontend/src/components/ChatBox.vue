@@ -15,10 +15,8 @@
 </template>
 
 <script lang="ts">
-import SocketioService from "@/services/socketio.service";
-
+import SocketioService from "../services/socketio.service";
 import { defineComponent } from "vue";
-import type { PropType } from "vue";
 
 export default defineComponent({
   props: {},
@@ -58,7 +56,10 @@ export default defineComponent({
       console.log("Send button clicked!");
       args;
       // console.log(this.input);
-      // this.socket.emit("addMessage", "Msg: Send button clicked!");
+      SocketioService.release(
+        "addMessage",
+        "Msg: User clicked the Send button!"
+      );
     },
   },
 });

@@ -19,6 +19,12 @@ class SocketioService {
       this.socket.disconnect();
     }
   }
+
+  release(event: string, message: string) {
+    if (this.socket) {
+      this.socket.emit(event, message);
+    }
+  }
 }
 
 export default new SocketioService();
