@@ -49,15 +49,16 @@ export class ChatGateway
 	afterInit(server: Server) {
 		this.logger.log('Gateway: init');
 		this.server.emit('Hey there');
+		//TODO maybe delete all connected users and joined rooms with onInit?
 	}
 
-	async handleDisconnect(client: Socket): Promise<any> {
+	handleDisconnect(client: Socket) {
 		this.logger.log('Client disconnected');
 		this.connectedUserService.deleteBySocketId(client.id);
 		client.disconnect(); //manually disconnects the socket
 	}
 
-	@SubscribeMessage('messages') //allows to listen to incoming messages
+	@SubscribeMessage('messages') //allows to listen to incoming messages //FIXME is it messages or addMessage event coming from client-side?
 	// @UseGuards(AuthenticatedGuard) //TODO check if it works
 	 handleMessage(client: Socket, payLoad: string) {
 		this.logger.log("button is clicked");
