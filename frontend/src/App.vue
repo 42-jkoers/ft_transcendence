@@ -5,7 +5,10 @@
     </router-link> |
     <router-link to="/chat">
       Chat
-    </router-link>
+    </router-link> |
+    <a href="http://localhost:3000/auth/login">
+      Login
+    </a>
     <router-view />
   </div>
 </template>

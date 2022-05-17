@@ -36,7 +36,7 @@ export default {
     },
 
     mounted() {
-        this.socket = io('http://localhost:3000'); //create a socket instance for connecting client
+        this.socket = io('http://localhost:3000', {withCredentials: true}); //create a socket instance for connecting client
 
         // event listeners for the socket instance //
         // making use of on() to register an event listener //

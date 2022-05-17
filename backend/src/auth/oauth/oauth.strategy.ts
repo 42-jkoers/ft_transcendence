@@ -23,6 +23,7 @@ export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
 		});
 	}
 
+	/* return value (User) could be accessed via req.session.passport.user */	
 	async validate(accessToken: string, refreshToken: string, profile: any, done: any) {
 		const data = await this.httpService.get(this.config.get('INTRA_GET_ME_URL'), {
 			headers: { Authorization: `Bearer ${ accessToken }` }, }
@@ -30,7 +31,7 @@ export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
 		const intraID = data.data.id;
 		const username = data.data.usual_full_name;
 		const validateUserDto = { intraID, username};
-		return this.authService.validateUser(validateUserDto);
+		return (await this.authService.validateUser(validateUserDto));
 		// const jwt = await this.jwtService.signAsync({ id: data.data.id });
 		// return jwt;
 	}
