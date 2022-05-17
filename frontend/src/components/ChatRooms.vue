@@ -1,9 +1,10 @@
 <template>
   <div id="chatrooms">
     <PrimeVueButton
+      @click="openCreateRoomCard"
       label="New Chat Room"
       icon="pi pi-plus"
-      class="p-button-info"
+      class="p-button-primary"
     />
   </div>
 </template>
@@ -15,6 +16,11 @@ export default {
   name: "ChatRooms",
   components: {
     PrimeVueButton,
+  },
+  methods: {
+    openCreateRoomCard() {
+      alert("A new Room will be created here");
+    },
   },
 };
 </script>

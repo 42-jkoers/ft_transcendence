@@ -1,6 +1,5 @@
 <template>
   <div class="card">
-    <h5>Messages</h5>
     <form class="form" @submit.prevent="onSubmit">
       <input
         v-model="input"
