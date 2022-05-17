@@ -59,7 +59,7 @@ export class AuthService {
 	async getUserFromCookie(cookieString: string | undefined) {
 		if (cookieString) {
 			const sessionUser = await this.parseSessionUserFromCookie(cookieString);
-			const { id: userID } = sessionUser;
+			const userID: number = sessionUser['id'];
 			if (userID) {
 				return this.userService.findByID(Number(userID));
 			}
