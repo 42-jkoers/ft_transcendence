@@ -8,29 +8,43 @@ import {
 	WebSocketServer,
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
+import { UserI } from 'src/user/user.interface';
 import { AuthService } from '../../auth/auth.service';
+import { ConnectedUserService } from '../connected-user/connected-user.service';
+import { ConnectedUserI } from '../connected-user/connected-user.interface';
 
 //Gateway: a class annotated with @WebSocketGetAway decorator
-@WebSocketGateway({ cors: { origin: 'http://localhost:8080', credentials: true } }) //allows us to make use of any WebSockets library (in our case socket.io)
+@WebSocketGateway({
+	cors: { origin: 'http://localhost:8080', credentials: true },
+}) //allows us to make use of any WebSockets library (in our case socket.io)
 export class ChatGateway
 	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-	constructor (
+	constructor(
 		private readonly authService: AuthService,
-	) {};
+		private readonly connectedUserService: ConnectedUserService,
+	) {}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
 
 	async handleConnection(client: Socket) {
 		this.logger.log('Client connected');
-		const user = await this.authService.getUserFromCookie(client.handshake.headers.cookie);
+		const user: UserI = await this.authService.getUserFromCookie(
+			client.handshake.headers.cookie,
+		);
 		if (user) {
-			console.log(">> In gateway handleConnection(): user is:\n", user);
+			console.log('>> In gateway handleConnection(): user is:\n', user);
 		} else {
-			console.log(">> In gateway handleConnection(): user not authorized.\n");
+			console.log(
+				'>> In gateway handleConnection(): user not authorized.\n',
+			);
 		}
+		client.data.user = user;
 		//try catch block here to authenticate user with jwt
-		//push sockets into Socket[] array. + keep id info of socket
+		await this.connectedUserService.createConnectedUser({
+			socketID: client.id,
+			user,
+		}); // save connection to DB
 	}
 
 	afterInit(server: Server) {
@@ -38,16 +52,17 @@ export class ChatGateway
 		this.server.emit('Hey there');
 	}
 
-	handleDisconnect() {
+	async handleDisconnect(client: Socket): Promise<any> {
 		this.logger.log('Client disconnected');
 		//remove sockets from Socket[] array
 		//disconnect socket
 	}
 
-	@SubscribeMessage('addMessage') //allows to listen to incoming messages
-	handleMessage(client: Socket, payLoad: string): void {
-		this.logger.log(payLoad);
+	@SubscribeMessage('messages') //allows to listen to incoming messages
+	 handleMessage(client: Socket, payLoad: string) {
+		this.logger.log("button is clicked");
 		client.emit('messageAdded', 'Here is my message?');
+
 		// client.send(payLoad);
 	}
 }

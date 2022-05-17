@@ -39,9 +39,9 @@ export class AuthService {
 		let RedisStore = connectRedis(session);
 		let redisClient = redis.createClient({ url: this.configService.get('REDIS_URI')});
 		const store = new RedisStore({ client: redisClient });
-		
+
 		/*
-		** the RedisStore.get() contains callback function, 
+		** the RedisStore.get() contains callback function,
 		** only way to return session info if to use new Promise(resolve, reject)
 		** see: https://www.youtube.com/watch?v=ranuTFXPgbw&ab_channel=CodingWithChaim
 		*/
@@ -59,13 +59,14 @@ export class AuthService {
 	async getUserFromCookie(cookieString: string | undefined) {
 		if (cookieString) {
 			const sessionUser = await this.parseSessionUserFromCookie(cookieString);
-			const { id: userID } = sessionUser;
+			const userID: number = sessionUser['id'];
 			if (userID) {
 				return this.userService.findByID(Number(userID));
 			}
 		}
 		return null;
 	}
+
 
 }
 

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RoomEntity } from './entities/room.entity';
 import { IRoom } from './room.interface';
-import { IUser } from 'src/user/user.interface';
+import { UserI } from 'src/user/user.interface';
 import {
 	IPaginationOptions,
 	paginate,
@@ -16,12 +16,12 @@ export class RoomService {
 		@InjectRepository(RoomEntity)
 		private readonly RoomEntityRepository: Repository<RoomEntity>,
 	) {}
-	async createRoom(room: IRoom, creator: IUser): Promise<IRoom> {
+	async createRoom(room: IRoom, creator: UserI): Promise<IRoom> {
 		const newRoom = await this.addCreatorToRoom(room, creator); // adding current creator to the array of users for this new room
 		return this.RoomEntityRepository.save(newRoom); // Saves a given entity in the database. If entity does not exist in the database then inserts, otherwise updates.
 	}
 
-	async addCreatorToRoom(room: IRoom, creator: IUser): Promise<IRoom> {
+	async addCreatorToRoom(room: IRoom, creator: UserI): Promise<IRoom> {
 		room.users.push(creator);
 		return room;
 	}
