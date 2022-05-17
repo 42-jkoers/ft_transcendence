@@ -8,7 +8,9 @@ import {
 	WebSocketServer,
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
+import { UserI } from 'src/user/user.interface';
 import { AuthService } from '../../auth/auth.service';
+import { ConnectedUserService } from '../connected-user/connected-user.service';
 
 //Gateway: a class annotated with @WebSocketGetAway decorator
 @WebSocketGateway({ cors: { origin: 'http://localhost:8080', credentials: true } }) //allows us to make use of any WebSockets library (in our case socket.io)
@@ -17,6 +19,7 @@ export class ChatGateway
 {
 	constructor (
 		private readonly authService: AuthService,
+		private readonly connectedUserService: ConnectedUserService
 	) {};
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -24,10 +27,11 @@ export class ChatGateway
 	async handleConnection(client: Socket) {
 		this.logger.log('Client connected');
 		const cookieString = client.handshake.headers.cookie;
-		client.data.user = await this.authService.getUserFromCookie(cookieString);
-		console.log(">> user is:\n", client.data.user);
+		const user: UserI = await this.authService.getUserFromCookie(cookieString);
+		client.data.user = user;
+		console.log(">> user is:\n", user);
 		//try catch block here to authenticate user with jwt
-		//push sockets into Socket[] array. + keep id info of socket
+		await this.connectedUserService.createConnectedUser({socketID: client.id, user}); // save connection to DB
 	}
 
 	afterInit(server: Server) {
