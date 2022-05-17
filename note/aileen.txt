@@ -62,11 +62,12 @@ Tutorial:
 (Tue) 2022-05-17
 	- change validateUser dto with just intraID >> in the future may be add 2-factor-Auth
 	- build method registerUser in AuthServicenew, new user will have empty username which should be redirect to registration page
+	- build /register view
 
 **************************
 **		Next To To		**
 **************************
-- registration form on the front end
+- registration form on the front end and connect to backend
 
 ******************************
 **		General To To		**

@@ -22,8 +22,7 @@ export class AuthController {
 			res.redirect("http://localhost:8080");
 		}
 		else {
-			console.log("new user");
-			res.send("new user detected!");
+			res.redirect("http://localhost:8080/register");
 		}
 	}
 

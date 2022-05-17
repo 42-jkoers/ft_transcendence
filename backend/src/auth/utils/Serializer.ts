@@ -20,7 +20,7 @@ export class SessionSerializer extends PassportSerializer {
 
 	/* 
 	** function deserializeUser is used to retrieve user data from session. 
-	** the object passed in Done (UserI) will be retrieved by req.user
+	** the object passed in Done (UserI) will be retrieved by req.user.
 	*/
 	async deserializeUser(user: User, done: Done) {
 		const userDB: UserI = await this.userService.findByIntraID(user.intraID);
