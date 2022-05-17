@@ -45,7 +45,7 @@ export class ChatGateway
 			user,
 		}); // save connection to DB
 	}
-	
+
 	afterInit(server: Server) {
 		this.logger.log('Gateway: init');
 		this.server.emit('Hey there');
@@ -58,10 +58,11 @@ export class ChatGateway
 		client.disconnect(); //manually disconnects the socket
 	}
 
-	@SubscribeMessage('messages') //allows to listen to incoming messages //FIXME is it messages or addMessage event coming from client-side?
+	@SubscribeMessage('addMessage') //allows to listen to incoming messages //FIXME is it messages or addMessage event coming from client-side?
 	// @UseGuards(AuthenticatedGuard) //TODO check if it works
 	handleMessage(client: Socket, payLoad: string) {
-		this.logger.log("button is clicked");
+		this.logger.log(payLoad);
+		this.logger.log('button is clicked');
 		client.emit('messageAdded', 'Here is my message?');
 
 		// client.send(payLoad);
