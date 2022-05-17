@@ -28,11 +28,11 @@ export class AuthService {
 	}
 
 	parseSessionUserFromCookie(cookieString: string): Promise< User | undefined > {
-		/* parse session cookie to sid (session id) */
+		/* parse cookie to session id(sid)) */
 		const parsedCookie = parse(cookieString);
 		const decodeSid = cookieParser.signedCookie(parsedCookie['connect.sid'], this.configService.get('SESSION_SECRET'));
 		if (!decodeSid) {
-			throw new Error('invalid cookie');
+			return null; // invalid cookie string
 		}
 
 		/* set up redis store to be able to retireve session */
@@ -52,15 +52,21 @@ export class AuthService {
 		});
 	}
 
-	async getUserFromCookie(cookieString: string) {
-		const sessionUser = await this.parseSessionUserFromCookie(cookieString);
-		const { id: userID } = sessionUser;
-		if (userID) {
-			return this.userService.findByID(Number(userID));
+	/*
+	** return User entity if user is authorized (meaning: logged in)
+	** return null if user is not authorized
+	*/
+	async getUserFromCookie(cookieString: string | undefined) {
+		if (cookieString) {
+			const sessionUser = await this.parseSessionUserFromCookie(cookieString);
+			const { id: userID } = sessionUser;
+			if (userID) {
+				return this.userService.findByID(Number(userID));
+			}
 		}
 		return null;
 	}
 
-	}
+}
 
 export default AuthService;

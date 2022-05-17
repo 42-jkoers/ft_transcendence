@@ -1,23 +1,27 @@
 import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
- 
+import { RoomEntity } from 'src/chat/room/entities/room.entity';
+import { Column, Entity, JoinColumn, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+
 @Entity()
 export class User {
 	@PrimaryGeneratedColumn()
 	public id?: number;
-	
-	@Column({ name: "intra_ID", unique: true })
+
+	@Column({ name: 'intra_ID', unique: true })
 	public intraID: string;
-	
+
 	@Column({ unique: true })
 	public username: string;
 
 	@Column({ nullable: true })
 	public avatar: string;
-	
-	@OneToMany(() => ConnectedUserEntity, connection => connection.user)
+
+    @JoinColumn()
+	@OneToMany(() => ConnectedUserEntity, (connection) => connection.user)
 	connections: ConnectedUserEntity[];
 
+	@ManyToMany(() => RoomEntity, (room) => room.users)
+	rooms: RoomEntity[];
 }
- 
+
 export default User;

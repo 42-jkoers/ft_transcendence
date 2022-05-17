@@ -3,13 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto } from './dto';
- 
+
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectRepository(User)
 		private userRepository: Repository<User>,
-		) {}
+	) {}
 
 	async findByID(id: number): Promise<User | undefined> {
 		return await this.userRepository.findOne({ id });
@@ -23,5 +23,4 @@ export class UserService {
 		const newUser = this.userRepository.create(userData);
 		return await this.userRepository.save(newUser);
 	}
-
 }
