@@ -1,7 +1,9 @@
 <template>
+  <router-view >
   <nav>
     <router-link to="/">Home</router-link> |
-    <router-link to="/chat">Chat</router-link>
+    <router-link to="/chat">Chat</router-link> |
+    <a href="http://localhost:3000/auth/login"> Login </a>
   </nav>
   <router-view />
 </template>

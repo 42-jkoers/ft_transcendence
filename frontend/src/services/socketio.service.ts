@@ -5,10 +5,10 @@ class SocketioService {
   constructor() {
     // do nothing.
   }
-
   setupSocketConnection() {
     this.socket = io("http://localhost:3000", {
       transports: ["websocket"],
+      withCredentials: true,
     });
 
     return this.socket;
