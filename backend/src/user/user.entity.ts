@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
  
 @Entity()
 export class User {
@@ -14,6 +15,8 @@ export class User {
 	@Column({ nullable: true })
 	public avatar: string;
 	
+	@OneToMany(() => ConnectedUserEntity, connection => connection.user)
+	connections: ConnectedUserEntity[];
 
 }
  
