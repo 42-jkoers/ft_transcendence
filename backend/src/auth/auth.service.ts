@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { parse } from 'cookie';
 import { ValidateUserDto } from 'src/user/dto';
 import { UserService } from '../user/user.service';
@@ -8,6 +8,7 @@ import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import * as session from 'express-session';
 import User from '../user/user.entity';
+import { UserI } from 'src/user/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -27,12 +28,15 @@ export class AuthService {
 		return this.userService.createUser(createUserDto);
 	}
 
-	parseSessionUserFromCookie(cookieString: string): Promise< User | undefined > {
+	/* return undefined if cookie is invalid */
+	parseSessionUserFromCookie(cookieString: string): Promise< UserI | undefined > {
 		/* parse cookie to session id(sid)) */
-		const parsedCookie = parse(cookieString);
-		const decodeSid = cookieParser.signedCookie(parsedCookie['connect.sid'], this.configService.get('SESSION_SECRET'));
+		const parsedCookie = parse(cookieString); // return empty object if cookieString is incorrect
+		const sid = parsedCookie['connect.sid']; // return undefined if no 'connect.sid' present
+		const secret = this.configService.get('SESSION_SECRET');
+		const decodeSid = cookieParser.signedCookie(sid, secret);
 		if (!decodeSid) {
-			return null; // invalid cookie string
+			return undefined; // invalid cookie string
 		}
 
 		/* set up redis store to be able to retireve session */
@@ -53,18 +57,20 @@ export class AuthService {
 	}
 
 	/*
-	** return User entity if user is authorized (meaning: logged in)
-	** return null if user is not authorized
+	** return UserInterface if user is authorized (meaning: logged in)
+	** return undefined if user is not authorized
 	*/
-	async getUserFromCookie(cookieString: string | undefined) {
+	async getUserFromCookie(cookieString: string | undefined): Promise < UserI | undefined > {
 		if (cookieString) {
 			const sessionUser = await this.parseSessionUserFromCookie(cookieString);
-			const userID: number = sessionUser['id'];
-			if (userID) {
-				return this.userService.findByID(Number(userID));
+			if (sessionUser) {
+				const userID = sessionUser['id'];
+				if (userID) {
+					return this.userService.findByID(userID);
+				}
 			}
 		}
-		return null;
+		return undefined;
 	}
 
 
