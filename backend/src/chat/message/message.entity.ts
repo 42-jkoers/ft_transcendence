@@ -2,6 +2,7 @@ import {
 	Column,
 	CreateDateColumn,
 	Entity,
+	JoinColumn,
 	JoinTable,
 	ManyToOne,
 	PrimaryGeneratedColumn,
@@ -19,6 +20,7 @@ export class MessageEntity {
 	text: string;
 
 	@ManyToOne(() => User, (user) => user.messages)
+	@JoinColumn()
 	user: User;
 
 	@ManyToOne(() => RoomEntity, (room) => room.messages)
