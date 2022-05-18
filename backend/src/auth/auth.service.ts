@@ -7,12 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import * as session from 'express-session';
-import User from '../user/user.entity';
-<<<<<<< HEAD
 import { UserI } from '../user/user.interface';
-=======
-import { UserI } from 'src/user/user.interface';
->>>>>>> origin/main
 
 @Injectable()
 export class AuthService {

@@ -1,16 +1,31 @@
 <template>
-  <div class="home">
-    <h3>"Welcome new user! Please register!"</h3>
+  <div class="register-view">
+    <p class="form-title">Register New User</p>
+    <form class="form">
+      <InputUserName />
+      <br />
+    </form>
+    <button class="button">register</button>
   </div>
 </template>
-
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
+import InputUserName from "@/components/InputUserName.vue";
 
 @Options({
   components: {
-    //nothing atm
+    InputUserName,
   },
 })
-export default class HomeView extends Vue {}
+export default class RegisterView extends Vue {}
 </script>
+<style scoped>
+.form-title {
+  color: darkcyan;
+  font-size: large;
+  font-weight: 600;
+}
+.button {
+  color: green;
+}
+</style>
