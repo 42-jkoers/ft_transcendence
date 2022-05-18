@@ -61,13 +61,12 @@ export class ChatGateway
 		client.disconnect(); //manually disconnects the socket
 	}
 
-	@SubscribeMessage('addMessage') //allows to listen to incoming messages //FIXME is it messages or addMessage event coming from client-side?
+	@SubscribeMessage('addMessage') //allows to listen to incoming messages
 	// @UseGuards(AuthenticatedGuard) //TODO check if it works
 	async handleMessage(client: Socket, message: MessageI): Promise<any> {
-		// this.logger.log(payLoad);
+		this.logger.log(message);
 		this.logger.log('button is clicked');
 		client.emit('messageAdded', 'Here is my message?');
-		// client.send(payLoad);
         const createdMessage: MessageI = await this.messageService.create(message);
 	}
 }
