@@ -12,6 +12,8 @@ import { UserI } from 'src/user/user.interface';
 import { AuthService } from '../../auth/auth.service';
 import { ConnectedUserService } from '../connected-user/connected-user.service';
 import { ConnectedUserI } from '../connected-user/connected-user.interface';
+import { MessageI } from '../message/message.interface';
+import { MessageService } from '../message/message.service';
 
 //Gateway: a class annotated with @WebSocketGetAway decorator
 @WebSocketGateway({
@@ -23,6 +25,7 @@ export class ChatGateway
 	constructor(
 		private readonly authService: AuthService,
 		private readonly connectedUserService: ConnectedUserService,
+        private readonly messageService: MessageService
 	) {}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -60,11 +63,11 @@ export class ChatGateway
 
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages //FIXME is it messages or addMessage event coming from client-side?
 	// @UseGuards(AuthenticatedGuard) //TODO check if it works
-	handleMessage(client: Socket, payLoad: string) {
-		this.logger.log(payLoad);
+	async handleMessage(client: Socket, message: MessageI): Promise<any> {
+		// this.logger.log(payLoad);
 		this.logger.log('button is clicked');
 		client.emit('messageAdded', 'Here is my message?');
-
 		// client.send(payLoad);
+        const createdMessage: MessageI = await this.messageService.create(message);
 	}
 }
