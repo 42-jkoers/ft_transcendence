@@ -15,17 +15,14 @@
 </template>
 
 <script lang="ts">
-import SocketioService from "@/services/socketio.service";
-
+import SocketioService from "../services/socketio.service";
 import { defineComponent } from "vue";
-import type { PropType } from "vue";
 
 export default defineComponent({
   props: {},
   data() {
     return {
-      // messages: { type: Array as PropType<Array<string>> },
-      msg: "Welcome to our Chat",
+      input: null,
     };
   },
 
@@ -55,10 +52,12 @@ export default defineComponent({
   methods: {
     //binding a click event listener to a method named 'sendMessage'
     sendMessage(args: string) {
-      console.log("Send button clicked!");
       args;
-      // console.log(this.input);
-      // this.socket.emit("addMessage", "Msg: Send button clicked!");
+      console.log("input value: ", this.input);
+      SocketioService.release(
+        "addMessage",
+        `Your input value was ${this.input}`
+      );
     },
   },
 });
