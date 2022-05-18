@@ -12,11 +12,11 @@ export class UserService {
 		private userRepository: Repository<User>,
 	) {}
 
-	async findByID(id: number): Promise<User | undefined> {
+	async findByID(id: number): Promise<UserI> {
 		return await this.userRepository.findOne({ id });
 	}
 
-	async findByIntraID(intraID: string): Promise<UserI | undefined> {
+	async findByIntraID(intraID: string): Promise<UserI> {
 		return await this.userRepository.findOne({ intraID });
 	}
 
