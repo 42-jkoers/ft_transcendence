@@ -61,8 +61,6 @@ async function sendFrom(args: string) {
     isSuccess.value = true;
   }
 }
-// lifecyle
-// onMounted(() => {});
 </script>
 <style>
 /* please see UpdateProfile_UserName.vue */

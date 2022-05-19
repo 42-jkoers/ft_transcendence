@@ -20,14 +20,16 @@
   </form>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, defineEmits } from "vue";
 import axios from "axios";
-// reactive state
 const username = ref<string>("");
 const isSuccess = ref<boolean>(false);
 const error_empty = ref<boolean>(false);
 const error_duplicate = ref<boolean>(false);
-
+// emit is used to pass value from child component to parent component
+const emit = defineEmits<{
+  (event: "updateUserName"): boolean;
+}>();
 async function sendFrom(args: string) {
   // reset boolean for submit checks
   error_duplicate.value = false;
@@ -60,10 +62,9 @@ async function sendFrom(args: string) {
     error_duplicate.value = true;
   } else {
     isSuccess.value = true;
+    emit("updateUserName", true);
   }
 }
-// lifecyle
-// onMounted(() => {});
 </script>
 <style>
 .update-profile-error {

@@ -1,17 +1,22 @@
 <template>
   <p class="form-title">Register New User</p>
-  <UpdateProfile_UserName />
+  <UpdateProfile_UserName @updateUserName="redirectToHome($event)" />
 </template>
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
 import UpdateProfile_UserName from "@/components/UpdateProfile_UserName.vue";
-
-@Options({
+import router from "@/router";
+export default {
   components: {
     UpdateProfile_UserName,
   },
-})
-export default class RegisterView extends Vue {}
+  methods: {
+    redirectToHome(e: boolean) {
+      if (e) {
+        setTimeout(() => router.push("/"), 1000);
+      }
+    },
+  },
+};
 </script>
 <style scoped>
 .form-title {
