@@ -76,8 +76,7 @@ Tutorial:
 **************************
 **		Next To To		**
 **************************
-- input error checking (empty)
-- after registration return a page
+- upload avatar
 
 ******************************
 **		General To To		**
