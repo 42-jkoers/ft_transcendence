@@ -20,8 +20,19 @@ export class UserService {
 		return await this.userRepository.findOne({ intraID });
 	}
 
-	async createUser(userData: CreateUserDto) {
+	async createUser(userData: CreateUserDto): Promise<UserI>  {
 		const newUser = this.userRepository.create(userData);
 		return await this.userRepository.save(newUser);
 	}
+
+	async updateUserName(id: number, newName: string): Promise<UserI>  {
+		await this.userRepository.update(id, { username: newName });
+		return await this.findByID(id);
+	}
+
+	async updateAvatar(id: number, newAvatar: string): Promise<UserI>  {
+		await this.userRepository.update(id, { avatar: newAvatar });
+		return await this.findByID(id);
+	}
+
 }

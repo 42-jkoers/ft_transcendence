@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Res, Req, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserI } from 'src/user/user.interface';
-import { AuthService } from './auth.service';
+import { UserService } from 'src/user/user.service';
 import { AuthenticatedGuard, OAuthGuard } from './oauth/oauth.guard';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private authService: AuthService) {}
+	constructor(private userService: UserService) {}
 
 	@Get('login')
 	@UseGuards(OAuthGuard)
@@ -34,8 +34,10 @@ export class AuthController {
 
 	@Post('register')
 	@UseGuards(AuthenticatedGuard)
-	register(@Body() body: { id: number, username: string, avatar: string}, @Res() res: Response) {
-		console.log("backend received:\n", body);
+	async register(@Body() body: { id: number, username: string, avatar: string}, @Res() res: Response) {
+		await this.userService.updateUserName(body.id, body.username);
+		await this.userService.updateAvatar(body.id, body.avatar);
+		console.log("Update user is:", await this.userService.findByID(body.id));
 	}
 
 	@Get('logout')

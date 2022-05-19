@@ -68,11 +68,14 @@ Tutorial:
 	- (Fix issue) protect getUserFromCookie()
 	- frontend: build regsiter component (input field + button)
 
+(Thu) 2022-05-19
+	- Set up register user page to update username and avatar in database
+
 **************************
 **		Next To To		**
 **************************
 - input error checking (empty)
-- connect frontend to backend
+- after registration return a page
 
 ******************************
 **		General To To		**
