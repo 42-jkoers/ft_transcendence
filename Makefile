@@ -12,7 +12,7 @@ IMAGES = postgres dpage/pgadmin4 redis ft_transcendence_backend ft_transcendence
 ###### compilation ######
 all:
 	@echo "$(MAGENTA)start docker-compose...$(RESET)"
-	docker-compose up --build -d
+	docker-compose --project-name $(PROJECT) up --build -d
 
 start:
 	@echo "$(MAGENTA)start all containers...$(RESET)"
@@ -25,7 +25,7 @@ stop:
 restart: stop start
 
 database:
-	docker-compose up -d --no-deps --build $(SERVICES_DATABASE)
+	docker-compose --project-name $(PROJECT) up -d --no-deps --build $(SERVICES_DATABASE)
 
 clean:
 	@echo "$(MAGENTA)remove all containers/images/volumes...$(RESET)"
