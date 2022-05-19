@@ -12,3 +12,6 @@ logs
 # Tests
 coverage/
 .nyc_output
+
+inject-secrets.sh
+.env
