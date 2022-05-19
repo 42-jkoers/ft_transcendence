@@ -1,11 +1,14 @@
-import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res, Req, UseGuards, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { AuthService } from './auth.service';
+import { STATUS_CODES } from 'http';
+import { nextTick } from 'process';
+import { UserI } from 'src/user/user.interface';
+import { UserService } from 'src/user/user.service';
 import { AuthenticatedGuard, OAuthGuard } from './oauth/oauth.guard';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private authService: AuthService) {}
+	constructor(private userService: UserService) {}
 
 	@Get('login')
 	@UseGuards(OAuthGuard)
@@ -15,8 +18,14 @@ export class AuthController {
 
 	@Get('redirect')
 	@UseGuards(OAuthGuard)
-	redirect(@Res() res: Response) {
-		res.redirect("http://localhost:8080");
+	redirect(@Req() req: Request, @Res() res: Response) {
+		const user: UserI = req.user;
+		if (user.username) {
+			res.redirect("http://localhost:8080");
+		}
+		else {
+			res.redirect("http://localhost:8080/register");
+		}
 	}
 
 	@Get('status')
