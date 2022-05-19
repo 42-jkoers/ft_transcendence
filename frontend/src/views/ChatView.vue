@@ -56,8 +56,6 @@ onMounted(() => {
     // this.messages.push(this.input);
     // console.log("MEssages: ", this.messages);
   }); //listen to an event coming from the backend gateway for msg sent?
-
-  socket.emit("addMessage", "use emit");
 });
 
 onBeforeUnmount(() => {
