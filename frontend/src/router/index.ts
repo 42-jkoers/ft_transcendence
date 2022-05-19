@@ -2,6 +2,22 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import UpdateProfileView from "../views/UpdateProfileView.vue";
+import UnAuthorizedView from "../views/UnAuthorizedView.vue";
+import LogOut from "../components/LogOut.vue";
+import axios from "axios";
+
+/* Check if the user is logged in */
+const AuthenticateGuard = function () {
+  axios
+    .get("http://localhost:3000/auth/status", {
+      withCredentials: true,
+    })
+    .catch((error) => {
+      console.log("Oops, you ar enot logged in!!");
+      console.log(error);
+      router.push("/un-authorized");
+    });
+};
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -17,16 +33,39 @@ const routes: Array<RouteRecordRaw> = [
     // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "chat" */ "../views/ChatView.vue"),
+    beforeEnter: () => {
+      AuthenticateGuard();
+    },
   },
   {
     path: "/register",
     name: "Register",
     component: RegisterView,
+    beforeEnter: (from, to) => {
+      AuthenticateGuard();
+      // TODO: to protect against access
+    },
   },
   {
     path: "/update-profile",
     name: "UpdateProfile",
     component: UpdateProfileView,
+    beforeEnter: () => {
+      AuthenticateGuard();
+    },
+  },
+  {
+    path: "/logout",
+    name: "LogOut",
+    component: LogOut,
+    beforeEnter: () => {
+      AuthenticateGuard();
+    },
+  },
+  {
+    path: "/un-authorized",
+    name: "UnAuthorized",
+    component: UnAuthorizedView,
   },
 ];
 

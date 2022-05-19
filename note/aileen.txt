@@ -72,6 +72,7 @@ Tutorial:
 	- setting CORS(https://medium.com/developer-rants/session-cookies-between-express-js-and-vue-js-with-axios-98a10274fae7)
 	- Set up register user page to update username and avatar in database
 	- Add /update-profile view to homepage
+	- Protect route with AuthenticatedGuard
 
 **************************
 **		Next To To		**
