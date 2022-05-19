@@ -34,10 +34,11 @@ export class AuthController {
 
 	@Post('register')
 	@UseGuards(AuthenticatedGuard)
-	async register(@Body() body: { id: number, username: string, avatar: string}, @Res() res: Response) {
+	async register(@Body() body: { id: number, username: string, avatar: string}) {
 		await this.userService.updateUserName(body.id, body.username);
 		await this.userService.updateAvatar(body.id, body.avatar);
-		console.log("Update user is:", await this.userService.findByID(body.id));
+		const user: UserI = await this.userService.findByID(body.id);
+		return user;
 	}
 
 	@Get('logout')

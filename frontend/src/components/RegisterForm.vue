@@ -37,21 +37,23 @@ const avatar = ref<string>("");
  ** first get user id,
  ** then post username and avatar to update user profile
  */
-function sendFrom(args: string) {
-  axios
-    .get("http://localhost:3000/auth/status", {
-      withCredentials: true,
-    })
-    .then((response) => {
-      const body = {
-        id: response.data.id,
-        username: username.value,
-        avatar: avatar.value,
-      };
-      axios.post("http://localhost:3000/auth/register", body, {
-        withCredentials: true, // to enable authenticated user log-in state pass-through from back-end
-      });
-    });
+async function sendFrom(args: string) {
+  const response_user = await axios.get("http://localhost:3000/auth/status", {
+    withCredentials: true,
+  });
+  const body = {
+    id: response_user.data.id,
+    username: username.value,
+    avatar: avatar.value,
+  };
+  const response_post = await axios.post(
+    "http://localhost:3000/auth/register",
+    body,
+    {
+      withCredentials: true, // to enable authenticated user log-in state pass-through from back-end
+    }
+  );
+  console.log(response_post.data);
 }
 // lifecyle
 // onMounted(() => {});
