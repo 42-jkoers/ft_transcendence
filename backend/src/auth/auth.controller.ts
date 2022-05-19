@@ -1,5 +1,7 @@
-import { Controller, Get, Post, Body, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res, Req, UseGuards, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { STATUS_CODES } from 'http';
+import { nextTick } from 'process';
 import { UserI } from 'src/user/user.interface';
 import { UserService } from 'src/user/user.service';
 import { AuthenticatedGuard, OAuthGuard } from './oauth/oauth.guard';
@@ -30,15 +32,6 @@ export class AuthController {
 	@UseGuards(AuthenticatedGuard)
 	status(@Req() req: Request) {
 		return req.user;
-	}
-
-	@Post('register')
-	@UseGuards(AuthenticatedGuard)
-	async register(@Body() body: { id: number, username: string, avatar: string}) {
-		await this.userService.updateUserName(body.id, body.username);
-		await this.userService.updateAvatar(body.id, body.avatar);
-		const user: UserI = await this.userService.findByID(body.id);
-		return user;
 	}
 
 	@Get('logout')

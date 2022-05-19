@@ -25,8 +25,14 @@ export class UserService {
 		return await this.userRepository.save(newUser);
 	}
 
-	async updateUserName(id: number, newName: string): Promise<UserI>  {
-		await this.userRepository.update(id, { username: newName });
+	/* return undefined if username is duplicated */
+	async updateUserName(id: number, newName: string): Promise<UserI | undefined>  {
+		try {
+			await this.userRepository.update(id, { username: newName });
+		}
+		catch (error) {
+			return undefined;
+		}
 		return await this.findByID(id);
 	}
 
