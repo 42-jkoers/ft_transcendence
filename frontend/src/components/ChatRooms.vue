@@ -6,21 +6,23 @@
       icon="pi pi-plus"
       class="p-button-primary"
     />
+    <router-view></router-view>
   </div>
 </template>
 
 <script lang="ts">
+import { defineComponent } from "@vue/runtime-core";
 import PrimeVueButton from "primevue/button";
 
-export default {
+export default defineComponent({
   name: "ChatRooms",
   components: {
     PrimeVueButton,
   },
   methods: {
     openCreateRoomCard() {
-      alert("A new Room will be created here");
+      this.$router.push({ name: "create-chatroom" });
     },
   },
-};
+});
 </script>
