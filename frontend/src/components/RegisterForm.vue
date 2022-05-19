@@ -22,19 +22,36 @@
         />
       </div>
       <br />
-      <button class="button" @click="sendInput">register</button>
+      <button class="button" @click="sendFrom">register</button>
     </form>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref } from "vue";
+import axios from "axios";
 // reactive state
-const username = ref("");
-const avatar = ref("");
-// functions that mutate state and trigger updates
-function sendInput(args: string) {
-  console.log("username is: ", username.value);
-  console.log("avatar is: ", avatar.value);
+const username = ref<string>("");
+const avatar = ref<string>("");
+
+/*
+ ** first get user id,
+ ** then post username and avatar to update user profile
+ */
+function sendFrom(args: string) {
+  axios
+    .get("http://localhost:3000/auth/status", {
+      withCredentials: true,
+    })
+    .then((response) => {
+      const body = {
+        id: response.data.id,
+        username: username.value,
+        avatar: avatar.value,
+      };
+      axios.post("http://localhost:3000/auth/register", body, {
+        withCredentials: true, // to enable authenticated user log-in state pass-through from back-end
+      });
+    });
 }
 // lifecyle
 // onMounted(() => {});

@@ -14,8 +14,14 @@ async function bootstrap() {
 	const configService = app.get(ConfigService);
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 	
-	// front end
-	app.enableCors();
+	// to enable session cookie pass to frontend (authenticate user)
+	app.enableCors({
+		origin: [
+			'http://localhost:8080'
+		],
+		credentials: true,
+		exposedHeaders: ['set-cookie'],
+	});
 	
 	// login sessions
 	let RedisStore = connectRedis(session);
@@ -24,7 +30,7 @@ async function bootstrap() {
 	app.use(
 		session({
 			cookie: {
-				maxAge: 6000 * 60 * 24,
+				maxAge: 6000 * 60 * 24, // login cookie is 24 hours valid
 			},
 			secret: configService.get('SESSION_SECRET'),
 			resave: false,

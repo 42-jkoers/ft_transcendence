@@ -1,4 +1,4 @@
-import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res, Req, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserI } from 'src/user/user.interface';
 import { AuthService } from './auth.service';
@@ -30,6 +30,12 @@ export class AuthController {
 	@UseGuards(AuthenticatedGuard)
 	status(@Req() req: Request) {
 		return req.user;
+	}
+
+	@Post('register')
+	@UseGuards(AuthenticatedGuard)
+	register(@Body() body: { id: number, username: string, avatar: string}, @Res() res: Response) {
+		console.log("backend received:\n", body);
 	}
 
 	@Get('logout')

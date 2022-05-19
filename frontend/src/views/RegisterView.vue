@@ -1,13 +1,11 @@
 <template>
   <div class="register-view">
     <RegisterForm />
-    <br />
   </div>
 </template>
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import RegisterForm from "@/components/RegisterForm.vue";
-import { useForm } from "vue-hooks-form";
 
 @Options({
   components: {
