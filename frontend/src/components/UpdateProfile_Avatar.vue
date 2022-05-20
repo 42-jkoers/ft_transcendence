@@ -27,7 +27,7 @@ const isSuccess = ref<boolean>(false);
 const error_empty = ref<boolean>(false);
 const error_duplicate = ref<boolean>(false);
 
-async function sendFrom(args: string) {
+async function sendFrom() {
   // reset boolean for submit checks
   error_duplicate.value = false;
   error_empty.value = false;

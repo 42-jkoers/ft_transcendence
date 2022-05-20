@@ -4,6 +4,7 @@ import RegisterView from "../views/RegisterView.vue";
 import UpdateProfileView from "../views/UpdateProfileView.vue";
 import UnAuthorizedView from "../views/UnAuthorizedView.vue";
 import LogOut from "../components/LogOut.vue";
+import LogIn from "../components/LogIn.vue";
 import axios from "axios";
 
 /* Check if the user is logged in */
@@ -38,10 +39,15 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
+    path: "/login",
+    name: "LogIn",
+    component: LogIn,
+  },
+  {
     path: "/register",
     name: "Register",
     component: RegisterView,
-    beforeEnter: (from, to) => {
+    beforeEnter: () => {
       AuthenticateGuard();
       // TODO: to protect against access
     },

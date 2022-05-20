@@ -30,7 +30,7 @@ const error_duplicate = ref<boolean>(false);
 const emit = defineEmits<{
   (event: "updateUserName"): boolean;
 }>();
-async function sendFrom(args: string) {
+async function sendFrom() {
   // reset boolean for submit checks
   error_duplicate.value = false;
   error_empty.value = false;

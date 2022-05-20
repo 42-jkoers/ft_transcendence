@@ -11,21 +11,17 @@
   </form>
 </template>
 <script setup lang="ts">
-import { ref, defineEmits } from "vue";
+import { ref } from "vue";
 import axios from "axios";
 const request = ref<boolean>(false);
 const confirm = ref<boolean>(false);
-// emit is used to pass value from child component to parent component
-const emit = defineEmits<{
-  (event: "updateUserName"): boolean;
-}>();
 function requestLogOut() {
   request.value = true;
 }
 
 async function confirmLogOut() {
   request.value = false;
-  const response = await axios.get("http://localhost:3000/auth/logout", {
+  await axios.get("http://localhost:3000/auth/logout", {
     withCredentials: true,
   });
   confirm.value = true;

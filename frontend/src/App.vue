@@ -3,7 +3,8 @@
     <nav>
       <router-link to="/">Home</router-link> |
       <router-link to="/chat">Chat</router-link> |
-      <a href="http://localhost:3000/auth/login"> Login </a> |
+      <router-link to="/login">Login</router-link> |
+      <!-- <a href="http://localhost:3000/auth/login"> Login </a> | -->
       <router-link to="/update-profile">UpdateProfile</router-link> |
       <router-link to="/logout">Logout</router-link>
     </nav>

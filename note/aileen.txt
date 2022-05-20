@@ -74,9 +74,14 @@ Tutorial:
 	- Add /update-profile view to homepage
 	- Protect route with AuthenticatedGuard
 
+(Fri) 2022-05-20
+	- Wrap Login to a component
+
 **************************
 **		Next To To		**
 **************************
+- set up home route structure
+- create Profile view and add update profile as a component
 - upload avatar
 
 ******************************
