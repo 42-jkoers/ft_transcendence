@@ -5,12 +5,5 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-
-@Options({
-  components: {
-    //nothing atm
-  },
-})
-export default class HomeView extends Vue {}
+export default {};
 </script>

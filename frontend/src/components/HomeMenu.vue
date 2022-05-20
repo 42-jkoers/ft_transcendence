@@ -17,8 +17,8 @@ const MenuItems = ref([
       [
         {
           items: [
-            { label: "Chat 1", to: { name: "ComingSoon" } },
-            { label: "Chat 2", to: { name: "ComingSoon" } },
+            { label: "Chat 1", to: { name: "Chat" } },
+            { label: "Chat 2", to: { name: "Chat" } },
           ],
         },
       ],

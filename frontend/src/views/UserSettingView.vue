@@ -5,17 +5,14 @@
   <UpdateAvatar />
 </template>
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
 import UpdateUserName from "@/components/UpdateUserName.vue";
 import UpdateAvatar from "@/components/UpdateAvatar.vue";
-
-@Options({
+export default {
   components: {
     UpdateUserName,
     UpdateAvatar,
   },
-})
-export default class RegisterView extends Vue {}
+};
 </script>
 <style scoped>
 .form-title {

@@ -5,9 +5,68 @@ import UserSettingView from "@/views/UserSettingView.vue";
 import UnAuthorizedView from "@/views/UnAuthorizedView.vue";
 import LogOut from "@/components/LogOut.vue";
 import LogIn from "@/components/LogIn.vue";
-import UserHome from "@/views/UserHomeView.vue";
-import ComingSoon from "@/views/ComingSoonView.vue";
+import UserHomeView from "@/views/UserHomeView.vue";
+import ComingSoonView from "@/views/ComingSoonView.vue";
 import axios from "axios";
+
+const routes: Array<RouteRecordRaw> = [
+  {
+    path: "/",
+    name: "home",
+    component: HomeView,
+  },
+  {
+    path: "/login",
+    name: "LogIn",
+    component: LogIn,
+  },
+  {
+    path: "/userhome",
+    name: "UserHome",
+    component: UserHomeView,
+    children: [
+      {
+        path: "/chat",
+        name: "Chat",
+        // route level code-splitting
+        // this generates a separate chunk (about.[hash].js) for this route
+        // which is lazy-loaded when the route is visited.
+        component: () =>
+          import(/* webpackChunkName: "chat" */ "../views/ChatView.vue"),
+      },
+      {
+        path: "setting",
+        name: "UserSetting",
+        component: UserSettingView,
+      },
+      {
+        path: "logout",
+        name: "LogOut",
+        component: LogOut,
+      },
+    ],
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: RegisterView,
+  },
+  {
+    path: "/un-authorized",
+    name: "UnAuthorized",
+    component: UnAuthorizedView,
+  },
+  {
+    path: "/coming-soon",
+    name: "ComingSoon",
+    component: ComingSoonView,
+  },
+];
+
+const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
+  routes,
+});
 
 /* Check if the user is logged in */
 const AuthenticateGuard = function () {
@@ -18,78 +77,14 @@ const AuthenticateGuard = function () {
     .catch((error) => {
       console.log("Oops, you ar enot logged in!!");
       console.log(error);
-      router.push("/un-authorized");
+      router.push({ name: "UnAuthorized" });
     });
 };
 
-const routes: Array<RouteRecordRaw> = [
-  {
-    path: "/",
-    name: "home",
-    component: HomeView,
-  },
-  {
-    path: "/chat",
-    name: "Chat",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "chat" */ "../views/ChatView.vue"),
-    beforeEnter: () => {
-      AuthenticateGuard();
-    },
-  },
-  {
-    path: "/login",
-    name: "LogIn",
-    component: LogIn,
-  },
-  {
-    path: "/userhome",
-    name: "UserHome",
-    component: UserHome,
-  },
-  {
-    path: "/register",
-    name: "Register",
-    component: RegisterView,
-    beforeEnter: () => {
-      AuthenticateGuard();
-      // TODO: to protect against access
-    },
-  },
-  {
-    path: "/user-setting",
-    name: "UserSetting",
-    component: UserSettingView,
-    beforeEnter: () => {
-      AuthenticateGuard();
-    },
-  },
-  {
-    path: "/logout",
-    name: "LogOut",
-    component: LogOut,
-    beforeEnter: () => {
-      AuthenticateGuard();
-    },
-  },
-  {
-    path: "/un-authorized",
-    name: "UnAuthorized",
-    component: UnAuthorizedView,
-  },
-  {
-    path: "/coming-soon",
-    name: "ComingSoon",
-    component: ComingSoon,
-  },
-];
-
-const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
-  routes,
+router.beforeEach((to) => {
+  if (to.name !== "LogIn" && to.name !== "home") {
+    AuthenticateGuard();
+  }
 });
 
 export default router;

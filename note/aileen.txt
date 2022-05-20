@@ -76,6 +76,8 @@ Tutorial:
 
 (Fri) 2022-05-20
 	- Wrap Login to a component
+	- setup Menu bar 
+	- prote all route except for "/" and "/login"
 
 **************************
 **		Next To To		**

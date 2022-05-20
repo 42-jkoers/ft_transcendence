@@ -1,11 +1,13 @@
 <template>
   <div>
-    <HomeMenu />
+    <nav>
+      <router-link to="/login">Login</router-link>
+    </nav>
+    <router-view />
   </div>
 </template>
 <script lang="ts">
-import HomeMenu from "@/components/HomeMenu.vue";
-export default { components: { HomeMenu } };
+export default {};
 </script>
 
 <style>

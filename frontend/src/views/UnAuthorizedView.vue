@@ -2,9 +2,7 @@
   <p class="message">Oops, you are not logged in yet.</p>
 </template>
 <script lang="ts">
-import { Vue } from "vue-class-component";
-
-export default class UnAuthorizedView extends Vue {}
+export default {};
 </script>
 <style scoped>
 .message {
