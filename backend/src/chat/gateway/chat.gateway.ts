@@ -36,9 +36,9 @@ export class ChatGateway
 			client.handshake.headers.cookie,
 		);
 		if (user) {
-			console.log('>> In gateway handleConnection(): user is:\n', user);
+			console.log('user is:\n', user);
 		} else {
-			console.log('>> In gateway handleConnection(): user not authorized.\n', ); //FIXME throw an exception
+			console.log('user not authorized.\n', ); //FIXME throw an exception
 		}
 		client.data.user = user;
 
