@@ -34,14 +34,13 @@ import { onMounted, onBeforeUnmount, ref } from "vue";
 import ChatRooms from "@/components/ChatRooms.vue";
 import ChatBox from "@/components/ChatBox.vue"; // @ is an alias to /src
 import SocketioService from "../services/socketio.service";
+import MessageI from "../types/Message.interface";
 
 const socket = SocketioService.setupSocketConnection(); //create a socket instance for connecting client
 // reactive state
 const input = ref<string>("");
 
 onMounted(() => {
-  // event listeners for the socket instance //
-  // making use of on() to register an event listener //
   socket.on("rooms", (args: string) => {
     args;
   }); //to get all rooms of the user?
@@ -50,24 +49,20 @@ onMounted(() => {
     args;
   }); //to get all messages of the user for this room?
 
-  socket.on("messageAdded", (args: string) => {
+  socket.on("messageAdded", (message: MessageI) => {
     console.log("messageAdded event received from backend");
-    // this.messages.push(args);
-    // this.messages.push(this.input);
-    // console.log("MEssages: ", this.messages);
-  }); //listen to an event coming from the backend gateway for msg sent?
+    console.log("Here is you msg saved to DB: ", message.text);
+  }); //event triggered when a msg is saved to DB
 });
 
 onBeforeUnmount(() => {
   socket.disconnect();
-  //SocketioService.disconnect(); //FIXME I can access socket directly. Which one should we use?
 });
 
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   console.log("input value: ", input.value);
-  socket.emit("addMessage", `Your input value was ${input.value}`);
-  //SocketioService.release("addMessage", `Your input value was ${input.value}`);
+  socket.emit("addMessage", { text: input.value });
 }
 </script>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
