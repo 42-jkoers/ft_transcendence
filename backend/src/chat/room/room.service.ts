@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RoomEntity } from './entities/room.entity';
-import { IRoom } from './room.interface';
+import { RoomI } from './room.interface';
 import { UserI } from 'src/user/user.interface';
 import {
 	IPaginationOptions,
@@ -16,12 +16,12 @@ export class RoomService {
 		@InjectRepository(RoomEntity)
 		private readonly RoomEntityRepository: Repository<RoomEntity>,
 	) {}
-	async createRoom(room: IRoom, creator: UserI): Promise<IRoom> {
+	async createRoom(room: RoomI, creator: UserI): Promise<RoomI> {
 		const newRoom = await this.addCreatorToRoom(room, creator); // adding current creator to the array of users for this new room
 		return this.RoomEntityRepository.save(newRoom); // Saves a given entity in the database. If entity does not exist in the database then inserts, otherwise updates.
 	}
 
-	async addCreatorToRoom(room: IRoom, creator: UserI): Promise<IRoom> {
+	async addCreatorToRoom(room: RoomI, creator: UserI): Promise<RoomI> {
 		room.users.push(creator);
 		return room;
 	}
@@ -29,7 +29,7 @@ export class RoomService {
 	async getRoomsForUser(
 		userId: number,
 		options: IPaginationOptions,
-	): Promise<Pagination<IRoom>> {
+	): Promise<Pagination<RoomI>> {
 		//build SQL query to get rooms
 		// leftJoin will be referencing the property users defined in the RoomEntity.
 		const query = this.RoomEntityRepository.createQueryBuilder('room')
