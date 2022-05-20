@@ -64,8 +64,9 @@ export class ChatGateway
 	// @UseGuards(AuthenticatedGuard) //TODO check if it works
 	async handleMessage(client: Socket, message: MessageI): Promise<any> {
 		this.logger.log(message);
-		this.logger.log('button is clicked');
-		client.emit('messageAdded', 'Here is my message?');
         const createdMessage: MessageI = await this.messageService.create(message);
+		console.log('created msg.text : ', createdMessage.text);
+		// this.server.to(client.id).emit('messageAdded', createdMessage); //TODO check the difference and decide
+		client.emit('messageAdded', createdMessage);
 	}
 }
