@@ -66,7 +66,7 @@ onBeforeUnmount(() => {
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   console.log("input value: ", input.value);
-  socket.emit("addMessage", `Your input value was ${input.value}`);
+  socket.emit("addMessage", { text: input.value });
   //SocketioService.release("addMessage", `Your input value was ${input.value}`);
 }
 </script>
