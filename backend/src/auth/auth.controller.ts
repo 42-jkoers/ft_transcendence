@@ -21,7 +21,7 @@ export class AuthController {
 	redirect(@Req() req: Request, @Res() res: Response) {
 		const user: UserI = req.user;
 		if (user.username) {
-			res.redirect("http://localhost:8080");
+			res.redirect("http://localhost:8080/userhome");
 		}
 		else {
 			res.redirect("http://localhost:8080/register");

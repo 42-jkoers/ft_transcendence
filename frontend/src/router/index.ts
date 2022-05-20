@@ -1,10 +1,12 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import HomeView from "../views/HomeView.vue";
-import RegisterView from "../views/RegisterView.vue";
-import UpdateProfileView from "../views/UpdateProfileView.vue";
-import UnAuthorizedView from "../views/UnAuthorizedView.vue";
-import LogOut from "../components/LogOut.vue";
-import LogIn from "../components/LogIn.vue";
+import HomeView from "@/views/HomeView.vue";
+import RegisterView from "@/views/RegisterView.vue";
+import UserSettingView from "@/views/UserSettingView.vue";
+import UnAuthorizedView from "@/views/UnAuthorizedView.vue";
+import LogOut from "@/components/LogOut.vue";
+import LogIn from "@/components/LogIn.vue";
+import UserHome from "@/views/UserHomeView.vue";
+import ComingSoon from "@/views/ComingSoonView.vue";
 import axios from "axios";
 
 /* Check if the user is logged in */
@@ -44,6 +46,11 @@ const routes: Array<RouteRecordRaw> = [
     component: LogIn,
   },
   {
+    path: "/userhome",
+    name: "UserHome",
+    component: UserHome,
+  },
+  {
     path: "/register",
     name: "Register",
     component: RegisterView,
@@ -53,9 +60,9 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: "/update-profile",
-    name: "UpdateProfile",
-    component: UpdateProfileView,
+    path: "/user-setting",
+    name: "UserSetting",
+    component: UserSettingView,
     beforeEnter: () => {
       AuthenticateGuard();
     },
@@ -72,6 +79,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/un-authorized",
     name: "UnAuthorized",
     component: UnAuthorizedView,
+  },
+  {
+    path: "/coming-soon",
+    name: "ComingSoon",
+    component: ComingSoon,
   },
 ];
 

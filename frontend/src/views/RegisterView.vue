@@ -1,18 +1,18 @@
 <template>
   <p class="form-title">Register New User</p>
-  <UpdateProfile_UserName @updateUserName="redirectToHome($event)" />
+  <UpdateUserName @updateUserName="redirectToHome($event)" />
 </template>
 <script lang="ts">
-import UpdateProfile_UserName from "@/components/UpdateProfile_UserName.vue";
+import UpdateUserName from "@/components/UpdateUserName.vue";
 import router from "@/router";
 export default {
   components: {
-    UpdateProfile_UserName,
+    UpdateUserName,
   },
   methods: {
     redirectToHome(e: boolean) {
       if (e) {
-        setTimeout(() => router.push("/"), 1000);
+        setTimeout(() => router.push("/userhome"), 1000);
       }
     },
   },

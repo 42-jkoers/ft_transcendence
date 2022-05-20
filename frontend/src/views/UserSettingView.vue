@@ -1,18 +1,18 @@
 <template>
   <p class="form-title">Update User Profile</p>
-  <UpdateProfile_UserName />
+  <UpdateUserName />
   <br />
-  <UpdateProfile_Avatar />
+  <UpdateAvatar />
 </template>
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import UpdateProfile_UserName from "@/components/UpdateProfile_UserName.vue";
-import UpdateProfile_Avatar from "@/components/UpdateProfile_Avatar.vue";
+import UpdateUserName from "@/components/UpdateUserName.vue";
+import UpdateAvatar from "@/components/UpdateAvatar.vue";
 
 @Options({
   components: {
-    UpdateProfile_UserName,
-    UpdateProfile_Avatar,
+    UpdateUserName,
+    UpdateAvatar,
   },
 })
 export default class RegisterView extends Vue {}

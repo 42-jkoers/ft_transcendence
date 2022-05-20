@@ -1,16 +1,12 @@
 <template>
   <div>
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/chat">Chat</router-link> |
-      <router-link to="/login">Login</router-link> |
-      <!-- <a href="http://localhost:3000/auth/login"> Login </a> | -->
-      <router-link to="/update-profile">UpdateProfile</router-link> |
-      <router-link to="/logout">Logout</router-link>
-    </nav>
-    <router-view />
+    <HomeMenu />
   </div>
 </template>
+<script lang="ts">
+import HomeMenu from "@/components/HomeMenu.vue";
+export default { components: { HomeMenu } };
+</script>
 
 <style>
 #app {
