@@ -1,7 +1,6 @@
 import RoomVisibility from "./RoomVisibility";
 interface Room {
-  id: null;
-  name: string;
+  name: string; // no id but the name must be unique
   isDirectMessage: boolean;
   RoomVisibilityType: RoomVisibility;
 }

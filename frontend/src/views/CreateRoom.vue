@@ -91,7 +91,6 @@ function pushToNewRoom() {
 
 function saveNewRoom() {
   const newRoom: Room = {
-    id: null, // needing id for displaying rooms, id will be assignmed from DB
     name: name.value,
     isDirectMessage: false,
     RoomVisibilityType: selectedCategory.value,
