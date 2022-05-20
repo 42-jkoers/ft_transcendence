@@ -9,9 +9,11 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { UserI } from 'src/user/user.interface';
+import { RoomI } from 'src/chat/room/room.interface';
 import { AuthService } from '../../auth/auth.service';
 import { ConnectedUserService } from '../connected-user/connected-user.service';
 import { ConnectedUserI } from '../connected-user/connected-user.interface';
+import { RoomService } from '../room/room.service';
 
 //Gateway: a class annotated with @WebSocketGetAway decorator
 @WebSocketGateway({
@@ -22,6 +24,7 @@ export class ChatGateway
 {
 	constructor(
 		private readonly authService: AuthService,
+		private readonly roomService: RoomService,
 		private readonly connectedUserService: ConnectedUserService,
 	) {}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
@@ -65,5 +68,13 @@ export class ChatGateway
 		client.emit('messageAdded', 'Here is my message?');
 
 		// client.send(payLoad);
+	}
+
+	@SubscribeMessage('createRoom')
+	async handleCreateRoom(client: Socket, room: RoomI) {
+		const newRoom: RoomI = await this.roomService.createRoom(
+			room,
+			client.data.user,
+		);
 	}
 }
