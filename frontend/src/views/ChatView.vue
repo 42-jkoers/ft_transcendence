@@ -30,15 +30,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from "vue";
+import { onMounted, onBeforeUnmount, ref, provide } from "vue";
 import ChatRooms from "@/components/ChatRooms.vue";
 import ChatBox from "@/components/ChatBox.vue"; // @ is an alias to /src
 import SocketioService from "../services/socketio.service";
 import MessageI from "../types/Message.interface";
 
 const socket = SocketioService.setupSocketConnection(); //create a socket instance for connecting client
-// reactive state
-const input = ref<string>("");
 
 onMounted(() => {
   socket.on("rooms", (args: string) => {
@@ -59,11 +57,15 @@ onBeforeUnmount(() => {
   socket.disconnect();
 });
 
+// reactive input state
+const input = ref<string>("");
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   console.log("input value: ", input.value);
   socket.emit("addMessage", { text: input.value });
 }
+provide("socketioInstance", socket); // dependency provider of socketio instance for all its descendants
 </script>
+
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped></style>

@@ -52,21 +52,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { ref, inject } from "vue";
+import { useRouter } from "vue-router";
 import PrimeVueButton from "primevue/button";
 import RadioButton from "primevue/radiobutton";
 import InputText from "primevue/inputtext";
 
 import Room from "../types/Room";
 import RoomVisibilityType from "../types/RoomVisibility";
+import { Socket } from "socket.io-client";
 
 // Because we don't have access to 'this' inside of setup, we cannot directly access this.$router or this.$route anymore.
 // Instead we use the useRouter function:
 const router = useRouter();
 
 //reactive state:
-
 // for visibility categories:
 const categories = ref([
   { name: "Public", key: "1", type: RoomVisibilityType.PUBLIC },
@@ -77,11 +77,10 @@ const categories = ref([
     type: RoomVisibilityType.PROTECTED,
   },
 ]);
-
 const selectedCategory = ref(categories.value[0].type); // public visibility will always be the default one
 
+// state of the new room name:
 const name = ref<string>();
-
 // push user to a newly created room
 function pushToNewRoom() {
   router.push({
@@ -96,6 +95,8 @@ function saveNewRoom() {
     RoomVisibilityType: selectedCategory.value,
   };
   console.log("newRoom: ", newRoom);
+  const socket: Socket = inject("socketioInstance");
+  socket.emit("createRoom", newRoom);
   pushToNewRoom();
 }
 </script>
