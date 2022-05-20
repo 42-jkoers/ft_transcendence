@@ -36,7 +36,7 @@ export class ChatGateway
 			client.handshake.headers.cookie,
 		);
 		if (user) {
-			console.log('user is:\n', user);
+			console.log(user);
 		} else {
 			console.log('user not authorized.\n', ); //FIXME throw an exception
 		}
