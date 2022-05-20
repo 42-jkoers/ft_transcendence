@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject } from "vue";
+import { ref, inject, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import PrimeVueButton from "primevue/button";
 import RadioButton from "primevue/radiobutton";
@@ -87,6 +87,13 @@ function pushToNewRoom() {
     name: "chat", // FIXME : temporarily pushing back to chat
   });
 }
+const socket: Socket = inject("socketioInstance");
+
+onMounted(() => {
+  socket.on("createRoom", (newRoom: Room) => {
+    console.log("created room name is :", newRoom.name);
+  });
+});
 
 function saveNewRoom() {
   const newRoom: Room = {
@@ -95,7 +102,6 @@ function saveNewRoom() {
     RoomVisibilityType: selectedCategory.value,
   };
   console.log("newRoom: ", newRoom);
-  const socket: Socket = inject("socketioInstance");
   socket.emit("createRoom", newRoom);
   pushToNewRoom();
 }
