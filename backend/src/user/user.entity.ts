@@ -1,4 +1,5 @@
 import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
+import { MessageEntity } from 'src/chat/message/message.entity';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { Column, Entity, JoinColumn, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -22,6 +23,9 @@ export class User {
 
 	@ManyToMany(() => RoomEntity, (room) => room.users)
 	rooms: RoomEntity[];
+
+    @OneToMany(() => MessageEntity, (message) => message.user)
+	messages: MessageEntity[];
 }
 
 export default User;
