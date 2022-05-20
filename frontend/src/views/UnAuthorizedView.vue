@@ -1,8 +1,15 @@
 <template>
   <p class="message">Oops, you are not logged in yet.</p>
+  <BackToHome />
+  <br />
+  <LogIn />
 </template>
 <script lang="ts">
-export default {};
+import LogIn from "@/components/LogIn.vue";
+import BackToHome from "@/components/BackToHome.vue";
+export default {
+  components: { LogIn, BackToHome },
+};
 </script>
 <style scoped>
 .message {

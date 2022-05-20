@@ -1,8 +1,6 @@
 <template>
   <div>
-    <nav>
-      <router-link to="/login">Login</router-link>
-    </nav>
+    <p>PONG</p>
     <router-view />
   </div>
 </template>

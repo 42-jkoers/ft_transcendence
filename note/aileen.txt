@@ -78,14 +78,15 @@ Tutorial:
 	- Wrap Login to a component
 	- setup Menu bar 
 	- prote all route except for "/" and "/login"
+	- Remove router-link on app, add website title
+	- Improve un-authorized page
 
 **************************
 **		Next To To		**
 **************************
-- set up home route structure
-- create Profile view and add update profile as a component
-- upload avatar
 
 ******************************
 **		General To To		**
 ******************************
+- create Profile view and add update profile as a component
+- upload avatar
