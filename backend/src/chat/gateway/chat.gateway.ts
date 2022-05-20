@@ -17,7 +17,7 @@ import { MessageService } from '../message/message.service';
 
 //Gateway: a class annotated with @WebSocketGetAway decorator
 @WebSocketGateway({
-	cors: { origin: 'http://localhost:8080', credentials: true },
+	namespace: "/chat", cors: { origin: 'http://localhost:8080', credentials: true },
 }) //allows us to make use of any WebSockets library (in our case socket.io)
 export class ChatGateway
 	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
