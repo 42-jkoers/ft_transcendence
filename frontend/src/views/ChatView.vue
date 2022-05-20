@@ -34,6 +34,7 @@ import { onMounted, onBeforeUnmount, ref } from "vue";
 import ChatRooms from "@/components/ChatRooms.vue";
 import ChatBox from "@/components/ChatBox.vue"; // @ is an alias to /src
 import SocketioService from "../services/socketio.service";
+import MessageI from "../types/Message.interface";
 
 const socket = SocketioService.setupSocketConnection(); //create a socket instance for connecting client
 // reactive state
@@ -48,12 +49,10 @@ onMounted(() => {
     args;
   }); //to get all messages of the user for this room?
 
-  socket.on("messageAdded", (args: string) => {
+  socket.on("messageAdded", (message: MessageI) => {
     console.log("messageAdded event received from backend");
-    // this.messages.push(args);
-    // this.messages.push(this.input);
-    // console.log("MEssages: ", this.messages);
-  }); //listen to an event coming from the backend gateway for msg saved to DB
+    console.log("Here is you msg saved to DB: ", message.text);
+  }); //event triggered when a msg is saved to DB
 });
 
 onBeforeUnmount(() => {
