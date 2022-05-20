@@ -82,5 +82,9 @@ export class ChatGateway
 			room,
 			client.data.user,
 		);
+		this.logger.log('newly created room from DB: ', newRoom);
+
+		//TODO: add newly created room to the current user as well?
+		client.emit('createRoom', newRoom);
 	}
 }
