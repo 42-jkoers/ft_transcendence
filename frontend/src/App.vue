@@ -10,6 +10,15 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import { provide } from "vue";
+
+import SocketioService from "./services/socketio.service";
+
+const socket = SocketioService.setupSocketConnection(); //create a socket instance for connecting client
+provide("socketioInstance", socket); // dependency provider of socketio instance for all its descendants
+</script>
+
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
