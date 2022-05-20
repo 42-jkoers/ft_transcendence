@@ -40,8 +40,6 @@ const socket = SocketioService.setupSocketConnection(); //create a socket instan
 const input = ref<string>("");
 
 onMounted(() => {
-  // event listeners for the socket instance //
-  // making use of on() to register an event listener //
   socket.on("rooms", (args: string) => {
     args;
   }); //to get all rooms of the user?
@@ -55,19 +53,17 @@ onMounted(() => {
     // this.messages.push(args);
     // this.messages.push(this.input);
     // console.log("MEssages: ", this.messages);
-  }); //listen to an event coming from the backend gateway for msg sent?
+  }); //listen to an event coming from the backend gateway for msg saved to DB
 });
 
 onBeforeUnmount(() => {
   socket.disconnect();
-  //SocketioService.disconnect(); //FIXME I can access socket directly. Which one should we use?
 });
 
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   console.log("input value: ", input.value);
   socket.emit("addMessage", { text: input.value });
-  //SocketioService.release("addMessage", `Your input value was ${input.value}`);
 }
 </script>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
