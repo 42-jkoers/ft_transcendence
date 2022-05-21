@@ -92,6 +92,13 @@ const socket: Socket = inject("socketioInstance");
 onMounted(() => {
   socket.on("createRoom", (response: { status: string; data: string }) => {
     console.log("Response is :", response.status);
+    if (response.status === "OK") {
+      pushToNewRoom();
+    } else {
+      console.log(
+        `The Chat Room '${response.data}' exists. Please choose another name` //FIXME: create message popup
+      );
+    }
   });
 });
 
@@ -103,7 +110,6 @@ function saveNewRoom() {
   };
   console.log("newRoom: ", newRoom);
   socket.emit("createRoom", newRoom);
-  pushToNewRoom();
 }
 </script>
 <style scoped></style>
