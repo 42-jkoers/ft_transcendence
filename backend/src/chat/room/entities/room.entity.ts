@@ -20,7 +20,7 @@ export class RoomEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
+	@Column({ unique: true }) // UNIQUE constraint will maintain the uniqueness of the data in the column
 	name: string;
 
 	@Column({
@@ -34,6 +34,6 @@ export class RoomEntity {
 	@JoinTable()
 	users: User[];
 
-    @OneToMany(() => MessageEntity, (message) => message.room)
-    messages: MessageEntity[];
+	@OneToMany(() => MessageEntity, (message) => message.room)
+	messages: MessageEntity[];
 }
