@@ -6,15 +6,15 @@
     <div v-else class="card">
       <h2>Chat</h2>
       <div class="grid">
-        <PrimeVueButton
-          @click="openCreateRoomCard"
-          label="New Chat Room"
-          icon="pi pi-plus"
-          class="p-button-primary"
-        />
         <div class="col-12">
           <div class="grid">
             <div class="col-12 md:col-6 xl:col-6">
+              <PrimeVueButton
+                @click="openCreateRoomCard"
+                label="New Chat Room"
+                icon="pi pi-plus"
+                class="p-button-primary"
+              />
               <ChatRoomsList />
             </div>
             <div class="col-12 md:col-6 xl:col-6">
