@@ -16,19 +16,36 @@ export class RoomService {
 		@InjectRepository(RoomEntity)
 		private readonly RoomEntityRepository: Repository<RoomEntity>,
 	) {}
-	async createRoom(room: RoomI, creator: UserI): Promise<RoomI> {
+
+	async createRoom(
+		room: RoomI,
+		creator: UserI,
+	): Promise<{ status: string; data: string }> {
 		const emptyRoom: RoomI = {
 			name: room.name,
 			visibility: room.visibility, //FIXME: visibiity undefined
 			users: [],
 		};
 		const newRoom = await this.addCreatorToRoom(emptyRoom, creator); // adding current creator to the array of users for this new room
-
-		return this.RoomEntityRepository.save(newRoom); // Saves a given entity in the database. If entity does not exist in the database then inserts, otherwise updates.
+		const response = {
+			status: '',
+			data: '',
+		};
+		try {
+			await this.RoomEntityRepository.save(newRoom); // Saves a given entity in the database if the new room name doesn't exist.
+			response.status = 'OK';
+			response.data = `${newRoom.name}`;
+		} catch (err) {
+			// if promise rejects (in case the name is not unique)
+			if (err.code === '23505') {
+				response.status = 'ERROR';
+				response.data = `${newRoom.name} already exists`;
+			}
+		}
+		return response;
 	}
 
 	async addCreatorToRoom(room: RoomI, creator: UserI): Promise<RoomI> {
-		console.log('passed room from DB: ', room);
 		room.users.push(creator);
 		return room;
 	}

@@ -90,8 +90,8 @@ function pushToNewRoom() {
 const socket: Socket = inject("socketioInstance");
 
 onMounted(() => {
-  socket.on("createRoom", (newRoom: Room) => {
-    console.log("created room name is :", newRoom.name);
+  socket.on("createRoom", (response: { status: string; data: string }) => {
+    console.log("Response is :", response.status);
   });
 });
 
