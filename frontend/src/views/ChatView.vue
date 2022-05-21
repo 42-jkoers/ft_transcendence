@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, inject } from "vue";
+import { onMounted, ref, inject } from "vue";
 import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 
@@ -73,10 +73,6 @@ onMounted(() => {
   }); //event triggered when a msg is saved to DB
 });
 
-// onBeforeUnmount(() => {
-//   socket.disconnect();
-// });
-
 // reactive input state
 const input = ref<string>("");
 //binding a click event listener to a method named 'sendMessage'
@@ -90,8 +86,6 @@ function openCreateRoomCard() {
     name: "create-chatroom", // FIXME : temporarily pushing back to chat
   });
 }
-
-// provide("socketioInstance", socket); // dependency provider of socketio instance for all its descendants
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
