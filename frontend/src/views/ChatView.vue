@@ -15,7 +15,7 @@
         <div class="col-12">
           <div class="grid">
             <div class="col-12 md:col-6 xl:col-6">
-              <ChatRooms />
+              <ChatRoomsList />
             </div>
             <div class="col-12 md:col-6 xl:col-6">
               <ChatBox />
@@ -48,7 +48,7 @@ import { onMounted, onBeforeUnmount, ref, inject } from "vue";
 import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 
-import ChatRooms from "../components/ChatRooms.vue"; //TODO: update tsconfig and change to @
+import ChatRoomsList from "../components/ChatRoomsList.vue"; //TODO: update tsconfig and change to @
 import ChatBox from "../components/ChatBox.vue"; // @ is an alias to /src
 import CreateRoom from "./CreateRoom.vue"; // Vetur still doesn't support script setup so is unhappy
 // import SocketioService from "../services/socketio.service";
