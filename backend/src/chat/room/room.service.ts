@@ -1,14 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, getRepository } from 'typeorm';
 import { RoomEntity } from './entities/room.entity';
 import { RoomI } from './room.interface';
 import { UserI } from 'src/user/user.interface';
-import {
-	IPaginationOptions,
-	paginate,
-	Pagination,
-} from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class RoomService {
@@ -50,16 +45,14 @@ export class RoomService {
 		return room;
 	}
 
-	async getRoomsForUser(
-		userId: number,
-		options: IPaginationOptions,
-	): Promise<Pagination<RoomI>> {
+	async getRoomsForUser(userId: number): Promise<RoomI[]> {
 		//build SQL query to get rooms
-		// leftJoin will be referencing the property users defined in the RoomEntity.
-		const query = this.RoomEntityRepository.createQueryBuilder('room')
-			.leftJoin('room.users', 'user')
-			.where('user.id = :userId', { userId });
-
-		return paginate(query, options);
+		// leftJoin will be referencing the property 'users' defined in the RoomEntity.
+		const query = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			.leftJoinAndSelect('room.users', 'users')
+			.where('users.id = :userId', { userId })
+			.getMany();
+		return query;
 	}
 }
