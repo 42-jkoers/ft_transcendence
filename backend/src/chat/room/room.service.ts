@@ -39,7 +39,7 @@ export class RoomService {
 			// if promise rejects (in case the name is not unique)
 			if (err.code === '23505') {
 				response.status = 'ERROR';
-				response.data = `${newRoom.name} already exists`;
+				response.data = `${newRoom.name}`;
 			}
 		}
 		return response;
