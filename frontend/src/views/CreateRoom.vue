@@ -106,7 +106,7 @@ function saveNewRoom() {
   const newRoom: Room = {
     name: name.value,
     isDirectMessage: false,
-    RoomVisibilityType: selectedCategory.value,
+    visibility: selectedCategory.value,
   };
   console.log("newRoom: ", newRoom);
   socket.emit("createRoom", newRoom);
