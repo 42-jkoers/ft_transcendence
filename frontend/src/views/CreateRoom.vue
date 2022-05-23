@@ -108,7 +108,7 @@ function saveNewRoom() {
     isDirectMessage: false,
     visibility: selectedCategory.value,
   };
-  console.log("newRoom: ", newRoom);
+  console.log("newRoom created on frontend: ", newRoom);
   socket.emit("createRoom", newRoom);
 }
 </script>

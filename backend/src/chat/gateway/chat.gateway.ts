@@ -82,7 +82,14 @@ export class ChatGateway
 			await this.roomService.createRoom(room, client.data.user);
 		this.logger.log('response from DB: ', response);
 
-		//TODO: add newly created room to the current user as well?
 		client.emit('createRoom', response);
+	}
+
+	@SubscribeMessage('getUserRoomsList')
+	async getRoomsList(client: Socket) {
+		const response: RoomI[] = await this.roomService.getRoomsForUser(
+			client.data.user.id,
+		);
+		client.emit('getUserRoomsList', response);
 	}
 }
