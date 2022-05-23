@@ -55,7 +55,7 @@ Tutorial:
 **********************************************
 **		Branch - auth_register_new_user		**
 **********************************************
-(Wed) 2022-05-11 ([deleted branch] register_new_user)
+(Mon) 2022-05-16 ([deleted branch] register_new_user)
 	- 1. replace validateUser dto with just intraID; 2.redirect login successful page to /user/me
 	- 1. setup route for existed user vs new user; 2. housekeeping
 
@@ -81,9 +81,14 @@ Tutorial:
 	- Remove router-link on app, add website title
 	- Improve un-authorized page
 
+(Mon) 2022-05-23
+	- add WebsiteTitle component (link to /userhome) to App.vue
+
 **************************
 **		Next To To		**
 **************************
+- add Website Logo/picture to website title
+- make website all dark background
 
 ******************************
 **		General To To		**

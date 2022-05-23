@@ -1,11 +1,12 @@
 <template>
   <div>
-    <p>PONG</p>
+    <WebsiteTitle />
     <router-view />
   </div>
 </template>
 <script lang="ts">
-export default {};
+import WebsiteTitle from "./components/WebsiteTitle.vue";
+export default { components: { WebsiteTitle } };
 </script>
 
 <style>
