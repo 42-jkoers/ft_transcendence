@@ -9,22 +9,26 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { UserI } from 'src/user/user.interface';
+import { RoomI } from 'src/chat/room/room.interface';
 import { AuthService } from '../../auth/auth.service';
 import { ConnectedUserService } from '../connected-user/connected-user.service';
 import { ConnectedUserI } from '../connected-user/connected-user.interface';
+import { RoomService } from '../room/room.service';
 import { MessageI } from '../message/message.interface';
 import { MessageService } from '../message/message.service';
 
 @WebSocketGateway({
-	namespace: "/chat", cors: { origin: 'http://localhost:8080', credentials: true },
+	namespace: '/chat',
+	cors: { origin: 'http://localhost:8080', credentials: true },
 }) //allows us to make use of any WebSockets library (in our case socket.io)
 export class ChatGateway
 	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
 	constructor(
 		private readonly authService: AuthService,
+		private readonly roomService: RoomService,
 		private readonly connectedUserService: ConnectedUserService,
-        private readonly messageService: MessageService
+		private readonly messageService: MessageService,
 	) {}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -38,7 +42,7 @@ export class ChatGateway
 		if (user) {
 			console.log(user);
 		} else {
-			console.log('user not authorized.\n', ); //FIXME throw an exception
+			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
 		client.data.user = user;
 
@@ -64,9 +68,21 @@ export class ChatGateway
 	// @UseGuards(AuthenticatedGuard) //TODO check if it works
 	async handleMessage(client: Socket, message: MessageI): Promise<any> {
 		this.logger.log(message);
-        const createdMessage: MessageI = await this.messageService.create(message);
+		const createdMessage: MessageI = await this.messageService.create(
+			message,
+		);
 		console.log('created msg.text : ', createdMessage.text);
 		// this.server.to(client.id).emit('messageAdded', createdMessage); //TODO check the difference and decide
 		client.emit('messageAdded', createdMessage);
+	}
+
+	@SubscribeMessage('createRoom')
+	async handleCreateRoom(client: Socket, room: RoomI) {
+		const response: { status: string; data: string } =
+			await this.roomService.createRoom(room, client.data.user);
+		this.logger.log('response from DB: ', response);
+
+		//TODO: add newly created room to the current user as well?
+		client.emit('createRoom', response);
 	}
 }
