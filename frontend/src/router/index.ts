@@ -8,6 +8,7 @@ import LogIn from "@/components/LogIn.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
 import axios from "axios";
+import CreateRoom from "@/views/CreateRoom.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -45,6 +46,11 @@ const routes: Array<RouteRecordRaw> = [
         component: LogOut,
       },
     ],
+  },
+  {
+    path: "/chat/create-chatroom",
+    name: "create-chatroom",
+    component: CreateRoom,
   },
   {
     path: "/register",

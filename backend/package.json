@@ -44,7 +44,6 @@
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.0",
     "express-session": "^1.17.2",
-    "nestjs-typeorm-paginate": "^3.2.1",
     "parse": "^3.4.2",
     "passport": "^0.5.2",
     "passport-oauth2": "^1.6.1",
