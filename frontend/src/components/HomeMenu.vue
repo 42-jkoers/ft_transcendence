@@ -13,30 +13,12 @@ const MenuItems = ref([
   {
     label: "Chat",
     icon: "pi pi-fw pi-comments",
-    items: [
-      [
-        {
-          items: [
-            { label: "Chat 1", to: { name: "Chat" } },
-            { label: "Chat 2", to: { name: "Chat" } },
-          ],
-        },
-      ],
-    ],
+    to: { name: "Chat" },
   },
   {
     label: "Game",
     icon: "pi pi-fw pi-discord",
-    items: [
-      [
-        {
-          items: [
-            { label: "Game 1", to: { name: "ComingSoon" } },
-            { label: "Game 2", to: { name: "ComingSoon" } },
-          ],
-        },
-      ],
-    ],
+    to: { name: "ComingSoon" },
   },
   {
     label: "Profile",

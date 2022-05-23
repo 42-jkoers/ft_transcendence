@@ -83,6 +83,7 @@ Tutorial:
 
 (Mon) 2022-05-23
 	- add WebsiteTitle component (link to /userhome) to App.vue
+	- mege with main
 
 **************************
 **		Next To To		**
