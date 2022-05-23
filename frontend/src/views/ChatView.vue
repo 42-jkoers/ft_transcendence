@@ -8,7 +8,7 @@
       <div class="grid">
         <div class="col-12">
           <div class="grid">
-            <div class="col-12 md:col-6 xl:col-6">
+            <div class="col-12 md:col-4 xl:col-3">
               <PrimeVueButton
                 @click="openCreateRoomCard"
                 label="New Chat Room"
@@ -17,7 +17,7 @@
               />
               <ChatRoomsList />
             </div>
-            <div class="col-12 md:col-6 xl:col-6">
+            <div class="col-12 md:col-8 xl:col-9">
               <ChatBox />
               <div class="card">
                 <form class="form" @submit.prevent="onSubmit">
