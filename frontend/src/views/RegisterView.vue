@@ -5,6 +5,7 @@
 <script lang="ts">
 import UpdateUserName from "@/components/UpdateUserName.vue";
 import router from "@/router";
+import store from "@/store";
 export default {
   components: {
     UpdateUserName,
@@ -12,7 +13,7 @@ export default {
   methods: {
     redirectToHome(e: boolean) {
       if (e) {
-        setTimeout(() => router.push("/userhome"), 1000);
+        setTimeout(() => router.push({ name: "LogInState" }), 1000);
       }
     },
   },

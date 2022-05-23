@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import axios from "axios";
+import store from "@/store/index";
 const request = ref<boolean>(false);
 const confirm = ref<boolean>(false);
 function requestLogOut() {
@@ -25,6 +26,7 @@ async function confirmLogOut() {
     withCredentials: true,
   });
   confirm.value = true;
+  store.commit("logout");
 }
 </script>
 <style>

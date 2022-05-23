@@ -2,13 +2,13 @@
   <p class="message">Oops, you are not logged in yet.</p>
   <BackToHome />
   <br />
-  <LogIn />
+  <LogInButton />
 </template>
 <script lang="ts">
-import LogIn from "@/components/LogIn.vue";
+import LogInButton from "@/components/LogInButton.vue";
 import BackToHome from "@/components/BackToHome.vue";
 export default {
-  components: { LogIn, BackToHome },
+  components: { LogInButton, BackToHome },
 };
 </script>
 <style scoped>

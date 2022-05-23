@@ -84,12 +84,12 @@ Tutorial:
 (Mon) 2022-05-23
 	- add WebsiteTitle component (link to /userhome) to App.vue
 	- mege with main
+	- improve front end authentication process (use vuex store)
 
 **************************
 **		Next To To		**
 **************************
 - add Website Logo/picture to website title
-- make website all dark background
 
 ******************************
 **		General To To		**

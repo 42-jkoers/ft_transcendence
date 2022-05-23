@@ -6,8 +6,10 @@ import "primevue/resources/themes/md-dark-indigo/theme.css"; //theme
 import "primevue/resources/primevue.min.css"; //core css
 import "primeicons/primeicons.css"; //icons
 import "primeflex/primeflex.css"; //PrimeFlex
-const app = createApp(App);
+import store from "@/store";
 
+const app = createApp(App);
+app.use(store);
 app.use(router);
 app.use(PrimeVue);
 app.mount("#app");
