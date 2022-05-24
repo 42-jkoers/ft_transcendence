@@ -24,9 +24,13 @@
 </template>
 
 <script setup lang="ts">
+import { ref, inject } from "vue";
+import { Socket } from "socket.io-client";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
 
+const socket: Socket = inject("socketioInstance");
 //TODO Should input text and button be inside a form tag?
+const messages = ref();
 </script>
