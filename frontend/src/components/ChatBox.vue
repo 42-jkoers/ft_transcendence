@@ -32,9 +32,6 @@ import PrimeVueButton from "primevue/button";
 import MessageI from "../types/Message.interface";
 
 const socket: Socket = inject("socketioInstance");
-//TODO Should input text and button be inside a form tag?
-
-// reactive states
 const messages = ref([]); //TODO type of array?
 const input = ref<string>("");
 

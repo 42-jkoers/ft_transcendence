@@ -19,10 +19,6 @@
             </div>
             <div class="col-12 md:col-8 xl:col-9">
               <ChatBox />
-              <!-- <div class="card">
-                <form class="form" @submit.prevent="onSubmit">
-                </form>
-              </div> -->
             </div>
           </div>
         </div>
