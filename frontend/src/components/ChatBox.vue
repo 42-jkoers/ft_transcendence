@@ -43,6 +43,7 @@ onMounted(() => {
     console.log("messageAdded event received from backend");
     console.log("Here is you msg saved to DB: ", message.text);
     messages.value.push(message.text);
+    console.log(messages.value);
   }); //event triggered when a msg is saved to DB
 });
 
@@ -50,5 +51,6 @@ onMounted(() => {
 function sendMessage() {
   console.log("input value: ", input.value);
   socket.emit("addMessage", { text: input.value });
+  input.value = "";
 }
 </script>
