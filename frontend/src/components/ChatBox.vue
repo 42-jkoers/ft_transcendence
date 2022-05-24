@@ -1,10 +1,25 @@
 <template>
   <div id="chatbox">
-    <div class="message-item" v-for="m in messages" :key="m.id"></div>
+    <div id="all-messages" class="flex flex-column gap-1 md:gap-2 xl:gap-4">
+      <div
+        class="message-item flex align-items-start"
+        v-for="m in messages"
+        :key="m.id"
+      >
+        <Card class="message-card">
+          <template v-slot:content>
+            {{ m.text }}
+          </template>
+          <!-- <template #footer class="message-date">{{ m.date }}</template> -->
+        </Card>
+      </div>
+    </div>
     <Card>
-      <template v-slot:content>
-        <div class="card">
-          <div class="flex justify-content-center flex-wrap card-container">
+      <template #footer>
+        <div id="input-field" class="card">
+          <div
+            class="flex justify-content-center align-items-end flex-wrap card-container"
+          >
             <InputText
               type="text"
               v-model="input"
@@ -52,3 +67,8 @@ function sendMessage() {
   input.value = "";
 }
 </script>
+<style scoped>
+.chatbox {
+  align-self: baseline;
+}
+</style>
