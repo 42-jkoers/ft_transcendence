@@ -1,5 +1,6 @@
 <template>
   <div id="chatbox">
+    <div class="message-item" v-for="m in messages" :key="m.id"></div>
     <Card>
       <template v-slot:content>
         <div class="card">
@@ -32,14 +33,14 @@ import PrimeVueButton from "primevue/button";
 import MessageI from "../types/Message.interface";
 
 const socket: Socket = inject("socketioInstance");
-const messages = ref([]); //TODO type of array?
+const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 
 onMounted(() => {
   socket.on("messageAdded", (message: MessageI) => {
     console.log("messageAdded event received from backend");
     console.log("Here is you msg saved to DB: ", message.text);
-    messages.value.push(message.text);
+    messages.value.push(message);
     console.log(messages.value);
   }); //event triggered when a msg is saved to DB
 });
