@@ -4,7 +4,6 @@
       <CreateRoom />
     </div>
     <div v-else class="card">
-      <h2>Chat</h2>
       <div class="grid">
         <div class="col-12">
           <div class="grid">
@@ -27,6 +26,7 @@
     <router-view></router-view>
   </div>
 </template>
+//TODO align and add flex to ChatRoomsList and ChatBox
 
 <script setup lang="ts">
 import { onMounted, inject } from "vue";
