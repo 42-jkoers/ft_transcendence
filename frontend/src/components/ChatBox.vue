@@ -1,18 +1,20 @@
 <template>
   <div id="chatbox">
     <div id="all-messages" class="flex flex-column gap-1 md:gap-2 xl:gap-4">
-      <div
-        class="message-item flex align-items-start"
-        v-for="m in messages"
-        :key="m.id"
-      >
-        <Card class="message-card">
-          <template v-slot:content>
-            {{ m.text }}
-          </template>
-          <!-- <template #footer class="message-date">{{ m.date }}</template> -->
-        </Card>
-      </div>
+      <ScrollPanel style="width: 100%; height: 1000px">
+        <div
+          class="message-item flex align-items-start"
+          v-for="m in messages"
+          :key="m.id"
+        >
+          <Card class="message-card">
+            <template v-slot:content>
+              {{ m.text }}
+            </template>
+            <!-- <template #footer class="message-date">{{ m.date }}</template> -->
+          </Card>
+        </div>
+      </ScrollPanel>
     </div>
     <Card>
       <template #footer>
@@ -45,6 +47,7 @@ import { Socket } from "socket.io-client";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
+import ScrollPanel from "primevue/scrollpanel";
 import MessageI from "../types/Message.interface";
 
 const socket: Socket = inject("socketioInstance");
