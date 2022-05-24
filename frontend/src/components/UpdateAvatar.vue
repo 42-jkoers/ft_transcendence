@@ -2,15 +2,14 @@
   <form class="form" @submit.prevent="onSubmit">
     <div class="update-profile-error">
       <p v-if="error_empty">Input field cannot be empty, please resumbit!</p>
-      <p v-if="error_duplicate">Username already exists, please resumbit!</p>
     </div>
     <div>
-      <label class="update-profile-label">UserName</label>
+      <label class="update-profile-label">Avatar</label>
       <input
         class="update-profile-input-box"
         type="text"
         placeholder="please input"
-        v-model="username"
+        v-model="avatar"
       />
       <button class="update-profile-button" @click="sendFrom">submit</button>
       <p v-if="isSuccess" class="update-profile-success">
@@ -20,24 +19,22 @@
   </form>
 </template>
 <script setup lang="ts">
-import { ref, defineEmits } from "vue";
+import { ref } from "vue";
 import axios from "axios";
-const username = ref<string>("");
+// reactive state
+const avatar = ref<string>("");
 const isSuccess = ref<boolean>(false);
 const error_empty = ref<boolean>(false);
 const error_duplicate = ref<boolean>(false);
-// emit is used to pass value from child component to parent component
-const emit = defineEmits<{
-  (event: "updateUserName"): boolean;
-}>();
-async function sendFrom(args: string) {
+
+async function sendFrom() {
   // reset boolean for submit checks
   error_duplicate.value = false;
   error_empty.value = false;
   isSuccess.value = false;
 
   // check if input is empty
-  if (username.value === "") {
+  if (avatar.value === "") {
     error_empty.value = true;
     return;
   }
@@ -47,42 +44,24 @@ async function sendFrom(args: string) {
   });
   const body = {
     id: response_user.data.id,
-    username: username.value,
+    avatar: avatar.value,
   };
-  // post username to update user profile
+  // post avatar to update user profile
   const response_post = await axios.post(
-    "http://localhost:3000/user/profile/update-username",
+    "http://localhost:3000/user/profile/update-avatar",
     body,
     {
       withCredentials: true, // to enable authenticated user log-in state pass-through from back-end
     }
   );
-  // if username already exists, return undefined from response
+  // if avatar already exists, return undefined from response
   if (!response_post.data) {
     error_duplicate.value = true;
   } else {
     isSuccess.value = true;
-    emit("updateUserName", true);
   }
 }
 </script>
 <style>
-.update-profile-error {
-  color: darkred;
-}
-.update-profile-label {
-  font-weight: 500;
-  padding-right: 12px;
-}
-.update-profile-input-box::placeholder {
-  color: grey;
-}
-.update-profile-button {
-  color: green;
-  margin-left: 20px;
-}
-.update-profile-success {
-  color: green;
-  font-weight: 500;
-}
+/* please see UpdateProfile_UserName.vue */
 </style>

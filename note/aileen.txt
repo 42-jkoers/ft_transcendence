@@ -55,7 +55,7 @@ Tutorial:
 **********************************************
 **		Branch - auth_register_new_user		**
 **********************************************
-(Wed) 2022-05-11 ([deleted branch] register_new_user)
+(Mon) 2022-05-16 ([deleted branch] register_new_user)
 	- 1. replace validateUser dto with just intraID; 2.redirect login successful page to /user/me
 	- 1. setup route for existed user vs new user; 2. housekeeping
 
@@ -72,12 +72,27 @@ Tutorial:
 	- setting CORS(https://medium.com/developer-rants/session-cookies-between-express-js-and-vue-js-with-axios-98a10274fae7)
 	- Set up register user page to update username and avatar in database
 	- Add /update-profile view to homepage
+	- Protect route with AuthenticatedGuard
+
+(Fri) 2022-05-20
+	- Wrap Login to a component
+	- setup Menu bar 
+	- prote all route except for "/" and "/login"
+	- Remove router-link on app, add website title
+	- Improve un-authorized page
+
+(Mon) 2022-05-23
+	- add WebsiteTitle component (link to /userhome) to App.vue
+	- mege with main
+	- improve front end authentication process (use vuex store)
 
 **************************
 **		Next To To		**
 **************************
-- upload avatar
+- add Website Logo/picture to website title
 
 ******************************
 **		General To To		**
 ******************************
+- create Profile view and add update profile as a component
+- upload avatar

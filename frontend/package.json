@@ -18,7 +18,8 @@
     "vue": "^3.2.13",
     "vue-class-component": "^8.0.0-0",
     "vue-hooks-form": "^0.2.2",
-    "vue-router": "^4.0.3"
+    "vue-router": "^4.0.3",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@types/jest": "^27.0.1",

@@ -1,14 +1,13 @@
 <template>
   <div>
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/chat">Chat</router-link> |
-      <a href="http://localhost:3000/auth/login"> Login </a> |
-      <router-link to="/update-profile">UpdateProfile</router-link>
-    </nav>
+    <WebsiteTitle />
     <router-view />
   </div>
 </template>
+<script lang="ts">
+import WebsiteTitle from "./components/WebsiteTitle.vue";
+export default { components: { WebsiteTitle } };
+</script>
 
 <script setup lang="ts">
 import { provide } from "vue";
@@ -46,9 +45,9 @@ body {
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
-  /* background-color: var(--surface-a);
-    font-family: var(--font-family);
-    font-weight: 400;
-    color: var(--text-color); */
+  background-color: var(--surface-a);
+  font-family: var(--font-family);
+  font-weight: 400;
+  color: var(--text-color);
 }
 </style>
