@@ -20,25 +20,26 @@ export class UserService {
 		return await this.userRepository.findOne({ intraID });
 	}
 
-	async createUser(userData: CreateUserDto): Promise<UserI>  {
+	async createUser(userData: CreateUserDto): Promise<UserI> {
 		const newUser = this.userRepository.create(userData);
 		return await this.userRepository.save(newUser);
 	}
 
 	/* return undefined if username is duplicated */
-	async updateUserName(id: number, newName: string): Promise<UserI | undefined>  {
+	async updateUserName(
+		id: number,
+		newName: string,
+	): Promise<UserI | undefined> {
 		try {
 			await this.userRepository.update(id, { username: newName });
-		}
-		catch (error) {
+		} catch (error) {
 			return undefined;
 		}
 		return await this.findByID(id);
 	}
 
-	async updateAvatar(id: number, newAvatar: string): Promise<UserI>  {
+	async updateAvatar(id: number, newAvatar: string): Promise<UserI> {
 		await this.userRepository.update(id, { avatar: newAvatar });
 		return await this.findByID(id);
 	}
-
 }

@@ -10,15 +10,16 @@ import { DatabaseModule } from './database/database.module';
 import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  imports: [
-    UserModule,
-    ChatModule,
-    GameModule,
-    AuthModule,
-    PassportModule.register({ session: true }),
-    ConfigModule.forRoot({isGlobal: true, }),
-    DatabaseModule],
-  controllers: [AppController],
-  providers: [AppService],
+	imports: [
+		UserModule,
+		ChatModule,
+		GameModule,
+		AuthModule,
+		PassportModule.register({ session: true }),
+		ConfigModule.forRoot({ isGlobal: true }),
+		DatabaseModule,
+	],
+	controllers: [AppController],
+	providers: [AppService],
 })
 export class AppModule {}
