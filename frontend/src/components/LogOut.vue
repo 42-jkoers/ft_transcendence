@@ -27,6 +27,7 @@
   </div>
   <div v-if="confirm">
     <p class="message">You've successfully logged out.</p>
+    <p class="message">Redirecting back to home...</p>
   </div>
 </template>
 <script setup lang="ts">
@@ -34,9 +35,11 @@ import Button from "primevue/button";
 import { ref } from "vue";
 import axios from "axios";
 import store from "@/store/index";
+import router from "@/router";
 const logoutButton = ref<boolean>(true);
 const request = ref<boolean>(false);
 const confirm = ref<boolean>(false);
+
 function requestLogOut() {
   request.value = true;
   logoutButton.value = false;
@@ -49,6 +52,7 @@ async function confirmLogOut() {
   });
   confirm.value = true;
   store.commit("logout");
+  setTimeout(() => router.push({ name: "Home" }), 2000);
 }
 
 function cancelLogOut() {
