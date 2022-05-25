@@ -1,10 +1,9 @@
-import { PassportStrategy } from "@nestjs/passport";
-import { ConfigService } from "@nestjs/config";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { Strategy } from "passport-oauth2"
-import AuthService from "../auth.service";
-import { HttpService } from "@nestjs/axios";
-import { JwtService } from "@nestjs/jwt";
+import { PassportStrategy } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { Strategy } from 'passport-oauth2';
+import AuthService from '../auth.service';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
@@ -12,8 +11,8 @@ export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
 		private readonly config: ConfigService,
 		private readonly authService: AuthService,
 		private readonly httpService: HttpService,
-		) {
-		super ({
+	) {
+		super({
 			authorizationURL: config.get('INTRA_AUTH_URL'),
 			tokenURL: config.get('INTRA_TOKEN_URL'),
 			clientID: config.get('INTRA_CLIENT_ID'),
@@ -22,11 +21,13 @@ export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
 		});
 	}
 
-	/* return value (UserI) could be accessed via req.session.passport.user */	
-	async validate(accessToken: string, refreshToken: string, profile: any, done: any) {
-		const data = await this.httpService.get(this.config.get('INTRA_GET_ME_URL'), {
-			headers: { Authorization: `Bearer ${ accessToken }` }, }
-		).toPromise();
+	/* return value (UserI) could be accessed via req.session.passport.user */
+	async validate(accessToken: string) {
+		const data = await this.httpService
+			.get(this.config.get('INTRA_GET_ME_URL'), {
+				headers: { Authorization: `Bearer ${accessToken}` },
+			})
+			.toPromise();
 		const intraID = data.data.id;
 		const validateUserDto = { intraID };
 		return await this.authService.validateUser(validateUserDto);
