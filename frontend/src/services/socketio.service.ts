@@ -6,7 +6,7 @@ class SocketioService {
     // do nothing.
   }
   setupSocketConnection() {
-    this.socket = io("http://localhost:3000/chat", {
+    this.socket = io("http://localhost:3000", {
       transports: ["websocket"],
       withCredentials: true,
     });

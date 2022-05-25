@@ -5,7 +5,6 @@
 <script lang="ts">
 import UpdateUserName from "@/components/UpdateUserName.vue";
 import router from "@/router";
-import store from "@/store";
 export default {
   components: {
     UpdateUserName,
