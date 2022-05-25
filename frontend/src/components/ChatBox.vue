@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted, onUpdated } from "vue";
+import { ref, inject, onMounted } from "vue";
 import { Socket } from "socket.io-client";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
@@ -61,19 +61,12 @@ onMounted(() => {
     console.log("Here is you msg saved to DB: ", message.text);
     messages.value.push(message);
     console.log(messages.value);
-    const scrollpanelTop = root.value.scrollTop;
+    //after each msg adjust scroll height?
+    // const scrollpanel = root.value;
+    // console.log("Root ", scrollpanel.scrollTop, scrollpanel.scrollHeight);
     // scrollpanel.scrollTop = scrollpanel.scrollHeight;
-    const scrollpanelHeight = root.value.scrollHeight;
-    console.log("top ", scrollpanelTop);
-    console.log("height ", scrollpanelHeight);
   }); //event triggered when a msg is saved to DB
 });
-
-// onUpdated(() => {
-//   const scrollpanel = root.value;
-//   scrollpanel.scrollTop = scrollpanel.scrollHeight;
-//   console.log("Root ", scrollpanel.scrollTop, scrollpanel.scrollHeight);
-// });
 
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
