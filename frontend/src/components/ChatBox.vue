@@ -4,7 +4,7 @@
       id="all-messages"
       class="flex flex-column-reverse gap-1 md:gap-2 xl:gap-4"
     >
-      <ScrollPanel ref="root" style="width: 100%; height: 1000px">
+      <ScrollPanel ref="root" style="width: 100%; height: 500px">
         <div
           class="message-item flex align-items-start py-2"
           v-for="m in messages"
