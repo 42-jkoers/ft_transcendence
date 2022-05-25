@@ -1,9 +1,9 @@
 <template>
-  <div id="chatbox">
+  <div id="chatbox" class="flex flex-column">
     <div id="all-messages" class="flex flex-column gap-1 md:gap-2 xl:gap-4">
       <ScrollPanel style="width: 100%; height: 1000px">
         <div
-          class="message-item flex align-items-start"
+          class="message-item flex align-items-start py-2"
           v-for="m in messages"
           :key="m.id"
         >
@@ -16,28 +16,25 @@
         </div>
       </ScrollPanel>
     </div>
-    <Card>
-      <template #footer>
-        <div id="input-field" class="card">
-          <div
-            class="flex justify-content-center align-items-end flex-wrap card-container"
-          >
-            <InputText
-              type="text"
-              v-model="input"
-              placeholder="Type your message..."
-              @keyup.enter="sendMessage"
-            >
-            </InputText>
-            <PrimeVueButton
-              @click="sendMessage"
-              icon="pi pi-send"
-              class="p-button-primary"
-            />
-          </div>
-        </div>
-      </template>
-    </Card>
+    <div id="input-field" class="card col-12">
+      <div
+        class="flex justify-content-center align-items-strech flex-wrap card-container"
+      >
+        <InputText
+          type="text"
+          v-model="input"
+          placeholder="Type your message..."
+          @keyup.enter="sendMessage"
+          class="w-11"
+        >
+        </InputText>
+        <PrimeVueButton
+          @click="sendMessage"
+          icon="pi pi-send"
+          class="p-button-primary w-1"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -70,8 +67,9 @@ function sendMessage() {
   input.value = "";
 }
 </script>
+
 <style scoped>
-.chatbox {
-  align-self: baseline;
+.message-card {
+  background: #212121;
 }
 </style>
