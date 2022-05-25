@@ -94,6 +94,8 @@ Tutorial:
 ******************************************
 (Wed) 2022-05-25
 	- Style change: Login button, BackToHome button, Logout page
+	- [branch: backend_fix_lint]
+	- replace LogInState component with store's mutation function login() => check login at app start
 
 **************************
 **		Next To To		**
