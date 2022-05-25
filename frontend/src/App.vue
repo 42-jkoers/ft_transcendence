@@ -11,14 +11,14 @@ export default { components: { WebsiteTitle } };
 
 <script setup lang="ts">
 import { provide } from "vue";
-import store from "@/store";
+import storeUser from "@/store";
 
 import SocketioService from "./services/socketio.service";
 
 const socket = SocketioService.setupSocketConnection(); //create a socket instance for connecting client
 provide("socketioInstance", socket); // dependency provider of socketio instance for all its descendants
 
-store.commit("login"); //immediately check user's authentication status when the app is initiated
+storeUser.commit("login"); //immediately check user's authentication status when the app is initiated
 </script>
 <style>
 #app {

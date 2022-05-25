@@ -34,7 +34,7 @@
 import Button from "primevue/button";
 import { ref } from "vue";
 import axios from "axios";
-import store from "@/store/index";
+import storeUser from "@/store";
 import router from "@/router";
 const logoutButton = ref<boolean>(true);
 const request = ref<boolean>(false);
@@ -51,7 +51,7 @@ async function confirmLogOut() {
     withCredentials: true,
   });
   confirm.value = true;
-  store.commit("logout");
+  storeUser.commit("logout");
   setTimeout(() => router.push({ name: "Home" }), 2000);
 }
 

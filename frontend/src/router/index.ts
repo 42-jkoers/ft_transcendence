@@ -7,7 +7,7 @@ import LogOut from "@/components/LogOut.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
 import CreateRoom from "@/views/CreateRoom.vue";
-import store from "@/store/index";
+import storeUser from "@/store";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -73,8 +73,8 @@ const router = createRouter({
 
 /* Only new user (with default empty username is able to enter the register view */
 const checkRegisterStatus = async function () {
-  if (store.state.isAuthenticated) {
-    if (store.state.username !== "") {
+  if (storeUser.state.isAuthenticated) {
+    if (storeUser.state.username !== "") {
       router.push({ name: "UserHome" });
     }
   } else {
@@ -84,8 +84,8 @@ const checkRegisterStatus = async function () {
 
 /* Check if the user is logged in */
 const checkLogInState = async function () {
-  if (store.state.isAuthenticated === false) {
-    store.commit("login");
+  if (storeUser.state.isAuthenticated === false) {
+    storeUser.commit("login");
   }
 };
 
