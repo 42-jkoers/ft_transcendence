@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ChatGateway } from './gateway/chat.gateway';
+import { ChatGateway } from '../gateway/chat.gateway';
 import { ChannelModule } from './channel/channel.module';
 import { MessageModule } from './message/message.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,7 +17,11 @@ import { MessageEntity } from './message/message.entity';
 		ChannelModule,
 		MessageModule,
 		AuthModule,
-		TypeOrmModule.forFeature([RoomEntity, ConnectedUserEntity, MessageEntity]),
+		TypeOrmModule.forFeature([
+			RoomEntity,
+			ConnectedUserEntity,
+			MessageEntity,
+		]),
 	],
 })
 export class ChatModule {}
