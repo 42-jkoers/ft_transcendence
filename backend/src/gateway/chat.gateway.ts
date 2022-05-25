@@ -10,15 +10,13 @@ import {
 import { Socket, Server } from 'socket.io';
 import { UserI } from 'src/user/user.interface';
 import { RoomI } from 'src/chat/room/room.interface';
-import { AuthService } from '../../auth/auth.service';
-import { ConnectedUserService } from '../connected-user/connected-user.service';
-import { ConnectedUserI } from '../connected-user/connected-user.interface';
-import { RoomService } from '../room/room.service';
-import { MessageI } from '../message/message.interface';
-import { MessageService } from '../message/message.service';
+import { AuthService } from '../auth/auth.service';
+import { ConnectedUserService } from '../chat/connected-user/connected-user.service';
+import { RoomService } from '../chat/room/room.service';
+import { MessageI } from '../chat/message/message.interface';
+import { MessageService } from '../chat/message/message.service';
 
 @WebSocketGateway({
-	namespace: '/chat',
 	cors: { origin: 'http://localhost:8080', credentials: true },
 }) //allows us to make use of any WebSockets library (in our case socket.io)
 export class ChatGateway
@@ -34,7 +32,6 @@ export class ChatGateway
 	private logger: Logger = new Logger('ChatGateway');
 
 	async handleConnection(client: Socket) {
-		// TODO should we check if the connection is coming from chat or game?
 		this.logger.log('Client connected');
 		const user: UserI = await this.authService.getUserFromCookie(
 			client.handshake.headers.cookie,
@@ -52,7 +49,7 @@ export class ChatGateway
 		}); // save connection to DB
 	}
 
-	afterInit(server: Server) {
+	afterInit() {
 		this.logger.log('Gateway: init');
 		this.server.emit('Hey there');
 		//TODO maybe delete all connected users and joined rooms with onInit?
