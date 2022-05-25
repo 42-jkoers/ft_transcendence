@@ -2,6 +2,7 @@
   <p class="message">Oops, you are not logged in yet.</p>
   <BackToHome />
   <br />
+  <br />
   <LogInButton />
 </template>
 <script lang="ts">
@@ -13,8 +14,8 @@ export default {
 </script>
 <style scoped>
 .message {
-  color: darkcyan;
+  color: white;
   font-size: large;
-  font-weight: 600;
+  font-weight: 500;
 }
 </style>

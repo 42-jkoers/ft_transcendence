@@ -92,14 +92,17 @@ Tutorial:
 ******************************************
 **		Branch - frontend_user_profile		**
 ******************************************
-
+(Wed) 2022-05-25
+	-
 
 **************************
 **		Next To To		**
 **************************
+- login button style
 - User Profile page
 - User Setting page
 - upload avatar
+- register page stype
 - logout page style
 
 ******************************
