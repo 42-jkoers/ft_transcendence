@@ -4,7 +4,6 @@ import RegisterView from "@/views/RegisterView.vue";
 import UserSettingView from "@/views/UserSettingView.vue";
 import UnAuthorizedView from "@/views/UnAuthorizedView.vue";
 import LogOut from "@/components/LogOut.vue";
-import LogInButton from "@/components/LogInButton.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
 import CreateRoom from "@/views/CreateRoom.vue";
