@@ -12,7 +12,9 @@ export class ConnectedUserService {
 		private readonly connectedUserRepository: Repository<ConnectedUserEntity>, //built-in repo
 	) {}
 	//create function
-	async createConnectedUser(connectedUser: ConnectedUserI,): Promise<ConnectedUserI> {
+	async createConnectedUser(
+		connectedUser: ConnectedUserI,
+	): Promise<ConnectedUserI> {
 		return this.connectedUserRepository.save(connectedUser);
 	}
 

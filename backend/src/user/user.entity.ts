@@ -1,7 +1,14 @@
 import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
-import { Column, Entity, JoinColumn, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+	Column,
+	Entity,
+	JoinColumn,
+	ManyToMany,
+	OneToMany,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class User {
@@ -17,14 +24,14 @@ export class User {
 	@Column({ nullable: true })
 	public avatar: string;
 
-    @JoinColumn()
+	@JoinColumn()
 	@OneToMany(() => ConnectedUserEntity, (connection) => connection.user)
 	connections: ConnectedUserEntity[];
 
 	@ManyToMany(() => RoomEntity, (room) => room.users)
 	rooms: RoomEntity[];
 
-    @OneToMany(() => MessageEntity, (message) => message.user)
+	@OneToMany(() => MessageEntity, (message) => message.user)
 	messages: MessageEntity[];
 }
 
