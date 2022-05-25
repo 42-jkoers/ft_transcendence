@@ -74,7 +74,7 @@ const router = createRouter({
 /* Only new user (with default empty username is able to enter the register view */
 const checkRegisterStatus = async function () {
   if (storeUser.state.isAuthenticated) {
-    if (storeUser.state.username !== "") {
+    if (storeUser.state.user.username !== "") {
       router.push({ name: "UserHome" });
     }
   } else {

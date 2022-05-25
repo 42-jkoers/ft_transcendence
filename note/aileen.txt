@@ -97,10 +97,12 @@ Tutorial:
 	- [branch: backend_fix_lint]
 	- replace LogInState component with store's mutation function login() => check login at app start
 	- merge with main ()
+	- home page show either login or userhome button based on isAuthenticated
 
 **************************
 **		Next To To		**
 **************************
+- update user profile: get placeholder based on state value
 - User Profile page
 - User Setting page
 - upload avatar
