@@ -7,7 +7,7 @@
           v-for="m in messages"
           :key="m.id"
         >
-          <Card class="message-card">
+          <Card class="message-card text-black-alpha-70">
             <template v-slot:content>
               {{ m.text }}
             </template>
@@ -70,6 +70,6 @@ function sendMessage() {
 
 <style scoped>
 .message-card {
-  background: #212121;
+  background: #9da3d2;
 }
 </style>
