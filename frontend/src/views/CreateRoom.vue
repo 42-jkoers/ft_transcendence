@@ -84,7 +84,7 @@ const name = ref<string>();
 // push user to a newly created room
 function pushToNewRoom() {
   router.push({
-    name: "chat", // FIXME : temporarily pushing back to chat
+    name: "Chat", // FIXME : temporarily pushing back to chat
   });
 }
 const socket: Socket = inject("socketioInstance");

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="this.$route.name === 'create-chatroom'">
+    <div v-if="this.$route.name === 'Create-chatroom'">
       <CreateRoom />
     </div>
     <div v-else class="card">
@@ -83,7 +83,7 @@ function sendMessage() {
 
 function openCreateRoomCard() {
   router.push({
-    name: "create-chatroom", // FIXME : temporarily pushing back to chat
+    name: "Create-chatroom", // FIXME : temporarily pushing back to chat
   });
 }
 </script>

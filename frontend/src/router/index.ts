@@ -51,7 +51,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: "/chat/create-chatroom",
-    name: "create-chatroom",
+    name: "Create-chatroom",
     component: CreateRoom,
   },
   {
