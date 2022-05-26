@@ -106,15 +106,13 @@ Tutorial:
 (Thu) 2022-05-26
 	- style Update User Profile
 	- build new ConfirmButton component, add to LogOut and UserSetting view
+	- build new update user profile view
 
 **************************
 **		Next To To		**
 **************************
-- update user profile: get placeholder based on state value
 - change all to Composition API
-- update logout with ConfirmDialog
 - User Profile page
-- User Setting page
 - upload avatar
 - register page stype
 

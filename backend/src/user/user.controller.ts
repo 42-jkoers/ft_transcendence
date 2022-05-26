@@ -27,4 +27,22 @@ export class UserController {
 			return user;
 		}
 	}
+
+	@Post('profile/update-userprofile')
+	async updateUserProfile(
+		@Body() body: { id: number; username: string; avatar: string },
+	) {
+		if (
+			!(await this.userService.updateUserProfile(
+				body.id,
+				body.username,
+				body.avatar,
+			))
+		) {
+			return undefined;
+		} else {
+			const user: UserI = await this.userService.findByID(body.id);
+			return user;
+		}
+	}
 }

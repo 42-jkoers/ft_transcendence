@@ -5,14 +5,14 @@
     <div class="grid align-items-center">
       <div class="col-3"></div>
       <div class="col-3" align="right">
-        <label class="label" for="name">User Name</label>
+        <label class="label">User Name</label>
       </div>
       <div class="col-3" align="left">
         <InputText
           type="text"
-          placeholder="username"
+          v-model="username"
           class="description"
-          :class="invalidUserName ? 'p-invalid' : ''"
+          :class="isUserNameInvalid ? 'p-invalid' : ''"
         />
       </div>
     </div>
@@ -22,8 +22,8 @@
       >
     </div>
     <div class="col-offset-6" align="left">
-      <small v-if="invalidUserName" class="p-error"
-        >Username is not valid.
+      <small v-if="isUserNameInvalid" class="p-error"
+        >{{ invalidUserNameMessage }}
       </small>
     </div>
   </div>
@@ -32,33 +32,114 @@
     <div class="grid align-items-center">
       <div class="col-3"></div>
       <div class="col-3" align="right">
-        <label class="label" for="name">Avatar</label>
+        <label class="label">Avatar</label>
       </div>
       <div class="col-3" align="left">
-        <InputText type="text" placeholder="avatar" />
+        <InputText
+          v-model="avatar"
+          type="text"
+          class="description"
+          :class="isAvatarInvalid ? 'p-invalid' : ''"
+        />
       </div>
     </div>
+    <div class="col-offset-6" align="left">
+      <small v-if="isAvatarInvalid" class="p-error"
+        >{{ invalidAvatarMessage }}
+      </small>
+    </div>
   </div>
+  <!-- Button -->
   <div>
-    <ConfirmButton
-      @confirm="updateData($event)"
-      :buttonLabel="confirmButtonLabel"
-      successMessage="Your input has been saved successfully."
-    />
+    <Button @click="updateData($event)" label="Save" />
+  </div>
+  <div v-if="isUpdateSuccess">
+    <h3 class="successMessage">Your input has been saved successfully!</h3>
   </div>
 </template>
 <script setup lang="ts">
 import InputText from "primevue/inputtext";
-import ConfirmButton from "@/components/ConfirmButton.vue";
-import { ref } from "vue";
+import Button from "primevue/button";
+import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
-const confirmButtonLabel = ref<string>("Save");
+import axios from "axios";
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
-const invalidUserName = ref<boolean>(false);
-function updateData(e) {
-  if (e) {
-    console.log("update");
+const isUpdateSuccess = ref<boolean>(false);
+const isUserNameInvalid = ref<boolean>(false);
+const invalidUserNameMessage = ref<string>("");
+const isAvatarInvalid = ref<boolean>(false);
+const invalidAvatarMessage = ref<string>("");
+
+const emit = defineEmits<{
+  (event: "updated"): boolean;
+}>();
+
+function isUserNameValid(input: string) {
+  for (const c of input) {
+    if (
+      ((c >= "0" && c <= "9") ||
+        (c >= "a" && c <= "z") ||
+        (c >= "A" && c <= "Z")) === false
+    ) {
+      invalidUserNameMessage.value = "User name contains invalid character.";
+      return false;
+    }
+  }
+  if (input.length === 0) {
+    invalidUserNameMessage.value = "User name cannot be empty.";
+    return false;
+  }
+  if (input.length > 15) {
+    invalidUserNameMessage.value = "User name is too long (max 15 characters).";
+    return false;
+  }
+  return true;
+}
+
+function isAvatarValid(input: string) {
+  if (input.length === 0) {
+    invalidAvatarMessage.value = "Avatar cannot be empty.";
+    return false;
+  }
+  return true;
+}
+
+async function updateData() {
+  let proceed = true;
+  if (isUserNameValid(username.value) === false) {
+    proceed = false;
+    isUserNameInvalid.value = true;
+    setTimeout(() => (isUserNameInvalid.value = false), 2000);
+  }
+  if (isAvatarValid(avatar.value) === false) {
+    proceed = false;
+    isAvatarInvalid.value = true;
+    setTimeout(() => (isAvatarInvalid.value = false), 2000);
+  }
+  if (proceed) {
+    // post username to update user profile
+    const postBody = {
+      id: storeUser.state.user.id,
+      username: username.value,
+      avatar: avatar.value,
+    };
+    const response_post = await axios.post(
+      "http://localhost:3000/user/profile/update-userprofile",
+      postBody,
+      {
+        withCredentials: true,
+      }
+    );
+    // if username already exists, return undefined from response
+    if (!response_post.data) {
+      isUserNameInvalid.value = true;
+      invalidUserNameMessage.value = "User name already exits.";
+    } else {
+      isUpdateSuccess.value = true;
+      setTimeout(() => (isUpdateSuccess.value = false), 2000);
+      // emit("updated", true);
+    }
   }
 }
 </script>
@@ -67,5 +148,8 @@ function updateData(e) {
   padding-right: 12px;
   font-weight: 500;
   font-size: large;
+}
+.successMessage {
+  color: yellowgreen;
 }
 </style>
