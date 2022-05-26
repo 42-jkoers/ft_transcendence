@@ -1,5 +1,5 @@
 export default interface MessageI {
-  // id?: number;
+  id?: number;
   text: string;
   // user: User;
   // room: RoomI;
