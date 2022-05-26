@@ -1,8 +1,8 @@
 <template>
   <div v-if="showConfirmButton">
-    <Button @click="requestConfirm" label="Confirm"></Button>
+    <Button @click="requestConfirm">{{ buttonLabel }}</Button>
   </div>
-  <div v-if="showQuestion" class="card">
+  <div v-else class="card">
     <h3>Are you sure you want to proceed?</h3>
     <span class="p-buttonset">
       <Button
@@ -24,32 +24,42 @@
       />
     </span>
   </div>
+  <div v-if="showSuccessMessage">
+    <h3 class="message">{{ successMessage }}</h3>
+  </div>
 </template>
 
 <script setup lang="ts">
 import Button from "primevue/button";
 import { ref, defineEmits, defineProps } from "vue";
 const showConfirmButton = ref<boolean>(true);
-const showQuestion = ref<boolean>(false);
+const showSuccessMessage = ref<boolean>(false);
+const elementVisible = ref<boolean>(true);
 const props = defineProps({
   buttonLabel: String,
+  successMessage: String,
 });
 const emit = defineEmits<{
   (event: "confirm"): boolean;
 }>();
 
 function requestConfirm() {
-  showQuestion.value = true;
   showConfirmButton.value = false;
 }
 
 function proceedConfirm() {
-  console.log("props is: ", props.buttonLabel);
   emit("confirm", true);
+  showConfirmButton.value = true;
+  showSuccessMessage.value = true;
+  setTimeout(() => (showSuccessMessage.value = false), 2000);
 }
 
 function cancelConfirm() {
   showConfirmButton.value = true;
-  showQuestion.value = false;
 }
 </script>
+<style scoped>
+.message {
+  color: greenyellow;
+}
+</style>

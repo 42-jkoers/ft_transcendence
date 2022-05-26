@@ -39,14 +39,28 @@
       </div>
     </div>
   </div>
+  <div>
+    <ConfirmButton
+      @confirm="updateData($event)"
+      :buttonLabel="confirmButtonLabel"
+      successMessage="Your input has been saved successfully."
+    />
+  </div>
 </template>
 <script setup lang="ts">
 import InputText from "primevue/inputtext";
+import ConfirmButton from "@/components/ConfirmButton.vue";
 import { ref } from "vue";
 import storeUser from "@/store";
+const confirmButtonLabel = ref<string>("Save");
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
 const invalidUserName = ref<boolean>(false);
+function updateData(e) {
+  if (e) {
+    console.log("update");
+  }
+}
 </script>
 <style scoped>
 .label {
