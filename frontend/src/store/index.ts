@@ -1,17 +1,42 @@
+import router from "@/router";
+import axios from "axios";
 import { createStore } from "vuex";
 
-const store = createStore({
+const storeUser = createStore({
   state: {
     isAuthenticated: false,
-    username: "",
+    user: {
+      id: 0,
+      username: "",
+      avatar: "",
+    },
   },
   mutations: {
     updateUserName(state, name) {
-      state.username = name;
-      console.log(">> updated state username as: ", state.username);
+      state.user.username = name;
+      console.log(">> updated state username as: ", state.user.username);
     },
     login(state) {
-      state.isAuthenticated = true;
+      if (state.isAuthenticated === true) {
+        return;
+      }
+      axios
+        .get("http://localhost:3000/auth/status", {
+          withCredentials: true,
+        })
+        .then((response) => {
+          state.isAuthenticated = true;
+          if (!response.data.username) {
+            router.push({ name: "Register" });
+          } else {
+            state.user.id = response.data.id;
+            state.user.username = response.data.username;
+            state.user.avatar = response.data.avatar;
+          }
+        })
+        .catch(() => {
+          router.push({ name: "Home" });
+        });
     },
     logout(state) {
       state.isAuthenticated = false;
@@ -19,4 +44,4 @@ const store = createStore({
   },
 });
 
-export default store;
+export default storeUser;

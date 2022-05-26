@@ -35,6 +35,7 @@
           placeholder="Type your message..."
           @keyup.enter="sendMessage"
           class="w-11"
+          required
         >
         </InputText>
         <PrimeVueButton
@@ -64,10 +65,9 @@ const root = ref(null);
 
 onMounted(() => {
   socket.on("messageAdded", (message: MessageI) => {
-    console.log("messageAdded event received from backend");
     console.log("Here is you msg saved to DB: ", message.text);
     messages.value.push(message);
-    console.log(messages.value);
+    // console.log(messages.value);
     //after each msg adjust scroll height?
     const x = ref[root];
     console.log("xx ", x);
@@ -81,8 +81,8 @@ onMounted(() => {
 
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
-  console.log("input value: ", input.value);
-  socket.emit("addMessage", { text: input.value });
+  input.value = input.value.trim();
+  if (input.value) socket.emit("addMessage", { text: input.value });
   input.value = "";
 }
 </script>

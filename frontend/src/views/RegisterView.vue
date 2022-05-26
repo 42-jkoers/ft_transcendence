@@ -12,7 +12,7 @@ export default {
   methods: {
     redirectToHome(e: boolean) {
       if (e) {
-        setTimeout(() => router.push({ name: "LogInState" }), 1000);
+        setTimeout(() => router.push({ name: "UserHome" }), 1000);
       }
     },
   },

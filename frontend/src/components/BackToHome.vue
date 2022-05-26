@@ -1,7 +1,11 @@
 <template>
-  <form class="form" @submit.prevent="onSubmit">
-    <button><router-link to="/">Back To Home</router-link></button>
-  </form>
+  <Button>
+    <router-link to="/" style="text-decoration: none">
+      Back To Home
+    </router-link>
+  </Button>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Button from "primevue/button";
+</script>
 <style></style>
