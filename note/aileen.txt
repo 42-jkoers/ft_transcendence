@@ -90,7 +90,7 @@ Tutorial:
 	- improve front end authentication process (use vuex store)
 
 ******************************************
-**		Branch - frontend_user_profile		**
+**			Branch - login improvement			**
 ******************************************
 (Wed) 2022-05-25
 	- Style change: Login button, BackToHome button, Logout page
@@ -99,14 +99,22 @@ Tutorial:
 	- merge with main ()
 	- home page show either login or userhome button based on isAuthenticated
 
+
+******************************************
+**		Branch - frontend_user_profile		**
+******************************************
+(Thu) 2022-05-26
+	- style Update User Profile
+	- build new ConfirmButton component, add to LogOut and UserSetting view
+	- build new update user profile view
+	- add UpdateUserInfo component to Regsiter view, replace old version, house cleaning files
+
 **************************
 **		Next To To		**
 **************************
-- update user profile: get placeholder based on state value
+- change all to Composition API
 - User Profile page
-- User Setting page
 - upload avatar
-- register page stype
 
 ******************************
 **		General To To		**

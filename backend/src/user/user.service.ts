@@ -26,20 +26,19 @@ export class UserService {
 	}
 
 	/* return undefined if username is duplicated */
-	async updateUserName(
+	async updateUserProfile(
 		id: number,
 		newName: string,
+		newAvatar: string,
 	): Promise<UserI | undefined> {
 		try {
-			await this.userRepository.update(id, { username: newName });
+			await this.userRepository.update(id, {
+				username: newName,
+				avatar: newAvatar,
+			});
 		} catch (error) {
 			return undefined;
 		}
-		return await this.findByID(id);
-	}
-
-	async updateAvatar(id: number, newAvatar: string): Promise<UserI> {
-		await this.userRepository.update(id, { avatar: newAvatar });
 		return await this.findByID(id);
 	}
 }
