@@ -1,6 +1,6 @@
 <template>
   <div>
-    <router-link class="title" style="text-decoration: none" to="/UserHome">
+    <router-link class="title" style="text-decoration: none" to="/">
       PONG
     </router-link>
   </div>

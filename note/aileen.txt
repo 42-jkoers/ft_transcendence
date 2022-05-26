@@ -52,9 +52,9 @@ Tutorial:
 (Wed) 2022-05-11
 	- solve conflict with main and pull request
 
-**********************************************
+******************************************
 **		Branch - auth_register_new_user		**
-**********************************************
+******************************************
 (Mon) 2022-05-16 ([deleted branch] register_new_user)
 	- 1. replace validateUser dto with just intraID; 2.redirect login successful page to /user/me
 	- 1. setup route for existed user vs new user; 2. housekeeping
@@ -74,6 +74,9 @@ Tutorial:
 	- Add /update-profile view to homepage
 	- Protect route with AuthenticatedGuard
 
+**************************************************
+**		Branch - frontend_menu/protected-route		**
+**************************************************
 (Fri) 2022-05-20
 	- Wrap Login to a component
 	- setup Menu bar 
@@ -83,16 +86,28 @@ Tutorial:
 
 (Mon) 2022-05-23
 	- add WebsiteTitle component (link to /userhome) to App.vue
-	- mege with main
+	- merge with main
 	- improve front end authentication process (use vuex store)
+
+******************************************
+**		Branch - frontend_user_profile		**
+******************************************
+(Wed) 2022-05-25
+	- Style change: Login button, BackToHome button, Logout page
+	- [branch: backend_fix_lint]
+	- replace LogInState component with store's mutation function login() => check login at app start
+	- merge with main ()
+	- home page show either login or userhome button based on isAuthenticated
 
 **************************
 **		Next To To		**
 **************************
-- add Website Logo/picture to website title
+- update user profile: get placeholder based on state value
+- User Profile page
+- User Setting page
+- upload avatar
+- register page stype
 
 ******************************
 **		General To To		**
 ******************************
-- create Profile view and add update profile as a component
-- upload avatar

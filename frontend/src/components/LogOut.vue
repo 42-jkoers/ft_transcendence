@@ -1,23 +1,48 @@
 <template>
-  <form class="form" @submit.prevent="onSubmit">
-    <button class="logout-button" @click="requestLogOut">Log out</button>
-    <div v-if="request">
-      <p class="confirm-question">Are you sure you want to log out?</p>
-      <button class="yes-button" @click="confirmLogOut">Confirm</button>
-    </div>
-    <div v-if="confirm">
-      <p class="success-message">You've successfully logged out.</p>
-    </div>
-  </form>
+  <br />
+  <div v-if="logoutButton">
+    <Button
+      label="Log Out"
+      icon="pi pi-power-off"
+      iconPos="left"
+      @click="requestLogOut"
+    />
+  </div>
+  <div v-if="request">
+    <p class="message">Are you sure you want to log out?</p>
+    <span class="p-buttonset">
+      <Button
+        label="Confirm"
+        icon="pi pi-check"
+        iconPos="left"
+        @click="confirmLogOut"
+      />
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        iconPos="left"
+        @click="cancelLogOut"
+      />
+    </span>
+  </div>
+  <div v-if="confirm">
+    <p class="message">You've successfully logged out.</p>
+    <p class="message">Redirecting back to home...</p>
+  </div>
 </template>
 <script setup lang="ts">
+import Button from "primevue/button";
 import { ref } from "vue";
 import axios from "axios";
-import store from "@/store/index";
+import storeUser from "@/store";
+import router from "@/router";
+const logoutButton = ref<boolean>(true);
 const request = ref<boolean>(false);
 const confirm = ref<boolean>(false);
+
 function requestLogOut() {
   request.value = true;
+  logoutButton.value = false;
 }
 
 async function confirmLogOut() {
@@ -26,16 +51,19 @@ async function confirmLogOut() {
     withCredentials: true,
   });
   confirm.value = true;
-  store.commit("logout");
+  storeUser.commit("logout");
+  setTimeout(() => router.push({ name: "Home" }), 2000);
+}
+
+function cancelLogOut() {
+  logoutButton.value = true;
+  request.value = false;
 }
 </script>
-<style>
-.confirm-question {
-  color: darkred;
-  font-weight: 500;
-}
-.success-message {
-  color: green;
+<style scoped>
+.message {
+  color: white;
+  font-size: x-large;
   font-weight: 500;
 }
 </style>
