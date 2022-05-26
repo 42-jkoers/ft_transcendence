@@ -138,7 +138,11 @@ async function updateData() {
     } else {
       isUpdateSuccess.value = true;
       setTimeout(() => (isUpdateSuccess.value = false), 2000);
-      // emit("updated", true);
+      // update storeUser
+      storeUser.state.user.username = username.value;
+      storeUser.state.user.avatar = avatar.value;
+      // send signal to parent component
+      emit("updated", true);
     }
   }
 }

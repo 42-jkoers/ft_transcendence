@@ -107,6 +107,7 @@ Tutorial:
 	- style Update User Profile
 	- build new ConfirmButton component, add to LogOut and UserSetting view
 	- build new update user profile view
+	- add UpdateUserInfo component to Regsiter view, replace old version, house cleaning files
 
 **************************
 **		Next To To		**
@@ -114,7 +115,6 @@ Tutorial:
 - change all to Composition API
 - User Profile page
 - upload avatar
-- register page stype
 
 ******************************
 **		General To To		**

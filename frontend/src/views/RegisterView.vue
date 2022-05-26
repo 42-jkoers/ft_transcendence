@@ -1,27 +1,14 @@
 <template>
-  <p class="form-title">Register New User</p>
-  <UpdateUserName @updateUserName="redirectToHome($event)" />
+  <h2>Register New User</h2>
+  <UpdateUserInfo @updated="redirectToHome($event)" />
 </template>
-<script lang="ts">
-import UpdateUserName from "@/components/UpdateUserName.vue";
+<script setup lang="ts">
+import UpdateUserInfo from "@/components/UpdateUserInfo.vue";
 import router from "@/router";
-export default {
-  components: {
-    UpdateUserName,
-  },
-  methods: {
-    redirectToHome(e: boolean) {
-      if (e) {
-        setTimeout(() => router.push({ name: "UserHome" }), 1000);
-      }
-    },
-  },
-};
-</script>
-<style scoped>
-.form-title {
-  color: darkcyan;
-  font-size: large;
-  font-weight: 600;
+function redirectToHome(e: boolean) {
+  if (e) {
+    setTimeout(() => router.push({ name: "UserHome" }), 1000);
+  }
 }
-</style>
+</script>
+<style scoped></style>

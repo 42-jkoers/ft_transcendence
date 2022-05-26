@@ -86,6 +86,8 @@ const checkRegisterStatus = async function () {
 const checkLogInState = async function () {
   if (storeUser.state.isAuthenticated === false) {
     storeUser.commit("login");
+  } else if (storeUser.state.user.username === "") {
+    router.push({ name: "Register" });
   }
 };
 
