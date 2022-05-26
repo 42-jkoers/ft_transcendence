@@ -16,7 +16,7 @@ export class AuthController {
 	@Get('redirect')
 	@UseGuards(OAuthGuard)
 	redirect(@Res() res: Response) {
-		res.redirect('http://localhost:8080');
+		res.redirect('http://localhost:8080/userhome');
 	}
 
 	@Get('status')
