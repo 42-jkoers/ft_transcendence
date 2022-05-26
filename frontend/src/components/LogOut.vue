@@ -62,7 +62,6 @@ function cancelLogOut() {
 </script>
 <style scoped>
 .message {
-  color: white;
   font-size: x-large;
   font-weight: 500;
 }
