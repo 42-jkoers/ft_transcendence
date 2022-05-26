@@ -35,12 +35,18 @@
         <label class="label">Avatar</label>
       </div>
       <div class="col-3" align="left">
-        <InputText
+        <img src="/avatar/default.png" height="100px" />
+        <!-- <InputText
           v-model="avatar"
           type="text"
           class="description"
           :class="isAvatarInvalid ? 'p-invalid' : ''"
-        />
+        /> -->
+      </div>
+    </div>
+    <div class="grid">
+      <div class="col-offset-6">
+        <UploadAvatar />
       </div>
     </div>
     <div class="col-offset-6" align="left">
@@ -63,6 +69,7 @@ import Button from "primevue/button";
 import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
+import UploadAvatar from "@/components/UploadAvatar.vue";
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
 const isUpdateSuccess = ref<boolean>(false);
@@ -112,11 +119,11 @@ async function updateData() {
     isUserNameInvalid.value = true;
     setTimeout(() => (isUserNameInvalid.value = false), 2000);
   }
-  if (isAvatarValid(avatar.value) === false) {
-    proceed = false;
-    isAvatarInvalid.value = true;
-    setTimeout(() => (isAvatarInvalid.value = false), 2000);
-  }
+  // if (isAvatarValid(avatar.value) === false) {
+  //   proceed = false;
+  //   isAvatarInvalid.value = true;
+  //   setTimeout(() => (isAvatarInvalid.value = false), 2000);
+  // }
   if (proceed) {
     // post username to update user profile
     const postBody = {

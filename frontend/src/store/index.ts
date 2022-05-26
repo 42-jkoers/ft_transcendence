@@ -25,11 +25,11 @@ const storeUser = createStore({
           .then((response) => {
             state.isAuthenticated = true;
             state.user.id = response.data.id;
+            state.user.avatar = response.data.avatar;
             if (!response.data.username) {
               router.push({ name: "Register" });
             } else {
               state.user.username = response.data.username;
-              state.user.avatar = response.data.avatar;
             }
           })
           .catch(() => {
