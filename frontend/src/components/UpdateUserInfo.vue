@@ -35,7 +35,7 @@
         <label class="label">Avatar</label>
       </div>
       <div class="col-3" align="left">
-        <img src="/avatar/default.png" height="100px" />
+        <img :src="storeUser.state.user.avatar" height="100" />
         <!-- <InputText
           v-model="avatar"
           type="text"

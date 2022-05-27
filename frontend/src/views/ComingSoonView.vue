@@ -2,9 +2,8 @@
   <HomeMenu />
   <p class="message">Coming up soon, be patient please :)</p>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import HomeMenu from "@/components/HomeMenu.vue";
-export default { components: { HomeMenu } };
 </script>
 <style scoped>
 .message {

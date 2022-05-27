@@ -114,7 +114,10 @@ Tutorial:
 ******************************************
 (Thu) 2022-05-27
 	- add upload component (issue: cannot show image with variable name)
-
+(Fri) 2022-05-28
+	- fix issue: img shown with variable name (height:100 instead of 100px)
+	- add post request to backend /user/avatar (issue: unable to print out file information in backend)
+	
 **************************
 **		Next To To		**
 **************************
