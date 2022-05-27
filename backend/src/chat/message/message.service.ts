@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+// import { RoomI } from '../room/room.interface';
 import { MessageEntity } from './message.entity';
 import { MessageI } from './message.interface';
 
@@ -17,6 +18,16 @@ export class MessageService {
 		);
 	}
 
+	async findMessagesForRoom(roomName: string): Promise<MessageI[]> {
+		const query = this.messageRepository
+			.createQueryBuilder('message')
+			.where('room.name = :name', { name: roomName })
+			// .leftJoinAndSelect('message.user', 'user')
+			// .orderBy('message.created_at', 'DESC')
+			.getMany();
+		return query;
+	}
+
 	// findAll() {
 	// 	return `This action returns all Message`;
 	// }
@@ -31,9 +42,5 @@ export class MessageService {
 
 	// remove(id: number) {
 	// 	return `This action removes a #${id} Message`;
-	// }
-
-	// async findMessagesForRoom(room: RoomI...) {
-	//     return paginate(?) //Min 26 in 14/17 video of tutorial
 	// }
 }
