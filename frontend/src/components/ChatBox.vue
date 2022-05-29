@@ -1,23 +1,22 @@
 <template>
   <div id="chatbox" class="flex flex-column">
     <div
+      ref="scroller"
       id="all-messages"
       class="flex flex-column-reverse gap-1 md:gap-2 xl:gap-4"
     >
-      <ScrollPanel ref="root" style="width: %100; height: 1000px">
-        <div
-          class="message-item flex align-items-start py-2"
-          v-for="m in messages"
-          :key="m.id"
-        >
-          <Card class="message-card text-black-alpha-70">
-            <template v-slot:content>
-              {{ m.text }}
-            </template>
-            <!-- <template #footer class="message-date">{{ m.date }}</template> -->
-          </Card>
-        </div>
-      </ScrollPanel>
+      <div
+        class="message-item flex align-items-start py-2"
+        v-for="m in messages"
+        :key="m.id"
+      >
+        <Card class="message-card text-black-alpha-70">
+          <template v-slot:content>
+            {{ m.text }}
+          </template>
+          <!-- <template #footer class="message-date">{{ m.date }}</template> -->
+        </Card>
+      </div>
     </div>
     <div id="input-field" class="card col-12">
       <div
@@ -48,7 +47,6 @@ import { Socket } from "socket.io-client";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
-import ScrollPanel from "primevue/scrollpanel";
 import MessageI from "../types/Message.interface";
 import Room from "../types/Room";
 import UserProfileI from "../types/UserProfile.interface";
@@ -56,7 +54,7 @@ import UserProfileI from "../types/UserProfile.interface";
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
-const root = ref(null);
+const scroller = ref(null);
 const exampleRoom: Room = {
   id: 5,
   name: "codam",
@@ -83,14 +81,8 @@ onMounted(() => {
     // messages.value.push(message);
     socket.emit("getMessagesForRoom", exampleRoom.id); //TODO discuss this approach of updating messages
 
-    //after each msg adjust scroll height?
-    // const x = ref[root];
-    // console.log("xx ", x);
-    // const scrollpanel = root.value;
-    // console.log("PANEL ", scrollpanel);
-    // console.log("TEST ", scrollpanel[1]);
-    // console.log("Root ", scrollpanel.scrollTop, scrollpanel.scrollHeight);
-    // scrollpanel.scrollTop = scrollpanel.scrollHeight;
+    //after each msg adjust scroll height
+    // keepScrollBarAtBottom();
   }); //event triggered when a msg is saved to DB
 });
 
@@ -106,9 +98,22 @@ function sendMessage() {
     });
   input.value = "";
 }
+
+//FIXME after implementing css overflow scroll, this is not needed?
+function keepScrollBarAtBottom() {
+  //   console.log("PANEL ", scroller.value);
+  //   console.log("ScrollTop ", scroller.value.scrollTop);
+  //   console.log("ScrollHeight ", scroller.value.scrollHeight);
+  //   scroller.value.scrollTop = scroller.value.scrollHeight;
+}
 </script>
 
 <style scoped>
+#all-messages {
+  height: 800px; /*if there is no height it does not scroll */
+  overflow: scroll;
+}
+
 .message-card {
   background: #9da3d2;
 }
