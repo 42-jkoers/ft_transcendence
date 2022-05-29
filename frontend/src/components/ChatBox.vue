@@ -4,7 +4,7 @@
       id="all-messages"
       class="flex flex-column-reverse gap-1 md:gap-2 xl:gap-4"
     >
-      <ScrollPanel ref="root" style="width: 250px; height: 200px">
+      <ScrollPanel ref="root" style="width: %100; height: 1000px">
         <div
           class="message-item flex align-items-start py-2"
           v-for="m in messages"
@@ -17,12 +17,6 @@
             <!-- <template #footer class="message-date">{{ m.date }}</template> -->
           </Card>
         </div>
-        <ScrollTop
-          target="parent"
-          :threshold="10"
-          class="custom-scrolltop"
-          icon="pi pi-arrow-up"
-        />
       </ScrollPanel>
     </div>
     <div id="input-field" class="card col-12">
@@ -55,7 +49,6 @@ import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
 import ScrollPanel from "primevue/scrollpanel";
-import ScrollTop from "primevue/scrolltop";
 import MessageI from "../types/Message.interface";
 import Room from "../types/Room";
 import UserProfileI from "../types/UserProfile.interface";
@@ -81,13 +74,14 @@ onMounted(() => {
   socket.emit("getMessagesForRoom", exampleRoom.id);
 
   socket.on("getMessagesForRoom", (response) => {
-    console.log("Msgs of this room coming from DB: ", response);
+    // console.log("Msgs of this room: ", response);
     messages.value = response;
   });
 
   socket.on("messageAdded", (message: MessageI) => {
     console.log("Here is you msg saved to DB: ", message.text);
-    messages.value.push(message);
+    // messages.value.push(message);
+    socket.emit("getMessagesForRoom", exampleRoom.id); //TODO discuss this approach of updating messages
 
     //after each msg adjust scroll height?
     // const x = ref[root];
@@ -103,8 +97,7 @@ onMounted(() => {
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   input.value = input.value.trim();
-  console.log("room ", exampleRoom);
-  console.log("user ", socket.id);
+  //console.log("user ", socket.id);
   if (input.value)
     socket.emit("addMessage", {
       text: input.value,
