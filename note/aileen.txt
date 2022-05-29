@@ -52,9 +52,9 @@ Tutorial:
 (Wed) 2022-05-11
 	- solve conflict with main and pull request
 
-**********************************************
+******************************************
 **		Branch - auth_register_new_user		**
-**********************************************
+******************************************
 (Mon) 2022-05-16 ([deleted branch] register_new_user)
 	- 1. replace validateUser dto with just intraID; 2.redirect login successful page to /user/me
 	- 1. setup route for existed user vs new user; 2. housekeeping
@@ -74,6 +74,9 @@ Tutorial:
 	- Add /update-profile view to homepage
 	- Protect route with AuthenticatedGuard
 
+**************************************************
+**		Branch - frontend_menu/protected-route		**
+**************************************************
 (Fri) 2022-05-20
 	- Wrap Login to a component
 	- setup Menu bar 
@@ -83,16 +86,36 @@ Tutorial:
 
 (Mon) 2022-05-23
 	- add WebsiteTitle component (link to /userhome) to App.vue
-	- mege with main
+	- merge with main
 	- improve front end authentication process (use vuex store)
+
+******************************************
+**			Branch - login improvement			**
+******************************************
+(Wed) 2022-05-25
+	- Style change: Login button, BackToHome button, Logout page
+	- [branch: backend_fix_lint]
+	- replace LogInState component with store's mutation function login() => check login at app start
+	- merge with main ()
+	- home page show either login or userhome button based on isAuthenticated
+
+
+******************************************
+**		Branch - frontend_user_profile		**
+******************************************
+(Thu) 2022-05-26
+	- style Update User Profile
+	- build new ConfirmButton component, add to LogOut and UserSetting view
+	- build new update user profile view
+	- add UpdateUserInfo component to Regsiter view, replace old version, house cleaning files
 
 **************************
 **		Next To To		**
 **************************
-- add Website Logo/picture to website title
+- change all to Composition API
+- User Profile page
+- upload avatar
 
 ******************************
 **		General To To		**
 ******************************
-- create Profile view and add update profile as a component
-- upload avatar

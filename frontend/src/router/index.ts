@@ -7,20 +7,13 @@ import LogOut from "@/components/LogOut.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
 import CreateRoom from "@/views/CreateRoom.vue";
-import store from "@/store/index";
-import LogInState from "@/components/LogInState.vue";
-import axios from "axios";
+import storeUser from "@/store";
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "Home",
     component: HomeView,
-  },
-  {
-    path: "/login",
-    name: "LogInState",
-    component: LogInState,
   },
   {
     path: "/userhome",
@@ -80,35 +73,31 @@ const router = createRouter({
 
 /* Only new user (with default empty username is able to enter the register view */
 const checkRegisterStatus = async function () {
-  await axios
-    .get("http://localhost:3000/auth/status", {
-      withCredentials: true,
-    })
-    .then((response) => {
-      if (response.data.username) {
-        router.push({ name: "LogInState" });
-      }
-    })
-    .catch(() => {
-      router.push({ name: "UnAuthorized" });
-    });
+  if (storeUser.state.isAuthenticated) {
+    if (storeUser.state.user.username !== "") {
+      router.push({ name: "UserHome" });
+    }
+  } else {
+    router.push({ name: "UserHome" });
+  }
 };
 
 /* Check if the user is logged in */
-const checkLogIn = async function () {
-  if (!store.state.isAuthenticated) {
-    router.push({ name: "LogInState" });
+const checkLogInState = async function () {
+  if (storeUser.state.isAuthenticated === false) {
+    storeUser.commit("login");
+  } else if (storeUser.state.user.username === "") {
+    router.push({ name: "Register" });
   }
 };
 
 router.beforeEach((to) => {
   if (
     to.name !== "Home" &&
-    to.name !== "LogInState" &&
     to.name !== "Register" &&
     to.name != "UnAuthorized"
   ) {
-    checkLogIn();
+    checkLogInState();
   }
 });
 
