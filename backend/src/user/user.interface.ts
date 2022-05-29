@@ -5,5 +5,5 @@ export interface UserI {
 	intraID?: string;
 	username?: string;
 	avatar?: string;
-	users?: RoomI[];
+	rooms?: RoomI[];
 }
