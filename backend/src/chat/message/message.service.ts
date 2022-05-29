@@ -24,7 +24,7 @@ export class MessageService {
 			.leftJoinAndSelect('message.room', 'room')
 			// .where('room.name = :name', { name: roomName }) //FIXME try to find by room name
 			.where('room.id = :roomId', { roomId: roomID })
-			// .orderBy('message.created_at', 'DESC')
+			.orderBy('message.created_at', 'DESC') //helps to display msg in order
 			.getMany();
 		return query;
 	}
