@@ -57,24 +57,45 @@ import PrimeVueButton from "primevue/button";
 import ScrollPanel from "primevue/scrollpanel";
 import ScrollTop from "primevue/scrolltop";
 import MessageI from "../types/Message.interface";
+import Room from "../types/Room";
+import UserProfileI from "../types/UserProfile.interface";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const root = ref(null);
+const exampleRoom: Room = {
+  id: 5,
+  name: "codam",
+  isDirectMessage: true,
+  visibility: 1,
+};
+
+const exampleUser: UserProfileI = {
+  id: 1,
+  username: "irem",
+  avatar: "av",
+};
 
 onMounted(() => {
+  socket.emit("getMessagesForRoom", exampleRoom.id);
+
+  socket.on("getMessagesForRoom", (response) => {
+    console.log("Msgs of this room coming from DB: ", response);
+    messages.value = response;
+  });
+
   socket.on("messageAdded", (message: MessageI) => {
     console.log("Here is you msg saved to DB: ", message.text);
     messages.value.push(message);
-    // console.log(messages.value);
+
     //after each msg adjust scroll height?
-    const x = ref[root];
-    console.log("xx ", x);
-    const scrollpanel = root.value;
-    console.log("PANEL ", scrollpanel);
-    console.log("TEST ", scrollpanel[1]);
-    console.log("Root ", scrollpanel.scrollTop, scrollpanel.scrollHeight);
+    // const x = ref[root];
+    // console.log("xx ", x);
+    // const scrollpanel = root.value;
+    // console.log("PANEL ", scrollpanel);
+    // console.log("TEST ", scrollpanel[1]);
+    // console.log("Root ", scrollpanel.scrollTop, scrollpanel.scrollHeight);
     // scrollpanel.scrollTop = scrollpanel.scrollHeight;
   }); //event triggered when a msg is saved to DB
 });
@@ -82,7 +103,14 @@ onMounted(() => {
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   input.value = input.value.trim();
-  if (input.value) socket.emit("addMessage", { text: input.value });
+  console.log("room ", exampleRoom);
+  console.log("user ", socket.id);
+  if (input.value)
+    socket.emit("addMessage", {
+      text: input.value,
+      user: exampleUser,
+      room: exampleRoom,
+    });
   input.value = "";
 }
 </script>
