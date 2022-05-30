@@ -25,14 +25,10 @@ export class RoomService {
 
 	async createRoom(
 		room: RoomI,
-		creator: UserI,
+		userToAddToRoom: UserI,
 	): Promise<{ status: string; data: string }> {
-		const emptyRoom: RoomI = {
-			name: room.name,
-			visibility: room.visibility, //FIXME: visibiity undefined
-			users: [],
-		};
-		const newRoom = await this.addCreatorToRoom(emptyRoom, creator); // adding current creator to the array of users for this new room
+		room.users = [];
+		const newRoom = await this.addUserToRoom(room, userToAddToRoom); // adding current creator to the array of users for this new room
 		const response = {
 			status: '',
 			data: '',
@@ -51,45 +47,8 @@ export class RoomService {
 		return response;
 	}
 
-	//temp:
-	async addUserToRoom(
-		room: RoomI,
-		creator: UserI,
-	): Promise<{ status: string; data: string }> {
-		// const thisroom: RoomI = this.findByName('#general');
-		const userToAdd: UserI = await this.userService.findByID(2);
-		const emptyRoom: RoomI = {
-			name: room.name,
-			visibility: room.visibility, //FIXME: visibiity undefined
-			users: [],
-		};
-		const newRoomFirst = await this.addCreatorToRoom(emptyRoom, creator); // adding current creator to the array of users for this new room
-		const newRoom: RoomI = await this.addCreatorToRoom(
-			newRoomFirst,
-			userToAdd,
-		); // adding current creator to the array of users for this new room
-		console.log('new room: ', newRoom);
-
-		const response = {
-			status: '',
-			data: '',
-		};
-		try {
-			await this.RoomEntityRepository.save(newRoom); // Saves a given entity in the database if the new room name doesn't exist.
-			response.status = 'OK';
-			response.data = `${newRoom.name}`;
-		} catch (err) {
-			// if promise rejects (in case the name is not unique,23505 - is the PostrgreSQL error code for unique constraint violation)
-			if (err.code === '23505') {
-				response.status = 'ERROR';
-				response.data = `${newRoom.name}`;
-			}
-		}
-		return response;
-	}
-
-	async addCreatorToRoom(room: RoomI, creator: UserI): Promise<RoomI> {
-		room.users.push(creator);
+	async addUserToRoom(room: RoomI, userToAddToRoom: UserI): Promise<RoomI> {
+		room.users.push(userToAddToRoom);
 		return room;
 	}
 
@@ -98,8 +57,8 @@ export class RoomService {
 		// leftJoin will be referencing the property 'users' defined in the RoomEntity.
 		const query = await getRepository(RoomEntity)
 			.createQueryBuilder('room')
-			.leftJoinAndSelect('room.users', 'users')
-			.where('users.id = :userId', { userId })
+			.leftJoinAndSelect('room.users', 'user')
+			.where('user.id = :userId', { userId })
 			.getMany();
 		return query;
 	}
