@@ -24,11 +24,10 @@
       >
         <InputText
           type="text"
-          v-model="input"
+          v-model.trim="input"
           placeholder="Type your message..."
           @keyup.enter="sendMessage"
           class="w-11"
-          required
         >
         </InputText>
         <PrimeVueButton
@@ -88,7 +87,6 @@ onMounted(() => {
 
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
-  input.value = input.value.trim();
   //console.log("user ", socket.id);
   if (input.value)
     socket.emit("addMessage", {
