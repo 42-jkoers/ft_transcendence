@@ -30,7 +30,7 @@ export class RoomEntity {
 	})
 	visibility: RoomVisibilityType;
 
-	@ManyToMany(() => User, (user) => user.rooms) //  describes relationship: multiple instances of rooms can contain multiple users and vv
+	@ManyToMany(() => User, (user) => user.rooms, { cascade: true }) //  describes relationship: multiple instances of rooms can contain multiple users and vv
 	@JoinTable() //  is required for @ManyToMany relations. You must put @JoinTable on one (owning) side of relation.
 	users: User[];
 
