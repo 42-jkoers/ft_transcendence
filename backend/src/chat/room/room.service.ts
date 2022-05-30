@@ -1,11 +1,10 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-// import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getRepository } from 'typeorm';
-// import { RoomEntity, RoomVisibilityType } from './entities/room.entity';
 import { RoomEntity } from './entities/room.entity';
 import { RoomI } from './room.interface';
 import { UserI } from 'src/user/user.interface';
+import { User } from 'src/user/user.entity';
 import { UserService } from '../../user/user.service';
 
 @Injectable()
@@ -47,6 +46,10 @@ export class RoomService {
 		return response;
 	}
 
+	async updateRoom(roomToUpdate: RoomI) {
+		await this.RoomEntityRepository.save(roomToUpdate);
+	}
+
 	async addUserToRoom(room: RoomI, userToAddToRoom: UserI): Promise<RoomI> {
 		room.users.push(userToAddToRoom);
 		return room;
@@ -55,11 +58,20 @@ export class RoomService {
 	async getRoomsForUser(userId: number): Promise<RoomI[]> {
 		//build SQL query to get rooms
 		// leftJoin will be referencing the property 'users' defined in the RoomEntity.
-		const query = await getRepository(RoomEntity)
+		const userRooms = await getRepository(RoomEntity)
 			.createQueryBuilder('room')
 			.leftJoinAndSelect('room.users', 'user')
 			.where('user.id = :userId', { userId })
 			.getMany();
-		return query;
+		return userRooms;
+	}
+
+	async getUsersForRoom(roomName: string): Promise<UserI[]> {
+		const usersInRoom = await getRepository(User)
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.rooms', 'room')
+			.where('room.name = :roomName', { roomName })
+			.getMany();
+		return usersInRoom;
 	}
 }
