@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getRepository } from 'typeorm';
-import { RoomEntity } from './entities/room.entity';
+import { RoomEntity, RoomVisibilityType } from './entities/room.entity';
 import { RoomI } from './room.interface';
 import { UserI } from 'src/user/user.interface';
 import { User } from 'src/user/user.entity';
@@ -44,6 +44,17 @@ export class RoomService {
 			}
 		}
 		return response;
+	}
+
+	async createDefaultRoom() {
+		const defaultUser = await this.userService.createDefaultUser();
+		await this.createRoom(
+			{
+				name: '#general',
+				visibility: RoomVisibilityType.PUBLIC,
+			},
+			defaultUser,
+		);
 	}
 
 	async updateRoom(roomToUpdate: RoomI) {

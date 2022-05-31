@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 // import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, getRepository } from 'typeorm';
+import { Repository } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto } from './dto';
 import { UserI } from './user.interface';
 import { RoomI } from '../chat/room/room.interface';
-import { RoomVisibilityType } from '../chat/room/entities/room.entity';
 import { RoomService } from '../chat/room/room.service';
 
 @Injectable()
@@ -29,18 +28,10 @@ export class UserService {
 	}
 
 	async createUser(userData: CreateUserDto): Promise<UserI> {
-		// TODO: temp solution?
 		// if user entity is empty it will create a default user in db and make him the admin of default room:
-		const findByIDReturn = await this.findByID(1);
-		if (findByIDReturn === undefined) {
-			const defaultUSer = await this.createDefaultUser();
-			await this.roomService.createRoom(
-				{
-					name: '#general',
-					visibility: RoomVisibilityType.PUBLIC,
-				},
-				defaultUSer,
-			);
+		const defaultUser: UserI | undefined = await this.findByID(1);
+		if (defaultUser === undefined) {
+			await this.roomService.createDefaultRoom();
 		}
 
 		const newUser = this.userRepository.create(userData);
@@ -55,7 +46,6 @@ export class UserService {
 		return createdUser;
 	}
 
-	i;
 	async createDefaultUser(): Promise<UserI> {
 		const defaultUserData = {
 			intraID: '00000',
