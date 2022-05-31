@@ -11,7 +11,7 @@ export class UploadFileHelper {
 	}
 
 	static destinationPath(req, file, cb) {
-		cb(null, './uploadedFiles/avatars');
+		cb(null, '../frontend/upload');
 	}
 }
 

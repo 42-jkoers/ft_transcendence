@@ -35,29 +35,18 @@
         <label class="label">Avatar</label>
       </div>
       <div class="col-3" align="left">
-        <img :src="storeUser.state.user.avatar" height="100" />
-        <!-- <InputText
-          v-model="avatar"
-          type="text"
-          class="description"
-          :class="isAvatarInvalid ? 'p-invalid' : ''"
-        /> -->
+        <img :src="avatar" height="100" />
       </div>
     </div>
     <div class="grid">
       <div class="col-offset-6">
-        <UploadAvatar />
+        <UploadAvatar @new-avatar="getNewAvatar($event)" />
       </div>
-    </div>
-    <div class="col-offset-6" align="left">
-      <small v-if="isAvatarInvalid" class="p-error"
-        >{{ invalidAvatarMessage }}
-      </small>
     </div>
   </div>
   <!-- Button -->
   <div>
-    <Button @click="updateData($event)" label="Save" />
+    <Button @click="updateData" label="Save" />
   </div>
   <div v-if="isUpdateSuccess">
     <h3 class="successMessage">Your input has been saved successfully!</h3>
@@ -75,8 +64,6 @@ const avatar = ref<string>(storeUser.state.user.avatar);
 const isUpdateSuccess = ref<boolean>(false);
 const isUserNameInvalid = ref<boolean>(false);
 const invalidUserNameMessage = ref<string>("");
-const isAvatarInvalid = ref<boolean>(false);
-const invalidAvatarMessage = ref<string>("");
 
 const emit = defineEmits<{
   (event: "updated"): boolean;
@@ -104,12 +91,8 @@ function isUserNameValid(input: string) {
   return true;
 }
 
-function isAvatarValid(input: string) {
-  if (input.length === 0) {
-    invalidAvatarMessage.value = "Avatar cannot be empty.";
-    return false;
-  }
-  return true;
+function getNewAvatar(event) {
+  avatar.value = require("../../upload/" + event);
 }
 
 async function updateData() {
@@ -119,11 +102,6 @@ async function updateData() {
     isUserNameInvalid.value = true;
     setTimeout(() => (isUserNameInvalid.value = false), 2000);
   }
-  // if (isAvatarValid(avatar.value) === false) {
-  //   proceed = false;
-  //   isAvatarInvalid.value = true;
-  //   setTimeout(() => (isAvatarInvalid.value = false), 2000);
-  // }
   if (proceed) {
     // post username to update user profile
     const postBody = {
@@ -148,6 +126,7 @@ async function updateData() {
       // update storeUser
       storeUser.state.user.username = username.value;
       storeUser.state.user.avatar = avatar.value;
+      console.log("state is updated");
       // send signal to parent component
       emit("updated", true);
     }

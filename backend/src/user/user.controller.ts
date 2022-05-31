@@ -47,10 +47,7 @@ export class UserController {
 			}),
 		}),
 	)
-	async uploadAvatar(
-		@Req() req: Request,
-		@UploadedFile() file: Express.Multer.File,
-	) {
-		console.log('>> In backend post request: file: ', file);
+	async uploadAvatar(@UploadedFile() file: Express.Multer.File) {
+		return file.filename;
 	}
 }

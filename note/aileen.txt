@@ -120,15 +120,18 @@ Tutorial:
 
 (Tue) 2022-05-31
 	- fix issue: upload file now is saved in local drive with customized name.
+		https://www.learmoreseekmore.com/2021/01/nestjs-file-upload.html
+	- understand img src path
+		https://developpaper.com/explain-several-ways-of-introducing-image-path-in-vue-js/
+	- error management for file upload
 
 **************************
 **		Next To To		**
 **************************
-- upload process
+- solve issue: upon refresh, no image/username is shown (store state update?)
 - change all to Composition API
 - User Profile page
 
 ******************************
 **		General To To		**
 ******************************
-- upload process: save images into database

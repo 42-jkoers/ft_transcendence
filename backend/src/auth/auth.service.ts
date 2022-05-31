@@ -30,7 +30,7 @@ export class AuthService {
 
 	private async registerUser(intraID: string): Promise<UserI> {
 		const username = null;
-		const avatar = 'http://localhost:8080/avatar/default.png';
+		const avatar = '../../upload/default.png';
 		const createUserDto = { intraID, username, avatar };
 		return await this.userService.createUser(createUserDto);
 	}
