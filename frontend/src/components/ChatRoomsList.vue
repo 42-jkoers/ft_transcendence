@@ -2,20 +2,11 @@
   <div id="chatrooms-list">
     <DataTable
       :value="rooms"
-      :paginator="true"
-      :rows="10"
-      paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-      :rowsPerPageOptions="[10, 20, 50]"
       responsiveLayout="scroll"
-      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+      :scrollable="true"
+      scrollHeight="400px"
     >
       <Column field="name" header="Chat Rooms"></Column>
-      <template #paginatorstart>
-        <Button type="button" icon="pi pi-refresh" class="p-button-text" />
-      </template>
-      <template #paginatorend>
-        <Button type="button" icon="pi pi-cloud" class="p-button-text" />
-      </template>
     </DataTable>
   </div>
 </template>
