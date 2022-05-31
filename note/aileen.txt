@@ -117,15 +117,18 @@ Tutorial:
 (Fri) 2022-05-28
 	- fix issue: img shown with variable name (height:100 instead of 100px)
 	- add post request to backend /user/avatar (issue: unable to print out file information in backend)
-	
+
+(Tue) 2022-05-31
+	- fix issue: upload file now is saved in local drive with customized name.
+
 **************************
 **		Next To To		**
 **************************
-- fix issue: showing image with :src="avatar"
+- upload process
 - change all to Composition API
 - User Profile page
-- upload avatar
 
 ******************************
 **		General To To		**
 ******************************
+- upload process: save images into database

@@ -28,11 +28,11 @@ function onFileSelected(event) {
 }
 async function onUpload() {
   const formData = new FormData();
-  formData.append("image", selectedFile.value, selectedFile.value.name);
-  // console.log("form data is: ", formData);
+  formData.append("file", selectedFile.value, selectedFile.value.name);
+  console.log("form data has a file field: ", formData.get("file"));
   const response_post = await axios.post(
     "http://localhost:3000/user/avatar",
-    { formData },
+    formData,
     {
       withCredentials: true,
     }

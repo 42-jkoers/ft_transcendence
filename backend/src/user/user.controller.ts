@@ -13,6 +13,7 @@ import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Request, Express } from 'express';
+import { UploadFileHelper } from './util/uploadfile.helper';
 
 @UseGuards(AuthenticatedGuard)
 @Controller('user')
@@ -39,9 +40,10 @@ export class UserController {
 
 	@Post('avatar')
 	@UseInterceptors(
-		FileInterceptor('image', {
+		FileInterceptor('file', {
 			storage: diskStorage({
-				destination: './uploadedFiles/avatars',
+				destination: UploadFileHelper.destinationPath,
+				filename: UploadFileHelper.customFileName,
 			}),
 		}),
 	)
@@ -49,7 +51,6 @@ export class UserController {
 		@Req() req: Request,
 		@UploadedFile() file: Express.Multer.File,
 	) {
-		console.log('>> user: ', req.user);
-		console.log('>> file: ', file);
+		console.log('>> In backend post request: file: ', file);
 	}
 }
