@@ -32,7 +32,7 @@ const routes: Array<RouteRecordRaw> = [
         redirect: { name: "ChatBox", params: { roomName: "general" } },
         children: [
           {
-            path: ":roomName",
+            path: "room/:roomName",
             name: "ChatBox",
             component: ChatBox,
           },
