@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="this.$route.name === 'Create-chatroom'">
+    <div v-if="$route.name === 'Create-chatroom'">
       <CreateRoom />
     </div>
     <div v-else class="card">
@@ -33,13 +33,11 @@ import { onMounted, inject } from "vue";
 import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 
-import ChatRoomsList from "../components/ChatRoomsList.vue"; //TODO: update tsconfig and change to @
+import ChatRoomsList from "../components/ChatRoomsList.vue";
 import ChatBox from "../components/ChatBox.vue"; // @ is an alias to /src
-import CreateRoom from "./CreateRoom.vue"; // Vetur still doesn't support script setup so is unhappy
-// import SocketioService from "../services/socketio.service";
+import CreateRoom from "./CreateRoom.vue";
 import PrimeVueButton from "primevue/button";
 
-const router = useRouter();
 const socket: Socket = inject("socketioInstance");
 
 onMounted(() => {
@@ -52,6 +50,7 @@ onMounted(() => {
   }); //to get all messages of the user for this room?
 });
 
+const router = useRouter();
 function openCreateRoomCard() {
   router.push({
     name: "Create-chatroom", // FIXME : temporarily pushing back to chat
@@ -60,4 +59,13 @@ function openCreateRoomCard() {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped></style>
+<style scoped>
+.card {
+  padding: 0.25rem;
+  border-color: aliceblue;
+  border-radius: 1rem;
+}
+.p-button-primary {
+  margin: 1.5rem 0rem;
+}
+</style>
