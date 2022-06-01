@@ -20,7 +20,7 @@
 import { ref, inject, onMounted } from "vue";
 import storeUser from "@/store";
 import { Socket } from "socket.io-client";
-// import { useRouter, useRoute } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -29,6 +29,8 @@ const socket: Socket = inject("socketioInstance");
 
 const rooms = ref();
 onMounted(() => {
+  console.log("socket", socket);
+
   socket.emit("getUserRoomsList");
   socket.on("getUserRoomsList", (response) => {
     console.log("Rooms of current user coming from DB: ", response);
@@ -36,14 +38,14 @@ onMounted(() => {
   });
 });
 const selectedRooms = ref();
-//
-// const router = useRouter();
-// const route = useRoute();
+
+const router = useRouter();
+const route = useRoute();
 
 const onRowSelect = (event) => {
-  // selectedRooms.value.name = event.data.name;
-  // route.params.roomName = event.data.name;
-  // router.replace({ name: "ChatBox", params: { selectedRoomName } });
+  const selectedRoomName = event.data.name;
+  route.params.roomName = event.data.name;
+  router.push({ name: "ChatBox", params: { selectedRoomName } });
   storeUser.commit("updateActiveRoomName", event.data.name);
 };
 </script>

@@ -17,13 +17,12 @@
               <ChatRoomsList />
             </div>
             <div class="col-12 md:col-8 xl:col-9">
-              <ChatBox />
+              <router-view></router-view>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <router-view></router-view>
   </div>
 </template>
 //TODO align and add flex to ChatRoomsList and ChatBox
@@ -34,7 +33,6 @@ import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 
 import ChatRoomsList from "../components/ChatRoomsList.vue";
-import ChatBox from "../components/ChatBox.vue"; // @ is an alias to /src
 import CreateRoom from "./CreateRoom.vue";
 import PrimeVueButton from "primevue/button";
 
