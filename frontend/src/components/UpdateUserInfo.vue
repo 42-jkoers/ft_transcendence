@@ -35,7 +35,7 @@
         <label class="label">Avatar</label>
       </div>
       <div class="col-3" align="left">
-        <img :src="avatar" height="100" />
+        <img :src="avatar" height="100" alt="user-profile" />
       </div>
     </div>
     <div class="grid">
