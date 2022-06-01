@@ -30,7 +30,7 @@ database: decrypt-secrets-file
 	docker-compose --project-name $(PROJECT) up -d --no-deps --build $(SERVICES_DATABASE)
 
 $(SECRETSFILE): $(SECRETSFILE_ENCRYPTED)
-	gpg --output $(SECRETSFILE) -decrypt $(SECRETSFILE_ENCRYPTED)
+	gpg --output $(SECRETSFILE) --decrypt $(SECRETSFILE_ENCRYPTED)
 
 decrypt-secrets-file: $(SECRETSFILE)
 	sh $(SECRETSFILE)
