@@ -6,9 +6,9 @@
       :scrollable="true"
       scrollHeight="60vh"
       :row-hover="true"
-      v-model:selection="selectedRooms"
+      :selection="{ name: route.params.roomName }"
       selectionMode="single"
-      dataKey="id"
+      dataKey="name"
       @rowSelect="onRowSelect"
     >
       <Column field="name" header="Chat Rooms"></Column>
@@ -37,15 +37,12 @@ onMounted(() => {
     rooms.value = response;
   });
 });
-const selectedRooms = ref();
 
 const router = useRouter();
 const route = useRoute();
 
 const onRowSelect = (event) => {
-  const selectedRoomName = event.data.name;
-  route.params.roomName = event.data.name;
-  router.push({ name: "ChatBox", params: { selectedRoomName } });
+  router.push({ name: "ChatBox", params: { roomName: event.data.name } });
   storeUser.commit("updateActiveRoomName", event.data.name);
 };
 </script>
