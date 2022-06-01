@@ -124,10 +124,16 @@ Tutorial:
 	- understand img src path
 		https://developpaper.com/explain-several-ways-of-introducing-image-path-in-vue-js/
 	- error management for file upload
+(Wed) 2022-06-01
+	- save default avatar in /public/ folder
+	- 
+
 
 **************************
 **		Next To To		**
 **************************
+- key change event - force render
+	https://michaelnthiessen.com/force-re-render/
 - solve issue: upon refresh, no image/username is shown (store state update?)
 - change all to Composition API
 - User Profile page

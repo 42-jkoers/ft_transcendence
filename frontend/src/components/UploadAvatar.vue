@@ -26,7 +26,6 @@
 <script setup lang="ts">
 import { ref, defineEmits } from "vue";
 import axios from "axios";
-// import FileUpload from "primevue/fileupload";
 const isAvatarInvalid = ref<boolean>(false);
 const invalidAvatarMessage = ref<string>("");
 
@@ -76,7 +75,9 @@ async function onUpload() {
           withCredentials: true,
         }
       );
-      emit("newAvatar", response.data);
+      // once saving new image to local drive, vue serve will reload
+      // so here we wait for a while to send signal so parent component could be able to find the saved image
+      setTimeout(() => emit("newAvatar", response.data), 2000);
     } catch (error) {
       invalidAvatarMessage.value = "Upload error. Please try again.";
       showErrorMessage();

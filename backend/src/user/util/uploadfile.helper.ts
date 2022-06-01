@@ -11,7 +11,7 @@ export class UploadFileHelper {
 	}
 
 	static destinationPath(req, file, cb) {
-		cb(null, '../frontend/upload');
+		cb(null, '../upload');
 	}
 }
 
