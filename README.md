@@ -16,3 +16,5 @@ This will do the following:
 3. Run ./backend/inject-secrets.sh
 4. Copy ./backend/.env-example to ./backend/.env
 5. Fill out all the secret data
+
+If you edit the secrets in ./backend/inject-secrets.sh, then run `make encrypt-secrets-file` and commit the ./backend/inject-secrets.sh.gpg to store the secrets safely.
