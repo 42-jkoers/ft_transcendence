@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 import { ref, inject, onMounted } from "vue";
-import storeUser from "@/store";
 import { Socket } from "socket.io-client";
 import { useRouter, useRoute } from "vue-router";
 
@@ -43,6 +42,5 @@ const route = useRoute();
 
 const onRowSelect = (event) => {
   router.push({ name: "ChatBox", params: { roomName: event.data.name } });
-  storeUser.commit("updateActiveRoomName", event.data.name);
 };
 </script>
