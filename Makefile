@@ -12,11 +12,11 @@ SECRETSFILE = backend/inject-secrets.sh
 SECRETSFILE_ENCRYPTED = $(SECRETSFILE).gpg
 
 ###### compilation ######
-all: decrypt-secrets-file
+all: $(SECRETSFILE)
 	@echo "$(MAGENTA)start docker-compose...$(RESET)"
 	docker-compose --project-name $(PROJECT) up --build -d
 
-start: decrypt-secrets-file
+start: $(SECRETSFILE)
 	@echo "$(MAGENTA)start all containers...$(RESET)"
 	docker start $(CONTAINERS)
 
@@ -26,14 +26,17 @@ stop:
 
 restart: stop start
 
-database: decrypt-secrets-file
+database: $(SECRETSFILE)
 	docker-compose --project-name $(PROJECT) up -d --no-deps --build $(SERVICES_DATABASE)
 
 $(SECRETSFILE): $(SECRETSFILE_ENCRYPTED)
-	gpg --output $(SECRETSFILE) --decrypt $(SECRETSFILE_ENCRYPTED)
+	gpg --yes --output $(SECRETSFILE) --decrypt $(SECRETSFILE_ENCRYPTED)
+	@echo "$(MAGENTA)Injecting secrets$(RESET)"
+	$$(cd backend && sh $(shell basename $(SECRETSFILE)))
+	@echo "$(MAGENTA)Secrets injected succesfully$(RESET)"
+	@echo ''
 
 decrypt-secrets-file: $(SECRETSFILE)
-	sh $(SECRETSFILE)
 
 encrypt-secrets-file:
 	gpg --yes --no-symkey-cache --symmetric --output $(SECRETSFILE_ENCRYPTED) $(SECRETSFILE)
