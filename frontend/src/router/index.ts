@@ -7,6 +7,7 @@ import LogOut from "@/components/LogOut.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
 import CreateRoom from "@/views/CreateRoom.vue";
+import ChatBox from "@/components/ChatBox.vue";
 import storeUser from "@/store";
 
 const routes: Array<RouteRecordRaw> = [
@@ -28,6 +29,13 @@ const routes: Array<RouteRecordRaw> = [
         // which is lazy-loaded when the route is visited.
         component: () =>
           import(/* webpackChunkName: "chat" */ "../views/ChatView.vue"),
+        children: [
+          {
+            path: "chatbox/:roomName",
+            name: "ChatBox",
+            component: ChatBox,
+          },
+        ],
       },
       {
         path: "setting",
