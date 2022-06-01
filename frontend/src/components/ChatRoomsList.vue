@@ -2,10 +2,9 @@
   <div id="chatrooms-list">
     <DataTable
       :value="rooms"
-      stripedRows
       responsiveLayout="scroll"
       :scrollable="true"
-      scrollHeight="400px"
+      scrollHeight="60vh"
       :row-hover="true"
       v-model:selection="selectedRooms"
       selectionMode="single"
@@ -19,11 +18,12 @@
 
 <script setup lang="ts">
 import { ref, inject, onMounted } from "vue";
+import storeUser from "@/store";
 import { Socket } from "socket.io-client";
+// import { useRouter, useRoute } from "vue-router";
 
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-import { useRouter, useRoute } from "vue-router";
 
 const socket: Socket = inject("socketioInstance");
 
@@ -36,12 +36,14 @@ onMounted(() => {
   });
 });
 const selectedRooms = ref();
+//
+// const router = useRouter();
+// const route = useRoute();
 
-const router = useRouter();
-const route = useRoute();
 const onRowSelect = (event) => {
-  const selectedRoomName: string = event.data.name;
-  route.params.roomName = event.data.name;
-  router.push({ name: "ChatBox", params: { selectedRoomName } });
+  // selectedRooms.value.name = event.data.name;
+  // route.params.roomName = event.data.name;
+  // router.replace({ name: "ChatBox", params: { selectedRoomName } });
+  storeUser.commit("updateActiveRoomName", event.data.name);
 };
 </script>

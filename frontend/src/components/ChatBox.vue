@@ -1,7 +1,7 @@
 <template>
-  <div class="col-12 col-offset-4 md:col-8 xl:col-9">
+  <div>
     <Panel>
-      {{ $route.params.roomName }}
+      {{ storeUser.state.activeRoomName }}
     </Panel>
     <div
       id="all-messages"
@@ -48,6 +48,7 @@
 <script setup lang="ts">
 import { ref, inject, onMounted } from "vue";
 import { Socket } from "socket.io-client";
+import storeUser from "@/store";
 import MessageI from "../types/Message.interface";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";

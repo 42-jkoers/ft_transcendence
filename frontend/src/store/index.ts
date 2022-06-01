@@ -10,6 +10,12 @@ const storeUser = createStore({
       username: "",
       avatar: "",
     },
+    activeRoomName: "general",
+  },
+  getters: {
+    getActiveRoomName(state) {
+      return state.activeRoomName;
+    },
   },
   mutations: {
     updateUserInfo(state, update) {
@@ -39,6 +45,10 @@ const storeUser = createStore({
     },
     logout(state) {
       state.isAuthenticated = false;
+    },
+    updateActiveRoomName(state, newName) {
+      state.activeRoomName = newName;
+      console.log("state.activeRoomName", state.activeRoomName);
     },
   },
 });
