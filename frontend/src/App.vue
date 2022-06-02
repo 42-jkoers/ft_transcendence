@@ -1,7 +1,7 @@
 <template>
   <div>
     <WebsiteTitle />
-    <router-view />
+    <router-view v-if="connected" />
   </div>
 </template>
 <script lang="ts">
@@ -10,11 +10,16 @@ export default { components: { WebsiteTitle } };
 </script>
 
 <script setup lang="ts">
-import { provide } from "vue";
+import { provide, ref } from "vue";
 
 import SocketioService from "./services/socketio.service";
 
 const socket = SocketioService.setupSocketConnection(); //create a socket instance for connecting client
+const connected = ref(false);
+socket.on("clientConnected", () => {
+  connected.value = true;
+});
+
 provide("socketioInstance", socket); // dependency provider of socketio instance for all its descendants
 </script>
 <style>
