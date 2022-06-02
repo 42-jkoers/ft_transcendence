@@ -3,8 +3,7 @@
   <!-- User Name -->
   <div class="field">
     <div class="grid align-items-center">
-      <div class="col-3"></div>
-      <div class="col-3" align="right">
+      <div class="col-3 col-offset-3" align="right">
         <label class="label">User Name</label>
       </div>
       <div class="col-3" align="left">
@@ -30,8 +29,7 @@
   <!-- Avatar -->
   <div class="field">
     <div class="grid align-items-center">
-      <div class="col-3"></div>
-      <div class="col-3" align="right">
+      <div class="col-3 col-offset-3" align="right">
         <label class="label">Avatar</label>
       </div>
       <div class="col-3" align="left">
@@ -57,7 +55,6 @@
         </Message>
       </div>
     </div>
-    <div class="col-4"></div>
   </div>
 </template>
 <script setup lang="ts">

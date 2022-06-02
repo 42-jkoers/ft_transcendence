@@ -1,21 +1,26 @@
 <template>
   <br />
-  <div>
+  <div class="col-4 col-offset-4">
     <ConfirmButton
       @confirm="confirmLogOut($event)"
       :buttonLabel="buttonLabel"
       successMessage="You've successfully logged out."
     />
-  </div>
-  <div v-if="showRedirectMessage">
-    <h3>Redirecting back to home...</h3>
-  </div>
-  <div v-if="showFailtMessage">
-    <h3>Something went wrong, please try again...</h3>
+    <div v-if="showRedirectMessage">
+      <Message severity="info" :closable="false">
+        Redirecting back to home..
+      </Message>
+    </div>
+    <div v-if="showFailtMessage">
+      <Message severity="error" :closable="false">
+        Something went wrong, please try again...
+      </Message>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
 import ConfirmButton from "@/components/ConfirmButton.vue";
+import Message from "primevue/message";
 import { ref } from "vue";
 import axios from "axios";
 import storeUser from "@/store";
