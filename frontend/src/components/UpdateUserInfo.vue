@@ -1,10 +1,9 @@
 <template>
-  <h2>User Profile</h2>
+  <h2>User Profile Settings</h2>
   <!-- User Name -->
   <div class="field">
     <div class="grid align-items-center">
-      <div class="col-3"></div>
-      <div class="col-3" align="right">
+      <div class="col-3 col-offset-2" align="right">
         <label class="label">User Name</label>
       </div>
       <div class="col-3" align="left">
@@ -16,54 +15,93 @@
         />
       </div>
     </div>
-    <div class="col-offset-6" align="left" margin>
-      <small
-        >Username can only be composed of alphabet letters and digit.</small
-      >
-    </div>
-    <div class="col-offset-6" align="left">
-      <small v-if="isUserNameInvalid" class="p-error"
-        >{{ invalidUserNameMessage }}
+    <div class="col-offset-5" align="left" margin>
+      <small>
+        * Username can only be composed of alphabet letters and digit.
       </small>
+    </div>
+    <div class="col-offset-5" align="left">
+      <Message v-if="isUserNameInvalid" severity="error" :closable="false">
+        {{ invalidUserNameMessage }}
+      </Message>
     </div>
   </div>
   <!-- Avatar -->
   <div class="field">
     <div class="grid align-items-center">
-      <div class="col-3"></div>
-      <div class="col-3" align="right">
+      <div class="col-3 col-offset-2" align="right">
         <label class="label">Avatar</label>
       </div>
+      <!-- Avatar Image -->
       <div class="col-3" align="left">
-        <img :src="avatar" height="100" alt="user-profile" />
+        <Avatar :image="avatar" shape="circle" size="xlarge" />
       </div>
     </div>
+    <!-- Avatar Source Selection -->
     <div class="grid">
-      <div class="col-offset-6">
-        <UploadAvatar @new-avatar="getNewAvatar($event)" />
+      <div class="col-offset-5" align="left">
+        <h4>Choose avatar image:</h4>
+        <div
+          v-for="category of avatarSources"
+          :key="category.key"
+          class="field-radiobutton"
+        >
+          <RadioButton
+            :id="category.key"
+            name="category"
+            :value="category"
+            v-model="selectedAvatarSource"
+            @change="changeAvatarSource"
+          />
+          <label :for="category.key" class="radio-label">{{
+            category.name
+          }}</label>
+        </div>
+        <!-- Avatar Upload Component -->
+        <div v-if="isUploadSelected">
+          <UploadAvatar @new-avatar="getNewAvatar($event)" />
+        </div>
       </div>
     </div>
   </div>
+  <br />
   <!-- Button -->
-  <div>
-    <Button @click="updateData" label="Save" />
-  </div>
-  <div v-if="isUpdateSuccess">
-    <h3 class="successMessage">Your input has been saved successfully!</h3>
+  <div class="grid">
+    <div class="col-offset-5" align="left">
+      <div>
+        <Button @click="updateData" label="Save" />
+      </div>
+      <div>
+        <Message v-if="isUpdateSuccess" severity="success" :closable="false">
+          Your input has been saved successfully!
+        </Message>
+      </div>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
 import InputText from "primevue/inputtext";
+import Message from "primevue/message";
 import Button from "primevue/button";
+import RadioButton from "primevue/radiobutton";
+import Avatar from "primevue/avatar";
 import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
 import UploadAvatar from "@/components/UploadAvatar.vue";
+
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
+const isUploadSelected = ref<boolean>(true);
 const isUpdateSuccess = ref<boolean>(false);
 const isUserNameInvalid = ref<boolean>(false);
 const invalidUserNameMessage = ref<string>("");
+
+const avatarSources = ref([
+  { name: "Default Avatar", key: "D" },
+  { name: "Upload My Own Avatar", key: "U" },
+]);
+const selectedAvatarSource = ref(avatarSources.value[1]);
 
 const emit = defineEmits<{
   (event: "updated"): boolean;
@@ -89,6 +127,16 @@ function isUserNameValid(input: string) {
     return false;
   }
   return true;
+}
+
+function changeAvatarSource() {
+  if (selectedAvatarSource.value.key === "U") {
+    isUploadSelected.value = true;
+    avatar.value = storeUser.state.user.avatar;
+  } else {
+    isUploadSelected.value = false;
+    avatar.value = "/default_avatar.png";
+  }
 }
 
 function getNewAvatar(event) {
@@ -126,7 +174,6 @@ async function updateData() {
       // update storeUser
       storeUser.state.user.username = username.value;
       storeUser.state.user.avatar = avatar.value;
-      console.log("state is updated");
       // send signal to parent component
       emit("updated", true);
     }
@@ -139,7 +186,9 @@ async function updateData() {
   font-weight: 500;
   font-size: large;
 }
-.successMessage {
-  color: yellowgreen;
+.radio-label {
+  padding-right: 12px;
+  font-weight: 400;
+  font-size: small;
 }
 </style>

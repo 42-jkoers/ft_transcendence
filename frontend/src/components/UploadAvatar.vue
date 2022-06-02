@@ -1,19 +1,34 @@
 <template>
-  <div>
+  <div v-if="isLoading">
+    <ProgressSpinner
+      style="width: 50px; height: 50px"
+      strokeWidth="8"
+      fill="var(--surface-ground)"
+      animationDuration=".5s"
+    />
+  </div>
+  <div align="left">
     <input type="file" @change="onFileSelected" />
     <button @click="onUpload">Upload</button>
   </div>
   <div align="left">
-    <small v-if="isAvatarInvalid" class="p-error"
-      >{{ invalidAvatarMessage }}
-    </small>
+    <Message v-if="isUploadSuccess" severity="success" :closable="false">
+      Upload successful!
+    </Message>
+    <Message v-if="isAvatarInvalid" severity="error" :closable="false">
+      {{ invalidAvatarMessage }}
+    </Message>
   </div>
 </template>
 <script setup lang="ts">
 import { ref, defineEmits } from "vue";
 import axios from "axios";
+import ProgressSpinner from "primevue/progressspinner";
+import Message from "primevue/message";
+const isLoading = ref<boolean>(false);
 const isAvatarInvalid = ref<boolean>(false);
 const invalidAvatarMessage = ref<string>("");
+const isUploadSuccess = ref<boolean>(false);
 
 const emit = defineEmits<{
   (event: "newAvatar"): string;
@@ -50,8 +65,14 @@ function showErrorMessage() {
   setTimeout(() => (isAvatarInvalid.value = false), 2000);
 }
 
+function showSuccessMessage() {
+  isUploadSuccess.value = true;
+  setTimeout(() => (isUploadSuccess.value = false), 2000);
+}
+
 async function onUpload() {
   if (isFileValid()) {
+    isLoading.value = true;
     const formData = new FormData();
     formData.append("file", selectedFile.value, selectedFile.value.name);
     try {
@@ -64,7 +85,11 @@ async function onUpload() {
       );
       // once saving new image to local drive, vue serve will reload
       // so here we wait for a while to send signal so parent component could be able to find the saved image
-      setTimeout(() => emit("newAvatar", response.data), 2000);
+      setTimeout(() => {
+        emit("newAvatar", response.data);
+        isLoading.value = false;
+        showSuccessMessage();
+      }, 2000);
     } catch (error) {
       invalidAvatarMessage.value = "Upload error. Please try again.";
       showErrorMessage();

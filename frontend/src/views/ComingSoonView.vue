@@ -1,5 +1,4 @@
 <template>
-  <HomeMenu />
   <p class="message">Coming up soon, be patient please :)</p>
 </template>
 <script setup lang="ts">
