@@ -50,7 +50,7 @@ export class RoomService {
 		const defaultUser = await this.userService.createDefaultUser();
 		await this.createRoom(
 			{
-				name: '#general',
+				name: 'general',
 				visibility: RoomVisibilityType.PUBLIC,
 			},
 			defaultUser,
