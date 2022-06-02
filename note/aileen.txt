@@ -109,13 +109,39 @@ Tutorial:
 	- build new update user profile view
 	- add UpdateUserInfo component to Regsiter view, replace old version, house cleaning files
 
+******************************************
+**				Branch - upload_avatar				**
+******************************************
+(Thu) 2022-05-27
+	- add upload component (issue: cannot show image with variable name)
+(Fri) 2022-05-28
+	- fix issue: img shown with variable name (height:100 instead of 100px)
+	- add post request to backend /user/avatar (issue: unable to print out file information in backend)
+
+(Tue) 2022-05-31
+	- fix issue: upload file now is saved in local drive with customized name.
+		https://www.learmoreseekmore.com/2021/01/nestjs-file-upload.html
+	- understand img src path
+		https://developpaper.com/explain-several-ways-of-introducing-image-path-in-vue-js/
+	- error management for file upload
+(Wed) 2022-06-01
+	- save default avatar in /public/ folder
+	
+(Thu) 2022-06-02
+	- change storeUser login() from mutation to async action
+	- fix issue in /setting, upon refresh, image/username is shown.
+	- merge with main, add HomeMenu to ChatView
+
+
 **************************
 **		Next To To		**
 **************************
+- key change event - force render
+	https://michaelnthiessen.com/force-re-render/
 - change all to Composition API
 - User Profile page
-- upload avatar
 
 ******************************
 **		General To To		**
 ******************************
+- try/catch all axios exception

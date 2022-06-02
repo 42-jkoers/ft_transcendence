@@ -11,34 +11,52 @@ const storeUser = createStore({
       avatar: "",
     },
   },
-  mutations: {
-    updateUserInfo(state, update) {
-      state.user.username = update.username;
-      state.user.avatar = update.avatar;
+  getters: {
+    isAuthenticated(state) {
+      return state.isAuthenticated;
     },
-    login(state) {
-      if (state.isAuthenticated === false) {
-        axios
+  },
+  mutations: {
+    updateId(state, id) {
+      state.user.id = id;
+    },
+    updateUserName(state, name) {
+      state.user.username = name;
+    },
+    updateUserAvatar(state, avatar) {
+      state.user.avatar = avatar;
+    },
+    setAuthenticated(state) {
+      state.isAuthenticated = true;
+    },
+    unsetAuthenticated(state) {
+      state.isAuthenticated = false;
+    },
+  },
+  actions: {
+    async login({ commit }) {
+      if (storeUser.getters.isAuthenticated === false) {
+        await axios
           .get("http://localhost:3000/auth/status", {
             withCredentials: true,
           })
           .then((response) => {
-            state.isAuthenticated = true;
-            state.user.id = response.data.id;
+            commit("setAuthenticated");
+            commit("updateId", response.data.id);
+            commit("updateUserAvatar", response.data.avatar);
             if (!response.data.username) {
               router.push({ name: "Register" });
             } else {
-              state.user.username = response.data.username;
-              state.user.avatar = response.data.avatar;
+              commit("updateUserName", response.data.username);
             }
           })
           .catch(() => {
-            router.push({ name: "Home" });
+            console.log("user is not unauthorized");
           });
       }
     },
-    logout(state) {
-      state.isAuthenticated = false;
+    logout({ commit }) {
+      commit("unsetAuthenticated");
     },
   },
 });
