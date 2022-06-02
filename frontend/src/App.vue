@@ -11,10 +11,10 @@ export default { components: { WebsiteTitle } };
 
 <script setup lang="ts">
 import { provide } from "vue";
-
 import SocketioService from "./services/socketio.service";
 
 const socket = SocketioService.setupSocketConnection(); //create a socket instance for connecting client
+
 provide("socketioInstance", socket); // dependency provider of socketio instance for all its descendants
 </script>
 <style>
@@ -48,5 +48,22 @@ body {
   font-family: var(--font-family);
   font-weight: 400;
   color: var(--text-color);
+}
+
+@keyframes p-progress-spinner-color {
+  100%,
+  0% {
+    stroke: #fffafa;
+  }
+  40% {
+    stroke: #0057e7;
+  }
+  66% {
+    stroke: #6722f3;
+  }
+  80%,
+  90% {
+    stroke: #d5e7fb;
+  }
 }
 </style>
