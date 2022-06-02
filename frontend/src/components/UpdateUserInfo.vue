@@ -17,14 +17,14 @@
       </div>
     </div>
     <div class="col-offset-6" align="left" margin>
-      <small
-        >Username can only be composed of alphabet letters and digit.</small
+      <small font="italic"
+        >* Username can only be composed of alphabet letters and digit.</small
       >
     </div>
     <div class="col-offset-6" align="left">
-      <small v-if="isUserNameInvalid" class="p-error"
-        >{{ invalidUserNameMessage }}
-      </small>
+      <Message v-if="isUserNameInvalid" severity="error" :closable="false">
+        {{ invalidUserNameMessage }}
+      </Message>
     </div>
   </div>
   <!-- Avatar -->
@@ -44,21 +44,31 @@
       </div>
     </div>
   </div>
+  <br />
   <!-- Button -->
-  <div>
-    <Button @click="updateData" label="Save" />
-  </div>
-  <div v-if="isUpdateSuccess">
-    <h3 class="successMessage">Your input has been saved successfully!</h3>
+  <div class="grid">
+    <div class="col-offset-6" align="left">
+      <div>
+        <Button @click="updateData" label="Save" />
+      </div>
+      <div>
+        <Message v-if="isUpdateSuccess" severity="success" :closable="false">
+          Your input has been saved successfully!
+        </Message>
+      </div>
+    </div>
+    <div class="col-4"></div>
   </div>
 </template>
 <script setup lang="ts">
 import InputText from "primevue/inputtext";
+import Message from "primevue/message";
 import Button from "primevue/button";
 import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
 import UploadAvatar from "@/components/UploadAvatar.vue";
+
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
 const isUpdateSuccess = ref<boolean>(false);
