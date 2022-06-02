@@ -1,5 +1,8 @@
 <template>
-  <div id="chatbox" class="flex flex-column">
+  <div>
+    <Panel>
+      {{ $route.params.roomName }}
+    </Panel>
     <div
       id="all-messages"
       class="flex flex-column-reverse gap-1 md:gap-2 xl:gap-4"
@@ -45,11 +48,12 @@
 <script setup lang="ts">
 import { ref, inject, onMounted } from "vue";
 import { Socket } from "socket.io-client";
+import MessageI from "../types/Message.interface";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
 import ScrollPanel from "primevue/scrollpanel";
-import MessageI from "../types/Message.interface";
+import Panel from "primevue/panel";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);

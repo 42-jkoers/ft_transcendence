@@ -82,9 +82,10 @@ const selectedCategory = ref(categories.value[0].type); // public visibility wil
 // state of the new room name:
 const name = ref<string>();
 // push user to a newly created room
-function pushToNewRoom() {
+function pushToNewRoom(newRoomName: string) {
   router.push({
-    name: "chat", // FIXME : temporarily pushing back to chat
+    name: "ChatBox",
+    params: { roomName: newRoomName },
   });
 }
 const socket: Socket = inject("socketioInstance");
@@ -93,7 +94,7 @@ onMounted(() => {
   socket.on("createRoom", (response: { status: string; data: string }) => {
     console.log("Response is :", response.status);
     if (response.status === "OK") {
-      pushToNewRoom();
+      pushToNewRoom(response.data);
     } else {
       console.log(
         `The Chat Room '${response.data}' exists. Please choose another name` //FIXME: create message popup

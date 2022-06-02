@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ChatGateway } from '../gateway/chat.gateway';
 import { ChannelModule } from './channel/channel.module';
 import { MessageModule } from './message/message.module';
@@ -10,18 +10,21 @@ import { ConnectedUserService } from './connected-user/connected-user.service';
 import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
 import { MessageService } from './message/message.service';
 import { MessageEntity } from './message/message.entity';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
 	providers: [ChatGateway, RoomService, ConnectedUserService, MessageService],
 	imports: [
 		ChannelModule,
+		forwardRef(() => AuthModule),
+		forwardRef(() => UserModule),
 		MessageModule,
-		AuthModule,
 		TypeOrmModule.forFeature([
 			RoomEntity,
 			ConnectedUserEntity,
 			MessageEntity,
 		]),
 	],
+	exports: [RoomService],
 })
 export class ChatModule {}
