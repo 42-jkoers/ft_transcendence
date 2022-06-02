@@ -130,6 +130,7 @@ Tutorial:
 (Thu) 2022-06-02
 	- change storeUser login() from mutation to async action
 	- fix issue in /setting, upon refresh, image/username is shown.
+	- merge with main, add HomeMenu to ChatView
 
 
 **************************
