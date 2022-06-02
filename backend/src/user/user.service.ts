@@ -37,10 +37,8 @@ export class UserService {
 		const newUser = this.userRepository.create(userData);
 		const createdUser: UserI = await this.userRepository.save(newUser);
 
-		const defaultRoom: RoomI = await this.roomService.findByName(
-			'#general',
-		);
-		defaultRoom.users = await this.roomService.getUsersForRoom('#general');
+		const defaultRoom: RoomI = await this.roomService.findByName('general');
+		defaultRoom.users = await this.roomService.getUsersForRoom('general');
 		defaultRoom.users.push(newUser);
 		await this.roomService.updateRoom(defaultRoom);
 		return createdUser;
