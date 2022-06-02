@@ -7,21 +7,24 @@
       animationDuration=".5s"
     />
   </div>
-  <div>
+  <div align="left">
     <input type="file" @change="onFileSelected" />
     <button @click="onUpload">Upload</button>
   </div>
   <div align="left">
-    <small v-if="isAvatarInvalid" class="p-error"
-      >{{ invalidAvatarMessage }}
-    </small>
-    <small v-if="isUploadSuccess">Upload Successful! </small>
+    <Message v-if="isUploadSuccess" severity="success" :closable="false">
+      Upload successful!
+    </Message>
+    <Message v-if="isAvatarInvalid" severity="error" :closable="false">
+      {{ invalidAvatarMessage }}
+    </Message>
   </div>
 </template>
 <script setup lang="ts">
 import { ref, defineEmits } from "vue";
 import axios from "axios";
 import ProgressSpinner from "primevue/progressspinner";
+import Message from "primevue/message";
 const isLoading = ref<boolean>(false);
 const isAvatarInvalid = ref<boolean>(false);
 const invalidAvatarMessage = ref<string>("");
