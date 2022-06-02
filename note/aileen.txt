@@ -134,7 +134,7 @@ Tutorial:
 	- add ProgressSpinner to avatar upload
 	- change all message style to PrimeVue style
 	- add radioButton for avatar source + add Avatar component from PrimeVue
-
+	- move all HomeMenu component to WebsiteTitle component
 
 **************************
 **		Next To To				**

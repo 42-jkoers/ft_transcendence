@@ -1,13 +1,7 @@
 <template>
   <div class="home">
     <h3>"Welcome to Our Pong App"</h3>
-    <div v-if="storeUser.state.isAuthenticated">
-      <Button>
-        <router-link to="/userhome" style="text-decoration: none">
-          User Home
-        </router-link>
-      </Button>
-    </div>
+    <div v-if="storeUser.state.isAuthenticated" />
     <div v-else>
       <LogInButton />
     </div>

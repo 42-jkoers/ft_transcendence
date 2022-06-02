@@ -5,12 +5,9 @@
   <br />
   <LogInButton />
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import LogInButton from "@/components/LogInButton.vue";
 import BackToHome from "@/components/BackToHome.vue";
-export default {
-  components: { LogInButton, BackToHome },
-};
 </script>
 <style scoped>
 .message {
