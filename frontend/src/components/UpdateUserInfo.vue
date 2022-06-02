@@ -55,7 +55,7 @@
 <script setup lang="ts">
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
-import { ref, defineEmits, onMounted } from "vue";
+import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
 import UploadAvatar from "@/components/UploadAvatar.vue";
@@ -68,12 +68,6 @@ const invalidUserNameMessage = ref<string>("");
 const emit = defineEmits<{
   (event: "updated"): boolean;
 }>();
-
-// onMounted(() => {
-//   username.value = storeUser.state.user.username;
-//   avatar.value = storeUser.state.user.avatar;
-//   console.log(">> mounted");
-// });
 
 function isUserNameValid(input: string) {
   for (const c of input) {

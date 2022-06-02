@@ -1,17 +1,3 @@
-<!-- <template>
-  <div>
-    <FileUpload
-      name="demo[]"
-      url="http://localhost:3000/user/avatar"
-      accept="image/*"
-      :maxFileSize="1000000"
-      :fileLimit="1"
-      chooseLabel="Choose Avatar"
-      uploadLabel="Upload"
-      @upload="onUpload"
-    />
-  </div>
-</template> -->
 <template>
   <div>
     <input type="file" @change="onFileSelected" />
@@ -38,7 +24,6 @@ function onFileSelected(event) {
   selectedFile.value = event.target.files[0];
 }
 
-// TODO: review file size limit
 function isFileValid() {
   if (!selectedFile.value) {
     invalidAvatarMessage.value = "Please choose an image.";
@@ -46,13 +31,15 @@ function isFileValid() {
   }
   const fileSize = selectedFile.value.size;
   if (fileSize > 1000000) {
-    invalidAvatarMessage.value = "File size is too big.";
+    invalidAvatarMessage.value =
+      "File size is too big. (Please upload file less than 1MB.)";
     return false;
   } else if (
     selectedFile.value.type.indexOf("jpeg") === -1 &&
     selectedFile.value.type.indexOf("png") === -1
   ) {
-    invalidAvatarMessage.value = "File type is not allowed.";
+    invalidAvatarMessage.value =
+      "File type is not allowed. (Please upload only JPEG or PNG image.)";
     return false;
   }
   return true;

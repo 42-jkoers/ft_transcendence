@@ -1,9 +1,9 @@
 <template>
   <HomeMenu />
-  <UpdateUserInfo />
+  <LogOut />
 </template>
 <script setup lang="ts">
-import UpdateUserInfo from "@/components/UpdateUserInfo.vue";
+import LogOut from "@/components/LogOut.vue";
 import HomeMenu from "@/components/HomeMenu.vue";
 </script>
 <style scoped></style>
