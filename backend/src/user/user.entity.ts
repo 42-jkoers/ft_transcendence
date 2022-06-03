@@ -33,6 +33,12 @@ export class User {
 
 	@OneToMany(() => MessageEntity, (message) => message.user)
 	messages: MessageEntity[];
+
+	@Column({ default: false})
+	public isTwoFactorAuthEnabled: boolean;
+
+	@Column({nullable: true})
+	public twoFactorAuthSecret?: string;
 }
 
 export default User;

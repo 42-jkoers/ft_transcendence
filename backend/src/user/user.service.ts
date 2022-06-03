@@ -71,4 +71,11 @@ export class UserService {
 		}
 		return await this.findByID(id);
 	}
+
+	// async setTwoFactorAuthenticationSecret(secret: string, username: string) {
+	async setTwoFactorAuthSecret(secret: string, id: number) {
+		return this.userRepository.update(id, {
+			twoFactorAuthSecret: secret
+		});
+	}
 }

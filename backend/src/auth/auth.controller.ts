@@ -1,4 +1,4 @@
-import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Res, Req, UseGuards, Post } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { AuthenticatedGuard, OAuthGuard } from './oauth/oauth.guard';
@@ -15,7 +15,8 @@ export class AuthController {
 
 	@Get('redirect')
 	@UseGuards(OAuthGuard)
-	redirect(@Res() res: Response) {
+	// redirect(@Res() res: Response) {
+	redirect(@Res() res: Response, @Req() req: Request) {
 		res.redirect('http://localhost:8080/userhome');
 	}
 
