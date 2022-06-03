@@ -16,8 +16,11 @@
         <template #body="slotProps">
           <div>
             <i
-              v-if="slotProps.data.visibility === RoomVisibility.PUBLIC"
-              class="pi pi-hashtag"
+              v-if="
+                slotProps.data.visibility === RoomVisibility.PUBLIC &&
+                slotProps.data.password !== null
+              "
+              class="pi pi-shield"
               style="font-size: 0.8rem"
             ></i>
             <i
@@ -25,7 +28,7 @@
               class="pi pi-lock"
               style="font-size: 0.8rem"
             ></i>
-            <i v-else class="pi pi-shield" style="font-size: 0.8rem"></i>
+            <i v-else class="pi pi-hashtag" style="font-size: 0.8rem"></i>
           </div>
         </template>
       </Column>
