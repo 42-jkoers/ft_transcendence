@@ -52,9 +52,9 @@ const socket: Socket = inject("socketioInstance");
 
 const rooms = ref();
 onMounted(() => {
-  console.log("socket", socket);
-
-  socket.emit("getUserRoomsList");
+  setTimeout(() => {
+    socket.emit("getUserRoomsList");
+  }, 90); // FIXME: find a better solution?
   socket.on("getUserRoomsList", (response) => {
     console.log("Rooms of current user coming from DB: ", response);
     rooms.value = response;

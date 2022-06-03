@@ -1,8 +1,7 @@
 <template>
   <div>
     <WebsiteTitle />
-    <router-view v-if="connected" />
-    <ProgressSpinner v-else />
+    <router-view />
   </div>
 </template>
 <script lang="ts">
@@ -11,15 +10,10 @@ export default { components: { WebsiteTitle } };
 </script>
 
 <script setup lang="ts">
-import { provide, ref } from "vue";
+import { provide } from "vue";
 import SocketioService from "./services/socketio.service";
-import ProgressSpinner from "primevue/progressspinner";
 
 const socket = SocketioService.setupSocketConnection(); //create a socket instance for connecting client
-const connected = ref(false);
-socket.on("clientConnected", () => {
-  connected.value = true;
-});
 
 provide("socketioInstance", socket); // dependency provider of socketio instance for all its descendants
 </script>

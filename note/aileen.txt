@@ -131,10 +131,13 @@ Tutorial:
 	- change storeUser login() from mutation to async action
 	- fix issue in /setting, upon refresh, image/username is shown.
 	- merge with main, add HomeMenu to ChatView
-
+	- add ProgressSpinner to avatar upload
+	- change all message style to PrimeVue style
+	- add radioButton for avatar source + add Avatar component from PrimeVue
+	- move all HomeMenu component to WebsiteTitle component
 
 **************************
-**		Next To To		**
+**		Next To To				**
 **************************
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/

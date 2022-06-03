@@ -1,8 +1,5 @@
 <template>
   <div>
-    <HomeMenu />
-  </div>
-  <div>
     <div v-if="$route.name === 'Create-chatroom'">
       <CreateRoom />
     </div>
@@ -38,7 +35,6 @@ import { Socket } from "socket.io-client";
 import ChatRoomsList from "../components/ChatRoomsList.vue";
 import CreateRoom from "./CreateRoom.vue";
 import PrimeVueButton from "primevue/button";
-import HomeMenu from "@/components/HomeMenu.vue";
 
 const socket: Socket = inject("socketioInstance");
 

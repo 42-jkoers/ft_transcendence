@@ -1,9 +1,7 @@
 <template>
-  <HomeMenu />
   <UpdateUserInfo />
 </template>
 <script setup lang="ts">
 import UpdateUserInfo from "@/components/UpdateUserInfo.vue";
-import HomeMenu from "@/components/HomeMenu.vue";
 </script>
 <style scoped></style>
