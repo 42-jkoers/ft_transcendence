@@ -4,6 +4,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import MegaMenu from "primevue/megamenu";
+import storeUser from "@/store";
 const MenuItems = ref([
   {
     label: "Home",
@@ -27,7 +28,13 @@ const MenuItems = ref([
       [
         {
           items: [
-            { label: "View My Profile", to: { name: "ComingSoon" } },
+            {
+              label: "View My Profile",
+              to: {
+                name: "UserProfileCard",
+                params: { id: storeUser.state.user.id },
+              },
+            },
             { label: "Settings", to: { name: "UserSetting" } },
             { label: "Log Out", to: { name: "LogOut" } },
           ],

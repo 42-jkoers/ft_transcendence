@@ -142,6 +142,7 @@ Tutorial:
 (Fri) 2022-06-03
 	- run.sh: add rebuild database volume
 	- house-cleaning for UploadAvatar
+	- build component UserProfileCard
 
 
 
