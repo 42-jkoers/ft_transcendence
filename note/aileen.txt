@@ -144,6 +144,7 @@ Tutorial:
 	- house-cleaning for UploadAvatar
 	- build component UserProfileCard
 	- add button Message/EditProfile to UserProfileCard
+	- add 2F InputSwitch in UserSetting
 
 
 

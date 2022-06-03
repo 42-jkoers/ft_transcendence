@@ -1,6 +1,5 @@
 <template>
   <div align="left">
-    <h4>Choose avatar image:</h4>
     <div
       v-for="category of avatarSources"
       :key="category.key"
@@ -24,7 +23,7 @@
       animationDuration=".5s"
     />
   </div>
-  <div align="left">
+  <div align="left" v-if="isUploadSelected">
     <input type="file" @change="onFileSelected" />
     <button @click="onUpload">Upload</button>
   </div>
@@ -62,6 +61,7 @@ const emit = defineEmits<{
 
 function changeAvatarSource() {
   if (selectedAvatarSource.value.key === "U") {
+    isUploadSelected.value = true;
     emit("avatarSource", "current");
   } else {
     isUploadSelected.value = false;
@@ -138,6 +138,5 @@ async function onUpload() {
 .radio-label {
   padding-right: 12px;
   font-weight: 400;
-  font-size: small;
 }
 </style>
