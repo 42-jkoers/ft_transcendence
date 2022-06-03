@@ -52,6 +52,7 @@ export class RoomService {
 			{
 				name: 'general',
 				visibility: RoomVisibilityType.PUBLIC,
+				password: '123',
 			},
 			defaultUser,
 		);

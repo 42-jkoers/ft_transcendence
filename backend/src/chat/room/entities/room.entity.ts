@@ -12,7 +12,6 @@ import {
 export enum RoomVisibilityType {
 	PUBLIC,
 	PRIVATE,
-	PROTECTED,
 }
 
 @Entity()
@@ -29,6 +28,9 @@ export class RoomEntity {
 		default: RoomVisibilityType.PUBLIC,
 	})
 	visibility: RoomVisibilityType;
+
+	@Column()
+	password: string | null;
 
 	@ManyToMany(() => User, (user) => user.rooms, { cascade: true }) //  describes relationship: multiple instances of rooms can contain multiple users and vv
 	@JoinTable() //  is required for @ManyToMany relations. You must put @JoinTable on one (owning) side of relation.
