@@ -24,18 +24,18 @@
 
         <div class="card">
           <div
-            v-for="category of categories"
-            :key="category.key"
+            v-for="visibility of visibilityTypes"
+            :key="visibility.key"
             class="field-radiobutton"
           >
             <RadioButton
-              :id="category.key"
+              :id="visibility.key"
               name="category"
-              :value="category.type"
+              :value="visibility.type"
               @change="togglePasswordBlock"
               v-model="selectedCategory"
             />
-            <label :for="category.key">{{ category.name }}</label>
+            <label :for="visibility.key">{{ visibility.name }}</label>
           </div>
           <div class="field grid">
             <BlockUI :blocked="blockedPasswordInput">
@@ -83,12 +83,12 @@ const router = useRouter();
 
 //reactive state:
 // for visibility categories:
-const categories = ref([
+const visibilityTypes = ref([
   { name: "Public", key: "1", type: RoomVisibilityType.PUBLIC },
   { name: "Private", key: "2", type: RoomVisibilityType.PRIVATE },
 ]);
 
-const selectedCategory = ref(categories.value[0].type); // public visibility will always be the default one
+const selectedCategory = ref(visibilityTypes.value[0].type); // public visibility will always be the default one
 const blockedPasswordInput = ref<boolean>(false);
 const passwordValue = ref(null);
 
