@@ -21,13 +21,22 @@ MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
 WHITE='\033[0;37m'
 
+#COMMAND
+STOP_CONTAINERS="docker stop ft_transcendence_postgres ft_transcendence_pgadmin ft_transcendence_redis"
+
 # Build upload directory for avatar upload
 [ ! -d ./upload/ ] && mkdir ./upload/
 
 # Start
-if [ "$1" == "clean" ]; then
-	docker stop ft_transcendence_postgres ft_transcendence_pgadmin ft_transcendence_redis
-else 
+if [ "$1" == "stop" ]; then
+	$STOP_CONTAINERS
+else
+	# delete database volume and rebuild
+	if [ "$1" == "-v" ]; then
+		$STOP_CONTAINERS
+		docker rm ft_transcendence_postgres
+		docker volume rm ft_transcendence_pgdata
+	fi
 	make database
 	cd backend && npm run start:dev
 fi

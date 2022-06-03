@@ -9,6 +9,7 @@ const storeUser = createStore({
       id: 0,
       username: "",
       avatar: "",
+      twoFactor: false,
     },
   },
   getters: {
@@ -25,6 +26,9 @@ const storeUser = createStore({
     },
     updateUserAvatar(state, avatar) {
       state.user.avatar = avatar;
+    },
+    updateTwoFactor(state, update) {
+      state.user.twoFactor = update;
     },
     setAuthenticated(state) {
       state.isAuthenticated = true;
@@ -44,6 +48,7 @@ const storeUser = createStore({
             commit("setAuthenticated");
             commit("updateId", response.data.id);
             commit("updateUserAvatar", response.data.avatar);
+            // commit("updateTwoFactor", response.data.avatar); //TODO: 2F
             if (!response.data.username) {
               router.push({ name: "Register" });
             } else {

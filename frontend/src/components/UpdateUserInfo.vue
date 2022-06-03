@@ -3,7 +3,7 @@
   <!-- User Name -->
   <div class="field">
     <div class="grid align-items-center">
-      <div class="col-3 col-offset-2" align="right">
+      <div class="col-5" align="right">
         <label class="label">User Name</label>
       </div>
       <div class="col-3" align="left">
@@ -29,53 +29,42 @@
   <!-- Avatar -->
   <div class="field">
     <div class="grid align-items-center">
-      <div class="col-3 col-offset-2" align="right">
+      <div class="col-5" align="right">
         <label class="label">Avatar</label>
       </div>
-      <!-- Avatar Image -->
       <div class="col-3" align="left">
         <Avatar :image="avatar" shape="circle" size="xlarge" />
       </div>
     </div>
-    <!-- Avatar Source Selection -->
-    <div class="grid">
-      <div class="col-offset-5" align="left">
-        <h4>Choose avatar image:</h4>
-        <div
-          v-for="category of avatarSources"
-          :key="category.key"
-          class="field-radiobutton"
-        >
-          <RadioButton
-            :id="category.key"
-            name="category"
-            :value="category"
-            v-model="selectedAvatarSource"
-            @change="changeAvatarSource"
-          />
-          <label :for="category.key" class="radio-label">{{
-            category.name
-          }}</label>
-        </div>
-        <!-- Avatar Upload Component -->
-        <div v-if="isUploadSelected">
-          <UploadAvatar @new-avatar="getNewAvatar($event)" />
-        </div>
+    <div class="col-offset-5" align="left">
+      <UploadAvatar
+        @new-avatar="getNewAvatar($event)"
+        @avatar-source="changeAvatarSource($event)"
+      />
+    </div>
+  </div>
+  <!-- 2 factor authentication -->
+  <div class="field">
+    <div class="grid align-items-center">
+      <div class="col-5" align="right">
+        <label class="label">Two Factor Authentication</label>
+      </div>
+      <div class="col-1" align="left">
+        <InputSwitch v-model="twoFactor" />
+      </div>
+      <div class="col-1">
+        <label v-if="twoFactor">Enabled</label>
+        <label v-else>Disabled</label>
       </div>
     </div>
   </div>
-  <br />
-  <!-- Button -->
-  <div class="grid">
+  <!-- Submit Button -->
+  <div class="field">
     <div class="col-offset-5" align="left">
-      <div>
-        <Button @click="updateData" label="Save" />
-      </div>
-      <div>
-        <Message v-if="isUpdateSuccess" severity="success" :closable="false">
-          Your input has been saved successfully!
-        </Message>
-      </div>
+      <Button @click="updateData" label="Save" />
+      <Message v-if="isUpdateSuccess" severity="success" :closable="false">
+        Your input has been saved successfully!
+      </Message>
     </div>
   </div>
 </template>
@@ -83,8 +72,8 @@
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import Button from "primevue/button";
-import RadioButton from "primevue/radiobutton";
 import Avatar from "primevue/avatar";
+import InputSwitch from "primevue/inputswitch";
 import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
@@ -92,16 +81,10 @@ import UploadAvatar from "@/components/UploadAvatar.vue";
 
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
-const isUploadSelected = ref<boolean>(true);
+const twoFactor = ref<boolean>(storeUser.state.user.twoFactor);
 const isUpdateSuccess = ref<boolean>(false);
 const isUserNameInvalid = ref<boolean>(false);
 const invalidUserNameMessage = ref<string>("");
-
-const avatarSources = ref([
-  { name: "Default Avatar", key: "D" },
-  { name: "Upload My Own Avatar", key: "U" },
-]);
-const selectedAvatarSource = ref(avatarSources.value[1]);
 
 const emit = defineEmits<{
   (event: "updated"): boolean;
@@ -129,18 +112,16 @@ function isUserNameValid(input: string) {
   return true;
 }
 
-function changeAvatarSource() {
-  if (selectedAvatarSource.value.key === "U") {
-    isUploadSelected.value = true;
-    avatar.value = storeUser.state.user.avatar;
-  } else {
-    isUploadSelected.value = false;
-    avatar.value = "/default_avatar.png";
-  }
-}
-
 function getNewAvatar(event) {
   avatar.value = require("../../../upload/" + event);
+}
+
+function changeAvatarSource(event) {
+  if (event == "default") {
+    avatar.value = "/default_avatar.png";
+  } else if (event == "current") {
+    avatar.value = storeUser.state.user.avatar;
+  }
 }
 
 async function updateData() {
@@ -156,6 +137,7 @@ async function updateData() {
       id: storeUser.state.user.id,
       username: username.value,
       avatar: avatar.value,
+      // TODO: add 2F
     };
     const response_post = await axios.post(
       "http://localhost:3000/user/profile/update-userprofile",
@@ -174,6 +156,7 @@ async function updateData() {
       // update storeUser
       storeUser.state.user.username = username.value;
       storeUser.state.user.avatar = avatar.value;
+      storeUser.state.user.twoFactor = twoFactor.value;
       // send signal to parent component
       emit("updated", true);
     }
@@ -185,10 +168,5 @@ async function updateData() {
   padding-right: 12px;
   font-weight: 500;
   font-size: large;
-}
-.radio-label {
-  padding-right: 12px;
-  font-weight: 400;
-  font-size: small;
 }
 </style>
