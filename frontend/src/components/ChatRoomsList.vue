@@ -1,5 +1,35 @@
 <template>
   <div id="chatrooms-list">
+    <Dialog
+      header="Password required"
+      v-model:visible="displayPasswordDialog"
+      :style="{ width: '50vw' }"
+    >
+      <div class="field">
+        <small id="password-help">Enter password to enter this room</small>
+        <Password
+          id="password"
+          v-model="passwordValue"
+          :feedback="false"
+          showIcon="pi pi-eye"
+          toggleMask
+        />
+      </div>
+      <template #footer>
+        <Button
+          label="Cancel"
+          icon="pi pi-times"
+          @click="closePasswordDialog"
+          class="p-button-text"
+        />
+        <Button
+          label="OK"
+          icon="pi pi-check"
+          @click="validatePassword"
+          autofocus
+        />
+      </template>
+    </Dialog>
     <DataTable
       :value="rooms"
       class="p-datatable-sm"
@@ -50,6 +80,9 @@ import RoomVisibility from "@/types/RoomVisibility";
 
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
+import Dialog from "primevue/dialog";
+import Password from "primevue/password";
+import Button from "primevue/button";
 
 const socket: Socket = inject("socketioInstance");
 
@@ -66,8 +99,22 @@ onMounted(() => {
 
 const router = useRouter();
 const route = useRoute();
-
+const displayPasswordDialog = ref(false);
 const onRowSelect = (event) => {
+  if (event.data.password !== null) {
+    displayPasswordDialog.value = true;
+  }
   router.push({ name: "ChatBox", params: { roomName: event.data.name } });
+};
+const passwordValue = ref();
+
+const closePasswordDialog = () => {
+  displayPasswordDialog.value = false;
+  passwordValue.value = null;
+};
+
+const validatePassword = () => {
+  console.log("Entered password is: ", passwordValue.value);
+  closePasswordDialog();
 };
 </script>
