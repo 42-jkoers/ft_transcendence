@@ -6,11 +6,9 @@
   </div>
   <div v-else align="center">
     <div>
-      <Card
-        style="width: 20rem; margin: 1em; border-radius: 5%; border: Groove"
-      >
+      <Card style="width: 30%; margin: 5%; border-radius: 5%; border: Groove">
         <template #header>
-          <img :src="user?.avatar" style="margin-top: 2rem" />
+          <img :src="user?.avatar" style="width: 90%; margin-top: 5%" />
         </template>
         <template #title>
           <h3>{{ user?.username }}</h3>
