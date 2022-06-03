@@ -48,7 +48,7 @@ export class UserService {
 		const defaultUserData = {
 			intraID: '00000',
 			username: 'admin',
-			avatar: 'admin',
+			avatar: '/default_avatar.png',
 		};
 		const defaultUser = this.userRepository.create(defaultUserData);
 		const createdUser: UserI = await this.userRepository.save(defaultUser);

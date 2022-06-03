@@ -9,6 +9,7 @@ import ComingSoonView from "@/views/ComingSoonView.vue";
 import CreateRoom from "@/views/CreateRoom.vue";
 import ChatView from "@/views/ChatView.vue";
 import ChatBox from "@/components/ChatBox.vue";
+import UserProfileCard from "@/components/UserProfileCard.vue";
 import storeUser from "@/store";
 
 const routes: Array<RouteRecordRaw> = [
@@ -21,6 +22,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/userhome",
     name: "UserHome",
     component: UserHomeView,
+  },
+  {
+    path: "/user/:id",
+    name: "UserProfileCard",
+    component: UserProfileCard,
   },
   {
     path: "/chat",

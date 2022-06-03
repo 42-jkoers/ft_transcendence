@@ -136,13 +136,23 @@ Tutorial:
 	- add radioButton for avatar source + add Avatar component from PrimeVue
 	- move all HomeMenu component to WebsiteTitle component
 
+******************************************
+**				Branch - user_profile					**
+******************************************
+(Fri) 2022-06-03
+	- run.sh: add rebuild database volume
+	- house-cleaning for UploadAvatar
+	- build component UserProfileCard
+	- add button Message/EditProfile to UserProfileCard
+	- add 2F InputSwitch in UserSetting
+
+
+
 **************************
 **		Next To To				**
 **************************
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
-- change all to Composition API
-- User Profile page
 
 ******************************
 **		General To To		**
