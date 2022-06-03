@@ -11,5 +11,4 @@
 <script setup lang="ts">
 import LogInButton from "@/components/LogInButton.vue";
 import storeUser from "@/store";
-import Button from "primevue/button";
 </script>

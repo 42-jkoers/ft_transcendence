@@ -1,4 +1,21 @@
 <template>
+  <div align="left">
+    <h4>Choose avatar image:</h4>
+    <div
+      v-for="category of avatarSources"
+      :key="category.key"
+      class="field-radiobutton"
+    >
+      <RadioButton
+        :id="category.key"
+        name="category"
+        :value="category"
+        v-model="selectedAvatarSource"
+        @change="changeAvatarSource"
+      />
+      <label :for="category.key" class="radio-label">{{ category.name }}</label>
+    </div>
+  </div>
   <div v-if="isLoading">
     <ProgressSpinner
       style="width: 50px; height: 50px"
@@ -25,14 +42,32 @@ import { ref, defineEmits } from "vue";
 import axios from "axios";
 import ProgressSpinner from "primevue/progressspinner";
 import Message from "primevue/message";
+import RadioButton from "primevue/radiobutton";
+const isUploadSelected = ref<boolean>(true);
 const isLoading = ref<boolean>(false);
 const isAvatarInvalid = ref<boolean>(false);
 const invalidAvatarMessage = ref<string>("");
 const isUploadSuccess = ref<boolean>(false);
 
+const avatarSources = ref([
+  { name: "Default Avatar", key: "D" },
+  { name: "Upload My Own Avatar", key: "U" },
+]);
+const selectedAvatarSource = ref(avatarSources.value[1]);
+
 const emit = defineEmits<{
   (event: "newAvatar"): string;
+  (event: "avatarSource"): string;
 }>();
+
+function changeAvatarSource() {
+  if (selectedAvatarSource.value.key === "U") {
+    emit("avatarSource", "current");
+  } else {
+    isUploadSelected.value = false;
+    emit("avatarSource", "default");
+  }
+}
 
 const selectedFile = ref(null);
 function onFileSelected(event) {
@@ -99,3 +134,10 @@ async function onUpload() {
   }
 }
 </script>
+<style scoped>
+.radio-label {
+  padding-right: 12px;
+  font-weight: 400;
+  font-size: small;
+}
+</style>
