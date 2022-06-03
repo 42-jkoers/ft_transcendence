@@ -7,10 +7,10 @@
   <div v-else align="center">
     <div>
       <Card
-        style="width: 25rem; margin: 2em; border-radius: 6%; border: Groove"
+        style="width: 20rem; margin: 1em; border-radius: 5%; border: Groove"
       >
         <template #header>
-          <img :src="user?.avatar" style="margin-top: 2.5rem" />
+          <img :src="user?.avatar" style="margin-top: 2rem" />
         </template>
         <template #title>
           <h3>{{ user?.username }}</h3>
