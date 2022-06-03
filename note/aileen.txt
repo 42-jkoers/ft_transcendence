@@ -143,6 +143,7 @@ Tutorial:
 	- run.sh: add rebuild database volume
 	- house-cleaning for UploadAvatar
 	- build component UserProfileCard
+	- add button Message/EditProfile to UserProfileCard
 
 
 
