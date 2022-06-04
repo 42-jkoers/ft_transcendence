@@ -3,10 +3,17 @@
     <Dialog
       header="Password required"
       v-model:visible="displayPasswordDialog"
+      closeOnEscape
       :style="{ width: '50vw' }"
+      :closable="false"
     >
-      <div class="field">
-        <small id="password-help">Enter password to enter this room</small>
+      <div class="field p-fluid">
+        <small v-if="matchingPasswordError" id="password-help" class="p-error"
+          >Entered password is incorrect.</small
+        >
+        <small v-else id="password-help"
+          >Enter room password to join '{{ selectedRoomName }}'</small
+        >
         <Password
           id="password"
           v-model="passwordValue"
@@ -46,10 +53,7 @@
         <template #body="slotProps">
           <div>
             <i
-              v-if="
-                slotProps.data.visibility === RoomVisibility.PUBLIC &&
-                slotProps.data.password !== null
-              "
+              v-if="slotProps.data.password !== null"
               class="pi pi-shield"
               style="font-size: 0.8rem"
             ></i>
@@ -73,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted } from "vue";
+import { ref, inject, onMounted, defineEmits } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Socket } from "socket.io-client";
 import RoomVisibility from "@/types/RoomVisibility";
@@ -92,7 +96,6 @@ onMounted(() => {
     socket.emit("getUserRoomsList");
   }, 90); // FIXME: find a better solution?
   socket.on("getUserRoomsList", (response) => {
-    console.log("Rooms of current user coming from DB: ", response);
     rooms.value = response;
   });
 });
@@ -100,21 +103,43 @@ onMounted(() => {
 const router = useRouter();
 const route = useRoute();
 const displayPasswordDialog = ref(false);
+const selectedRoomName = ref(null);
+const selectedRoomIcon = ref(null);
 const onRowSelect = (event) => {
   if (event.data.password !== null) {
     displayPasswordDialog.value = true;
+    selectedRoomName.value = event.data.name;
+    selectedRoomIcon.value = event.data.password
+      ? event.data.password
+      : event.data.visibility;
+  } else {
+    router.push({ name: "ChatBox", params: { roomName: event.data.name } });
   }
-  router.push({ name: "ChatBox", params: { roomName: event.data.name } });
 };
-const passwordValue = ref();
 
+const passwordValue = ref();
 const closePasswordDialog = () => {
   displayPasswordDialog.value = false;
   passwordValue.value = null;
+  matchingPasswordError.value = false;
 };
 
+const matchingPasswordError = ref(false);
 const validatePassword = () => {
-  console.log("Entered password is: ", passwordValue.value);
-  closePasswordDialog();
+  socket.emit("checkRoomPasswordMatch", {
+    name: selectedRoomName.value,
+    password: passwordValue.value,
+  });
+  socket.on("isRoomPasswordMatched", (isMatched) => {
+    if (isMatched) {
+      closePasswordDialog();
+      router.push({
+        name: "ChatBox",
+        params: { roomName: selectedRoomName.value },
+      });
+    } else {
+      matchingPasswordError.value = true;
+    }
+  });
 };
 </script>
