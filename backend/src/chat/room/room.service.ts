@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getRepository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { RoomEntity, RoomVisibilityType } from './entities/room.entity';
 import { RoomI } from './room.interface';
 import { UserI } from 'src/user/user.interface';
@@ -28,6 +29,10 @@ export class RoomService {
 	): Promise<{ status: string; data: string }> {
 		room.users = [];
 		const newRoom = await this.addUserToRoom(room, userToAddToRoom); // adding current creator to the array of users for this new room
+		if (room.password !== null) {
+			const hash = await this.encryptRoomPassword(room.password);
+			room.password = hash;
+		}
 		const response = {
 			status: '',
 			data: '',
@@ -85,5 +90,19 @@ export class RoomService {
 			.where('room.name = :roomName', { roomName })
 			.getMany();
 		return usersInRoom;
+	}
+
+	async encryptRoomPassword(password: string): Promise<string> {
+		const saltRounds = 10;
+		const hash = await bcrypt.hash(password, saltRounds);
+		return hash;
+	}
+
+	async compareRoomPassword(
+		password: string,
+		hash: string,
+	): Promise<boolean> {
+		const isMatch = await bcrypt.compare(password, hash);
+		return isMatch;
 	}
 }
