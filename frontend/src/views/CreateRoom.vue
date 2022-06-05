@@ -16,10 +16,10 @@
         >
         <InputText
           id="room-name"
-          required
           type="text"
-          class="w-full mb-4"
-          v-model="name"
+          class="room-name-input w-full mb-4"
+          v-model="newRoomName"
+          required="true"
         />
 
         <div class="card">
@@ -58,6 +58,7 @@
           label="Create"
           icon="pi pi-check"
           class="p-button-primary"
+          v-bind:disabled="!newRoomName.length"
         ></PrimeVueButton>
       </div>
     </div>
@@ -101,7 +102,7 @@ function togglePasswordBlock() {
 }
 
 // state of the new room name:
-const name = ref<string>("My New Room");
+const newRoomName = ref<string>("My New Room");
 // push user to a newly created room
 function pushToNewRoom(newRoomName: string) {
   router.push({
@@ -126,7 +127,7 @@ onMounted(() => {
 
 function saveNewRoom() {
   const newRoom: Room = {
-    name: name.value,
+    name: newRoomName.value,
     isDirectMessage: false,
     visibility: selectedCategory.value,
     password: passwordValue.value,
