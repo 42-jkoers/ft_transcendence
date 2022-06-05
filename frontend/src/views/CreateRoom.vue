@@ -11,16 +11,16 @@
         Create a Chat Room
       </div>
       <div class="col-12">
-        <label for="room-name" class="block text-900 font-medium mb-2"
-          >Name</label
-        >
-        <InputText
-          id="room-name"
-          type="text"
-          class="room-name-input w-full mb-4"
-          v-model="newRoomName"
-          required="true"
-        />
+        <span class="p-float-label">
+          <InputText
+            id="room-name"
+            type="text"
+            class="room-name-input w-full"
+            v-model="newRoomName"
+            required="true"
+          />
+          <label for="room-name">Select a unique name for your room</label>
+        </span>
 
         <div class="card">
           <div
@@ -102,7 +102,7 @@ function togglePasswordBlock() {
 }
 
 // state of the new room name:
-const newRoomName = ref<string>("My New Room");
+const newRoomName = ref<string>("");
 // push user to a newly created room
 function pushToNewRoom(newRoomName: string) {
   router.push({
@@ -137,6 +137,9 @@ function saveNewRoom() {
 }
 </script>
 <style scoped>
+.card {
+  margin-top: 2rem;
+}
 .field {
   margin-bottom: 0;
 }
