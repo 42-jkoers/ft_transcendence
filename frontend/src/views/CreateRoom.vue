@@ -18,6 +18,7 @@
             class="room-name-input w-full"
             v-model="newRoomName"
             required="true"
+            maxlength="60"
           />
           <label for="room-name">Select a unique name for your room</label>
         </span>
@@ -40,7 +41,11 @@
           <div class="field grid">
             <BlockUI :blocked="blockedPasswordInput">
               <span class="p-float-label">
-                <Password id="password" v-model="passwordValue" toggleMask />
+                <InputText
+                  id="password"
+                  v-model="passwordValue"
+                  maxlength="15"
+                />
                 <label for="password">Protect with password</label>
               </span>
             </BlockUI>
@@ -75,7 +80,6 @@ import { Socket } from "socket.io-client";
 import PrimeVueButton from "primevue/button";
 import RadioButton from "primevue/radiobutton";
 import InputText from "primevue/inputtext";
-import Password from "primevue/password";
 import BlockUI from "primevue/blockui";
 
 // Because we don't have access to 'this' inside of setup, we cannot directly access this.$router or this.$route anymore.
