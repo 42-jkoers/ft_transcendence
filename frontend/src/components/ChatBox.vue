@@ -50,7 +50,6 @@ import MessageI from "../types/Message.interface";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
-import MessageI from "../types/Message.interface";
 import Room from "../types/Room";
 import UserProfileI from "../types/UserProfile.interface";
 import Panel from "primevue/panel";
