@@ -92,17 +92,17 @@ const emit = defineEmits<{
 }>();
 
 function isUserNameValid(input: string) {
-  // only allow digit and alphabet letters, with space in between (not first/last)
-  if (/^[A-Za-z0-9][A-Za-z0-9 ]*[A-Za-z0-9]$/.test(input) === false) {
-    invalidUserNameMessage.value = "User name contains invalid character.";
-    return false;
-  }
   if (input.length === 0) {
     invalidUserNameMessage.value = "User name cannot be empty.";
     return false;
   }
   if (input.length > 15) {
     invalidUserNameMessage.value = "User name is too long (max 15 characters).";
+    return false;
+  }
+  // only allow digit and alphabet letters, with space in between (not first/last)
+  if (/^[A-Za-z0-9][A-Za-z0-9 ]*[A-Za-z0-9]$/.test(input) === false) {
+    invalidUserNameMessage.value = "User name contains invalid character.";
     return false;
   }
   return true;
