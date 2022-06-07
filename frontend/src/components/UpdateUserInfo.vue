@@ -92,12 +92,10 @@ const emit = defineEmits<{
 }>();
 
 function isUserNameValid(input: string) {
-  for (const c of input) {
-    // only allow digit and alphabet letters, with space in between (not first/last)
-    if (/^[A-Za-z0-9][A-Za-z0-9 ]*[A-Za-z0-9]$/.test(input) === false) {
-      invalidUserNameMessage.value = "User name contains invalid character.";
-      return false;
-    }
+  // only allow digit and alphabet letters, with space in between (not first/last)
+  if (/^[A-Za-z0-9][A-Za-z0-9 ]*[A-Za-z0-9]$/.test(input) === false) {
+    invalidUserNameMessage.value = "User name contains invalid character.";
+    return false;
   }
   if (input.length === 0) {
     invalidUserNameMessage.value = "User name cannot be empty.";
