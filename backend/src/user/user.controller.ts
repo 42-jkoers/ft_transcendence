@@ -17,7 +17,7 @@ import { diskStorage } from 'multer';
 import { Express } from 'express';
 import { UploadFileHelper } from './util/uploadfile.helper';
 import { UpdateUserProfileDto } from './dto';
-import UserNameValidator from './util/username.validator';
+
 @UseGuards(AuthenticatedGuard)
 @Controller('user')
 export class UserController {
