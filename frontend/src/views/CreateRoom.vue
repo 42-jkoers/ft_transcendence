@@ -22,20 +22,34 @@
           v-model="name"
         />
 
-        <!-- <div class="flex align-items-center justify-content-center mb-4"> -->
-        <div class="grid">
+        <div class="card">
           <div
-            v-for="category of categories"
-            :key="category.key"
-            class="field-radiobutton col-12"
+            v-for="visibility of visibilityTypes"
+            :key="visibility.key"
+            class="field-radiobutton"
           >
             <RadioButton
-              :id="category.key"
+              :id="visibility.key"
               name="category"
-              :value="category.type"
+              :value="visibility.type"
+              @change="togglePasswordBlock"
               v-model="selectedCategory"
             />
-            <label :for="category.key">{{ category.name }}</label>
+            <label :for="visibility.key">{{ visibility.name }}</label>
+          </div>
+          <div class="field grid">
+            <BlockUI :blocked="blockedPasswordInput">
+              <span class="p-float-label">
+                <Password id="password" v-model="passwordValue" toggleMask />
+                <label for="password">Protect with password</label>
+              </span>
+            </BlockUI>
+          </div>
+          <div class="field grid">
+            <small id="password-help"
+              >Leave it blank if you want to let other users access your chat
+              room</small
+            >
           </div>
         </div>
 
@@ -54,13 +68,14 @@
 <script setup lang="ts">
 import { ref, inject, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import PrimeVueButton from "primevue/button";
-import RadioButton from "primevue/radiobutton";
-import InputText from "primevue/inputtext";
-
 import Room from "../types/Room";
 import RoomVisibilityType from "../types/RoomVisibility";
 import { Socket } from "socket.io-client";
+import PrimeVueButton from "primevue/button";
+import RadioButton from "primevue/radiobutton";
+import InputText from "primevue/inputtext";
+import Password from "primevue/password";
+import BlockUI from "primevue/blockui";
 
 // Because we don't have access to 'this' inside of setup, we cannot directly access this.$router or this.$route anymore.
 // Instead we use the useRouter function:
@@ -68,19 +83,25 @@ const router = useRouter();
 
 //reactive state:
 // for visibility categories:
-const categories = ref([
+const visibilityTypes = ref([
   { name: "Public", key: "1", type: RoomVisibilityType.PUBLIC },
   { name: "Private", key: "2", type: RoomVisibilityType.PRIVATE },
-  {
-    name: "Protected with password",
-    key: "3",
-    type: RoomVisibilityType.PROTECTED,
-  },
 ]);
-const selectedCategory = ref(categories.value[0].type); // public visibility will always be the default one
+
+const selectedCategory = ref(visibilityTypes.value[0].type); // public visibility will always be the default one
+const blockedPasswordInput = ref<boolean>(false);
+const passwordValue = ref(null);
+
+function togglePasswordBlock() {
+  if (selectedCategory.value === RoomVisibilityType.PRIVATE) {
+    blockedPasswordInput.value = true;
+  } else {
+    blockedPasswordInput.value = false;
+  }
+}
 
 // state of the new room name:
-const name = ref<string>();
+const name = ref<string>("My New Room");
 // push user to a newly created room
 function pushToNewRoom(newRoomName: string) {
   router.push({
@@ -108,9 +129,17 @@ function saveNewRoom() {
     name: name.value,
     isDirectMessage: false,
     visibility: selectedCategory.value,
+    password: passwordValue.value,
   };
   console.log("newRoom created on frontend: ", newRoom);
   socket.emit("createRoom", newRoom);
 }
 </script>
-<style scoped></style>
+<style scoped>
+.field {
+  margin-bottom: 0;
+}
+.p-button-primary {
+  margin-top: 2rem;
+}
+</style>
