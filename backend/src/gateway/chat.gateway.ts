@@ -47,6 +47,7 @@ export class ChatGateway
 			socketID: client.id,
 			user,
 		}); // save connection to DB
+		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set
 	}
 
 	afterInit() {

@@ -1,11 +1,7 @@
 <template>
-  <HomeMenu />
   <p class="message">Coming up soon, be patient please :)</p>
 </template>
-<script lang="ts">
-import HomeMenu from "@/components/HomeMenu.vue";
-export default { components: { HomeMenu } };
-</script>
+<script setup lang="ts"></script>
 <style scoped>
 .message {
   color: darkcyan;

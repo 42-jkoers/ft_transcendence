@@ -9,37 +9,59 @@ const storeUser = createStore({
       id: 0,
       username: "",
       avatar: "",
+      twoFactor: false,
+    },
+  },
+  getters: {
+    isAuthenticated(state) {
+      return state.isAuthenticated;
     },
   },
   mutations: {
+    updateId(state, id) {
+      state.user.id = id;
+    },
     updateUserName(state, name) {
       state.user.username = name;
-      console.log(">> updated state username as: ", state.user.username);
     },
-    login(state) {
-      if (state.isAuthenticated === true) {
-        return;
-      }
-      axios
-        .get("http://localhost:3000/auth/status", {
-          withCredentials: true,
-        })
-        .then((response) => {
-          state.isAuthenticated = true;
-          if (!response.data.username) {
-            router.push({ name: "Register" });
-          } else {
-            state.user.id = response.data.id;
-            state.user.username = response.data.username;
-            state.user.avatar = response.data.avatar;
-          }
-        })
-        .catch(() => {
-          router.push({ name: "Home" });
-        });
+    updateUserAvatar(state, avatar) {
+      state.user.avatar = avatar;
     },
-    logout(state) {
+    updateTwoFactor(state, update) {
+      state.user.twoFactor = update;
+    },
+    setAuthenticated(state) {
+      state.isAuthenticated = true;
+    },
+    unsetAuthenticated(state) {
       state.isAuthenticated = false;
+    },
+  },
+  actions: {
+    async login({ commit }) {
+      if (storeUser.getters.isAuthenticated === false) {
+        await axios
+          .get("http://localhost:3000/auth/status", {
+            withCredentials: true,
+          })
+          .then((response) => {
+            commit("setAuthenticated");
+            commit("updateId", response.data.id);
+            commit("updateUserAvatar", response.data.avatar);
+            // commit("updateTwoFactor", response.data.avatar); //TODO: 2F
+            if (!response.data.username) {
+              router.push({ name: "Register" });
+            } else {
+              commit("updateUserName", response.data.username);
+            }
+          })
+          .catch(() => {
+            console.log("user is not unauthorized");
+          });
+      }
+    },
+    logout({ commit }) {
+      commit("unsetAuthenticated");
     },
   },
 });

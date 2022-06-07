@@ -1,5 +1,8 @@
 <template>
-  <div id="chatbox" class="flex flex-column">
+  <div>
+    <Panel>
+      {{ $route.params.roomName }}
+    </Panel>
     <div
       ref="scroller"
       id="all-messages"
@@ -43,12 +46,14 @@
 <script setup lang="ts">
 import { ref, inject, onMounted } from "vue";
 import { Socket } from "socket.io-client";
+import MessageI from "../types/Message.interface";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
 import MessageI from "../types/Message.interface";
 import Room from "../types/Room";
 import UserProfileI from "../types/UserProfile.interface";
+import Panel from "primevue/panel";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);

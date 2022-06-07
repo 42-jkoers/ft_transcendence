@@ -2,20 +2,16 @@
   <div id="chatrooms-list">
     <DataTable
       :value="rooms"
-      :paginator="true"
-      :rows="10"
-      paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-      :rowsPerPageOptions="[10, 20, 50]"
       responsiveLayout="scroll"
-      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+      :scrollable="true"
+      scrollHeight="60vh"
+      :row-hover="true"
+      :selection="{ name: route.params.roomName }"
+      selectionMode="single"
+      dataKey="name"
+      @rowSelect="onRowSelect"
     >
       <Column field="name" header="Chat Rooms"></Column>
-      <template #paginatorstart>
-        <Button type="button" icon="pi pi-refresh" class="p-button-text" />
-      </template>
-      <template #paginatorend>
-        <Button type="button" icon="pi pi-cloud" class="p-button-text" />
-      </template>
     </DataTable>
   </div>
 </template>
@@ -23,20 +19,28 @@
 <script setup lang="ts">
 import { ref, inject, onMounted } from "vue";
 import { Socket } from "socket.io-client";
+import { useRouter, useRoute } from "vue-router";
 
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-import Button from "primevue/button";
 
 const socket: Socket = inject("socketioInstance");
 
+const rooms = ref();
 onMounted(() => {
-  socket.emit("getUserRoomsList");
+  setTimeout(() => {
+    socket.emit("getUserRoomsList");
+  }, 90); // FIXME: find a better solution?
   socket.on("getUserRoomsList", (response) => {
     console.log("Rooms of current user coming from DB: ", response);
     rooms.value = response;
   });
 });
 
-const rooms = ref();
+const router = useRouter();
+const route = useRoute();
+
+const onRowSelect = (event) => {
+  router.push({ name: "ChatBox", params: { roomName: event.data.name } });
+};
 </script>

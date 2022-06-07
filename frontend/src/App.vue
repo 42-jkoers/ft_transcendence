@@ -11,14 +11,11 @@ export default { components: { WebsiteTitle } };
 
 <script setup lang="ts">
 import { provide } from "vue";
-import storeUser from "@/store";
-
 import SocketioService from "./services/socketio.service";
 
 const socket = SocketioService.setupSocketConnection(); //create a socket instance for connecting client
-provide("socketioInstance", socket); // dependency provider of socketio instance for all its descendants
 
-storeUser.commit("login"); //immediately check user's authentication status when the app is initiated
+provide("socketioInstance", socket); // dependency provider of socketio instance for all its descendants
 </script>
 <style>
 #app {
@@ -26,7 +23,7 @@ storeUser.commit("login"); //immediately check user's authentication status when
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: #8cb8e4;
 }
 
 nav {
@@ -51,5 +48,22 @@ body {
   font-family: var(--font-family);
   font-weight: 400;
   color: var(--text-color);
+}
+
+@keyframes p-progress-spinner-color {
+  100%,
+  0% {
+    stroke: #fffafa;
+  }
+  40% {
+    stroke: #0057e7;
+  }
+  66% {
+    stroke: #6722f3;
+  }
+  80%,
+  90% {
+    stroke: #d5e7fb;
+  }
 }
 </style>
