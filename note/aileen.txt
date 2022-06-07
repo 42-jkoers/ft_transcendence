@@ -146,11 +146,18 @@ Tutorial:
 	- add button Message/EditProfile to UserProfileCard
 	- add 2F InputSwitch in UserSetting
 
+******************************************
+**				Branch - 					**
+******************************************
+(Tue) 2022-06-07
+	- username validation correct on backend
+	- add Regex rule to both front/backend (allow space in between)
 
 
 **************************
 **		Next To To				**
 **************************
+- enable space in username
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 

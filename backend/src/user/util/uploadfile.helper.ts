@@ -10,7 +10,7 @@ export class UploadFileHelper {
 		cb(null, req.user.id + '.' + fileExtension);
 	}
 
-	static destinationPath(req, file, cb) {
+	static destinationPath(cb) {
 		cb(null, '../upload');
 	}
 }
