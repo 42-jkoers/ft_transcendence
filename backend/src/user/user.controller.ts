@@ -51,4 +51,20 @@ export class UserController {
 		const user: UserI = await this.userService.findByID(id);
 		return user;
 	}
+
+	@Get('friend')
+	async addFriend() {
+		const userId = 2;
+		const friendId = 1;
+		const user: UserI | undefined = await this.userService.findByID(userId);
+		const fr: UserI | undefined = await this.userService.findByID(friendId);
+		if (!user || !fr) {
+			// TODO: error;
+		}
+		await this.userService.addFriend(user, fr);
+		const friendOf1: UserI[] = await this.userService.getFriends(1);
+		const friendOf2: UserI[] = await this.userService.getFriends(2);
+		console.log('>>friend of user 1: ', friendOf1);
+		console.log('>>friend of user 2: ', friendOf2);
+	}
 }

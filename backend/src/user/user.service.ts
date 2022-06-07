@@ -34,6 +34,7 @@ export class UserService {
 		}
 
 		const newUser = this.userRepository.create(userData);
+		newUser.friends = [];
 		const createdUser: UserI = await this.userRepository.save(newUser);
 
 		const defaultRoom: RoomI = await this.roomService.findByName('general');
@@ -50,6 +51,7 @@ export class UserService {
 			avatar: '/default_avatar.png',
 		};
 		const defaultUser = this.userRepository.create(defaultUserData);
+		defaultUser.friends = [];
 		const createdUser: UserI = await this.userRepository.save(defaultUser);
 		return createdUser;
 	}
@@ -67,5 +69,22 @@ export class UserService {
 			return undefined;
 		}
 		return await this.findByID(userData.id);
+	}
+
+	async addFriend(user: UserI, friend: UserI) {
+		user.friends = await this.getFriends(user.id);
+		user.friends.push(friend);
+		await this.userRepository.save(user);
+		friend.friends = await this.getFriends(friend.id);
+		await this.userRepository.save(friend);
+	}
+
+	async getFriends(userId: number): Promise<UserI[]> {
+		const friends = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.friends', 'friend')
+			.where('friend.id = :userId', { userId })
+			.getMany();
+		return friends;
 	}
 }

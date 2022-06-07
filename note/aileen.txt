@@ -146,13 +146,16 @@ Tutorial:
 	- add button Message/EditProfile to UserProfileCard
 	- add 2F InputSwitch in UserSetting
 
-********************************************
-**	Branch - backend_username_validation	**
-********************************************
+******************************************
+**			Branch - 	user_add_friend				**
+******************************************
+[ Branch - backend_username_validation ]
 (Tue) 2022-06-07
 	- username validation correct on backend
 	- add Regex rule to both front/backend (allow space in between)
 
+(Tue) 2022-06-07
+	- build getFriend and addFriend method in userService
 
 **************************
 **		Next To To				**
@@ -164,3 +167,4 @@ Tutorial:
 **		General To To		**
 ******************************
 - try/catch all axios exception
+- deregister user
