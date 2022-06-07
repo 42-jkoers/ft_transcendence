@@ -5,5 +5,6 @@ export interface RoomI {
 	id?: number;
 	name: string;
 	visibility: RoomVisibilityType;
+	password: string | null;
 	users?: UserI[];
 }

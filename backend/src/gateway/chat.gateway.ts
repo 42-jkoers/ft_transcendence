@@ -98,4 +98,19 @@ export class ChatGateway
 		);
 		client.emit('getUserRoomsList', response);
 	}
+
+	@SubscribeMessage('checkRoomPasswordMatch')
+	async checkRoomPasswordMatch(
+		client: Socket,
+		roomToUnlock: { name: string; password: string },
+	) {
+		const room: RoomI = await this.roomService.findByName(
+			roomToUnlock.name,
+		);
+		const isMatched = await this.roomService.compareRoomPassword(
+			roomToUnlock.password,
+			room.password,
+		);
+		client.emit('isRoomPasswordMatched', isMatched);
+	}
 }
