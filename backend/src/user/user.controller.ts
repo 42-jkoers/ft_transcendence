@@ -6,8 +6,8 @@ import {
 	UseGuards,
 	UseInterceptors,
 	UploadedFile,
-	Param,
 	Query,
+	ParseIntPipe,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from '../auth/oauth/oauth.guard';
 import { UserI } from './user.interface';
@@ -16,7 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Express } from 'express';
 import { UploadFileHelper } from './util/uploadfile.helper';
-import { userInfo } from 'os';
+import { UpdateUserProfileDto } from './dto';
 
 @UseGuards(AuthenticatedGuard)
 @Controller('user')
@@ -24,19 +24,11 @@ export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 	@Post('profile/update-userprofile')
-	async updateUserProfile(
-		@Body() body: { id: number; username: string; avatar: string },
-	) {
-		if (
-			!(await this.userService.updateUserProfile(
-				body.id,
-				body.username,
-				body.avatar,
-			))
-		) {
+	async updateUserProfile(@Body() userDto: UpdateUserProfileDto) {
+		if (!(await this.userService.updateUserProfile(userDto))) {
 			return undefined;
 		} else {
-			const user: UserI = await this.userService.findByID(body.id);
+			const user: UserI = await this.userService.findByID(userDto.id);
 			return user;
 		}
 	}
@@ -55,7 +47,7 @@ export class UserController {
 	}
 
 	@Get('find-by-id?')
-	async findUser(@Query('id') id: number) {
+	async findUser(@Query('id', ParseIntPipe) id: number) {
 		const user: UserI = await this.userService.findByID(id);
 		return user;
 	}

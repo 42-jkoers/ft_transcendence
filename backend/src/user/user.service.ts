@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-// import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import User from './user.entity';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, UpdateUserProfileDto } from './dto';
 import { UserI } from './user.interface';
 import { RoomI } from '../chat/room/room.interface';
 import { RoomService } from '../chat/room/room.service';
@@ -57,18 +56,16 @@ export class UserService {
 
 	/* return undefined if username is duplicated */
 	async updateUserProfile(
-		id: number,
-		newName: string,
-		newAvatar: string,
+		userData: UpdateUserProfileDto,
 	): Promise<UserI | undefined> {
 		try {
-			await this.userRepository.update(id, {
-				username: newName,
-				avatar: newAvatar,
+			await this.userRepository.update(userData.id, {
+				username: userData.username,
+				avatar: userData.avatar,
 			});
 		} catch (error) {
 			return undefined;
 		}
-		return await this.findByID(id);
+		return await this.findByID(userData.id);
 	}
 }

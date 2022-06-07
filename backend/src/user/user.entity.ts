@@ -21,7 +21,7 @@ export class User {
 	@Column({ unique: true, nullable: true })
 	public username: string;
 
-	@Column({ nullable: true })
+	@Column()
 	public avatar: string;
 
 	@JoinColumn()
