@@ -25,9 +25,6 @@ export class UserController {
 
 	@Post('profile/update-userprofile')
 	async updateUserProfile(@Body() userDto: UpdateUserProfileDto) {
-		// if (UserNameValidator.isValid(userDto.username) === false) {
-		// 	return undefined;
-		// }
 		if (!(await this.userService.updateUserProfile(userDto))) {
 			return undefined;
 		} else {
