@@ -17,7 +17,8 @@
     </div>
     <div class="col-offset-5" align="left" margin>
       <small>
-        * Username can only be composed of alphabet letters and digit.
+        * Username can only be composed of alphabet letters and digit, with
+        potential space in between.
       </small>
     </div>
     <div class="col-offset-5" align="left">
@@ -91,22 +92,17 @@ const emit = defineEmits<{
 }>();
 
 function isUserNameValid(input: string) {
-  for (const c of input) {
-    if (
-      ((c >= "0" && c <= "9") ||
-        (c >= "a" && c <= "z") ||
-        (c >= "A" && c <= "Z")) === false
-    ) {
-      invalidUserNameMessage.value = "User name contains invalid character.";
-      return false;
-    }
-  }
   if (input.length === 0) {
     invalidUserNameMessage.value = "User name cannot be empty.";
     return false;
   }
   if (input.length > 15) {
     invalidUserNameMessage.value = "User name is too long (max 15 characters).";
+    return false;
+  }
+  // only allow digit and alphabet letters, with space in between (not first/last)
+  if (/^[A-Za-z0-9][A-Za-z0-9 ]*[A-Za-z0-9]$/.test(input) === false) {
+    invalidUserNameMessage.value = "User name contains invalid character.";
     return false;
   }
   return true;
