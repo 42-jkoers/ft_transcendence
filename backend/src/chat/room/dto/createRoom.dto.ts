@@ -26,7 +26,7 @@ export class createRoomDto {
 	})
 	@MaxLength(64, {
 		message: () => {
-			return 'The name is too long. Please create a shorter one';
+			return 'This name is too long. Please create a shorter one';
 		},
 	})
 	name: string;
