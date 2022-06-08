@@ -21,6 +21,9 @@
             maxlength="64"
           />
           <label for="room-name">Select a unique name for your room</label>
+          <small v-if="!isValidRoomName" id="room-name" class="p-error">{{
+            invalidRoomNameResponseMessage
+          }}</small>
         </span>
 
         <div class="card">
@@ -89,16 +92,16 @@ import BlockUI from "primevue/blockui";
 const router = useRouter();
 
 //reactive state:
-// for visibility categories:
+// for available visibility categories:
 const visibilityTypes = ref([
   { name: "Public", key: "1", type: RoomVisibilityType.PUBLIC },
   { name: "Private", key: "2", type: RoomVisibilityType.PRIVATE },
 ]);
-
 const selectedCategory = ref(visibilityTypes.value[0].type); // public visibility will always be the default one
+
+// for password
 const blockedPasswordInput = ref<boolean>(false);
 const passwordValue = ref(null);
-
 function togglePasswordBlock() {
   if (selectedCategory.value === RoomVisibilityType.PRIVATE) {
     blockedPasswordInput.value = true;
@@ -116,16 +119,24 @@ function pushToNewRoom(newRoomName: string) {
     params: { roomName: newRoomName },
   });
 }
+
+// enjecting the socketIO instance  for catching incoming events
 const socket: Socket = inject("socketioInstance");
 
+// reactive state for showing error message for invalid room name
+const isValidRoomName = ref<boolean>(true);
+const invalidRoomNameResponseMessage = ref<string>("");
 socket.on("BadRequestException", (response) => {
   console.log("constraints", response.message[0]);
+  isValidRoomName.value = false;
+  invalidRoomNameResponseMessage.value = response.message[0];
 });
 
 onMounted(() => {
   socket.on("createRoom", (response: { status: string; data: string }) => {
     console.log("Response is :", response.status);
     if (response.status === "OK") {
+      isValidRoomName.value = true;
       pushToNewRoom(response.data);
     } else {
       console.log(
@@ -144,6 +155,7 @@ function saveNewRoom() {
   };
   console.log("newRoom data sent from the client: ", newRoom);
   socket.emit("createRoom", newRoom);
+  isValidRoomName.value = true;
 }
 </script>
 <style scoped>
@@ -157,3 +169,9 @@ function saveNewRoom() {
   margin-top: 2rem;
 }
 </style>
+
+<!-- <div v-if="!isValidRoomName">
+        <InlineMessage severity="error">{{
+          invalidRoomNameResponseMessage
+        }}</InlineMessage>
+      </div> -->
