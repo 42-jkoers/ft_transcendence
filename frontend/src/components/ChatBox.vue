@@ -53,26 +53,30 @@ import PrimeVueButton from "primevue/button";
 import Room from "../types/Room";
 import UserProfileI from "../types/UserProfile.interface";
 import Panel from "primevue/panel";
+import { useRoute } from "vue-router";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const scroller = ref(null);
+const route = useRoute();
 const exampleRoom: Room = {
-  id: 5,
   name: "codam",
   isDirectMessage: true,
   visibility: 1,
+  password: null,
 };
 
 const exampleUser: UserProfileI = {
-  id: 1,
-  username: "irem",
-  avatar: "av",
+  id: 2,
+  username: "iremirem",
+  avatar: "/default_avatar.png",
+  twoFactor: false,
 };
 
 onMounted(() => {
-  socket.emit("getMessagesForRoom", exampleRoom.id);
+  console.log("mounted");
+  socket.emit("getMessagesForRoom", route.params.roomName);
 
   socket.on("getMessagesForRoom", (response) => {
     // console.log("Msgs of this room: ", response);
@@ -82,7 +86,7 @@ onMounted(() => {
   socket.on("messageAdded", (message: MessageI) => {
     console.log("Here is you msg saved to DB: ", message.text);
     // messages.value.push(message);
-    socket.emit("getMessagesForRoom", exampleRoom.id); //TODO discuss this approach of updating messages
+    socket.emit("getMessagesForRoom", route.params.roomName); //TODO discuss this approach of updating messages
 
     //after each msg adjust scroll height
     // keepScrollBarAtBottom();

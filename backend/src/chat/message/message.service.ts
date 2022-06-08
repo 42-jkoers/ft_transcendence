@@ -18,12 +18,13 @@ export class MessageService {
 		);
 	}
 
-	async findMessagesForRoom(roomID: number): Promise<MessageI[]> {
+	async findMessagesForRoom(roomName: string): Promise<MessageI[]> {
+		console.log(roomName);
 		const query = this.messageRepository
 			.createQueryBuilder('message')
 			.leftJoinAndSelect('message.room', 'room')
-			// .where('room.name = :name', { name: roomName }) //FIXME try to find by room name
-			.where('room.id = :roomId', { roomId: roomID })
+			.where('room.name = :name', { name: roomName }) //FIXME try to find by room name
+			// .where('room.id = :roomId', { roomId: roomID })
 			.orderBy('message.created_at', 'DESC') //helps to display msg in order
 			.getMany();
 		return query;
