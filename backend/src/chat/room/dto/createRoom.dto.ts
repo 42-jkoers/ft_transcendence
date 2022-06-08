@@ -19,7 +19,7 @@ export class createRoomDto {
 			return 'The name can contain letters of Latin alphabet, digits or whitespace. It cannot start or end with a whitespace.';
 		},
 	})
-	@MinLength(2, {
+	@MinLength(1, {
 		message: () => {
 			return 'Name is required';
 		},
