@@ -127,21 +127,18 @@ const socket: Socket = inject("socketioInstance");
 const isValidRoomName = ref<boolean>(true);
 const invalidRoomNameResponseMessage = ref<string>("");
 socket.on("BadRequestException", (response) => {
-  console.log("constraints", response.message[0]);
   isValidRoomName.value = false;
   invalidRoomNameResponseMessage.value = response.message[0];
 });
 
 onMounted(() => {
   socket.on("createRoom", (response: { status: string; data: string }) => {
-    console.log("Response is :", response.status);
     if (response.status === "OK") {
       isValidRoomName.value = true;
       pushToNewRoom(response.data);
     } else {
-      console.log(
-        `The Chat Room '${response.data}' exists. Please choose another name` //FIXME: create message popup
-      );
+      isValidRoomName.value = false;
+      invalidRoomNameResponseMessage.value = `'${response.data}' is already in use. Please choose another name`;
     }
   });
 });
