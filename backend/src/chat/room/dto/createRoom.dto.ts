@@ -14,7 +14,7 @@ import { UserI } from 'src/user/user.interface';
 
 export class createRoomDto {
 	@IsNotEmpty()
-	@Matches(/^[A-Za-z0-9][A-Za-z0-9 ]*[A-Za-z0-9]*$/, {
+	@Matches(/^[A-Za-z0-9][A-Za-z0-9 ]*[A-Za-z0-9]$/, {
 		message: () => {
 			return 'The name can contain letters of Latin alphabet, digits or whitespace. It cannot start or end with a whitespace.';
 		},
