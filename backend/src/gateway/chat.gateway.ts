@@ -68,13 +68,17 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages
-	// @UseGuards(AuthenticatedGuard) //TODO check if it works
-	async handleMessage(client: Socket, message: MessageI): Promise<any> {
-		this.logger.log(message);
+	async handleMessage(client: Socket, message: MessageI) {
+		console.log(message);
+		const selectedRoom: RoomI = await this.roomService.findByName(
+			message.room.name,
+		);
 		const createdMessage: MessageI = await this.messageService.create(
 			message,
+			client.data.user,
+			selectedRoom,
 		);
-		console.log('created msg.text : ', createdMessage.text);
+		console.log('created msg : ', createdMessage);
 		// this.server.to(client.id).emit('messageAdded', createdMessage); //TODO check the difference and decide
 		client.emit('messageAdded', createdMessage);
 	}
