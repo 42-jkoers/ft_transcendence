@@ -4,7 +4,7 @@
     style="height: 100%; min-height: 100vh"
   >
     <div
-      class="surface-card grid p-4 shadow-2 border-round w-full lg:w-6"
+      class="surface-card grid p-4 mt-4 w-full lg:w-6"
       style="height: 60%; min-height: 60vh"
     >
       <div class="col-12 text-900 text-3xl font-medium mb-3">
@@ -61,14 +61,21 @@
             >
           </div>
         </div>
-
-        <PrimeVueButton
-          @click="saveNewRoom"
-          label="Create"
-          icon="pi pi-check"
-          class="p-button-primary"
-          v-bind:disabled="!newRoomName.length"
-        ></PrimeVueButton>
+        <div class="flex flex-wrap justify-content-center mt-6">
+          <PrimeVueButton
+            @click="closeCreateRoomView"
+            label="Cancel"
+            icon="pi pi-times"
+            class="p-button-text m-3"
+          ></PrimeVueButton>
+          <PrimeVueButton
+            @click="saveNewRoom"
+            label="Create"
+            icon="pi pi-check"
+            class="m-3"
+            v-bind:disabled="!newRoomName.length"
+          ></PrimeVueButton>
+        </div>
       </div>
     </div>
     <router-view></router-view>
@@ -153,6 +160,12 @@ function saveNewRoom() {
   console.log("newRoom data sent from the client: ", newRoom);
   socket.emit("createRoom", newRoom);
   isValidRoomName.value = true;
+}
+
+function closeCreateRoomView() {
+  router.push({
+    name: "Chat",
+  });
 }
 </script>
 <style scoped>
