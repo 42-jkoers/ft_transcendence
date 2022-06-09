@@ -54,11 +54,13 @@ import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
 import ScrollPanel from "primevue/scrollpanel";
 import Panel from "primevue/panel";
+import { useRoute } from "vue-router";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const root = ref(null);
+const route = useRoute();
 
 onMounted(() => {
   socket.on("messageAdded", (message: MessageI) => {
@@ -75,7 +77,11 @@ onMounted(() => {
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   input.value = input.value.trim();
-  if (input.value) socket.emit("addMessage", { text: input.value });
+  if (input.value)
+    socket.emit("addMessage", {
+      text: input.value,
+      room: { name: route.params.name },
+    });
   input.value = "";
 }
 </script>
