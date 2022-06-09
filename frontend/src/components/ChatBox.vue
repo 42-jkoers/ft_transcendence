@@ -58,9 +58,17 @@ const input = ref<string>("");
 const route = useRoute();
 
 onMounted(() => {
+  socket.emit("getMessagesForRoom", route.params.roomName);
+
+  socket.on("getMessagesForRoom", (response) => {
+    console.log("Msgs of this room: ", response);
+    messages.value = response;
+  });
+
   socket.on("messageAdded", (message: MessageI) => {
     console.log("Here is you msg saved to DB: ", message.text);
-    messages.value.push(message);
+    // messages.value.push(message);
+    socket.emit("getMessagesForRoom", "general"); //TODO discuss this approach of updating messages
   }); //event triggered when a msg is saved to DB
 });
 
