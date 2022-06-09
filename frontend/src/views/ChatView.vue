@@ -33,7 +33,7 @@ import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 
 import ChatRoomsList from "../components/ChatRoomsList.vue";
-import CreateRoom from "./CreateRoom.vue";
+import CreateRoom from "./CreateRoomView.vue";
 import PrimeVueButton from "primevue/button";
 
 const socket: Socket = inject("socketioInstance");
