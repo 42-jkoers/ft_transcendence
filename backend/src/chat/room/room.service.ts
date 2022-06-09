@@ -7,6 +7,7 @@ import { RoomI } from './room.interface';
 import { UserI } from 'src/user/user.interface';
 import { User } from 'src/user/user.entity';
 import { UserService } from '../../user/user.service';
+import { createRoomDto } from './dto';
 
 @Injectable()
 export class RoomService {
@@ -24,7 +25,7 @@ export class RoomService {
 	}
 
 	async createRoom(
-		room: RoomI,
+		room: createRoomDto,
 		userToAddToRoom: UserI,
 	): Promise<{ status: string; data: string }> {
 		room.users = [];
@@ -56,8 +57,10 @@ export class RoomService {
 		await this.createRoom(
 			{
 				name: 'general',
+				isDirectMessage: false,
 				visibility: RoomVisibilityType.PUBLIC,
 				password: null,
+				users: [],
 			},
 			defaultUser,
 		);
@@ -105,4 +108,6 @@ export class RoomService {
 		const isMatch = await bcrypt.compare(password, hash);
 		return isMatch;
 	}
+
+	// async unlockProtectedRoom() {}
 }

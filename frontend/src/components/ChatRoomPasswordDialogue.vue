@@ -17,7 +17,6 @@
         id="password"
         v-model="passwordValue"
         :feedback="false"
-        showIcon="pi pi-eye"
         toggleMask
       />
     </div>
