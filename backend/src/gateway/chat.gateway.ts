@@ -79,6 +79,13 @@ export class ChatGateway
 		client.emit('messageAdded', createdMessage);
 	}
 
+	@SubscribeMessage('getMessagesForRoom')
+	async getMessagesForRoom(client: Socket, roomName: string) {
+		const response: MessageI[] =
+			await this.messageService.findMessagesForRoom(roomName);
+		client.emit('getMessagesForRoom', response);
+	}
+
 	@UseFilters(new WsExceptionFilter())
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('createRoom')
