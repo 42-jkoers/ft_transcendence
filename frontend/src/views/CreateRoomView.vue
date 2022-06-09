@@ -4,7 +4,7 @@
     style="height: 100%; min-height: 100vh"
   >
     <div
-      class="surface-card grid p-4 shadow-2 border-round w-full lg:w-6"
+      class="surface-card grid p-4 mt-4 w-full lg:w-6"
       style="height: 60%; min-height: 60vh"
     >
       <div class="col-12 text-900 text-3xl font-medium mb-3">
@@ -61,7 +61,7 @@
             >
           </div>
         </div>
-        <div class="flex flex-wrap justify-content-center mt-4">
+        <div class="flex flex-wrap justify-content-center mt-6">
           <PrimeVueButton
             @click="closeCreateRoomView"
             label="Cancel"
