@@ -17,23 +17,13 @@ export class MessageService {
 		);
 	}
 
-	// findAll() {
-	// 	return `This action returns all Message`;
-	// }
-
-	// findOne(id: number) {
-	// 	return `This action returns a #${id} Message`;
-	// }
-
-	// update(id: number, updateMessageDto: UpdateMessageDto) {
-	// 	return `This action updates a #${id} Message`;
-	// }
-
-	// remove(id: number) {
-	// 	return `This action removes a #${id} Message`;
-	// }
-
-	// async findMessagesForRoom(room: RoomI...) {
-	//     return paginate(?) //Min 26 in 14/17 video of tutorial
-	// }
+	async findMessagesForRoom(roomName: string): Promise<MessageI[]> {
+		const query = this.messageRepository
+			.createQueryBuilder('message')
+			.leftJoinAndSelect('message.room', 'room')
+			.where('room.name = :roomName', { roomName })
+			.orderBy('message.created_at', 'DESC') //helps to display msg in order
+			.getMany();
+		return query;
+	}
 }
