@@ -13,10 +13,15 @@
         :key="m.id"
       >
         <Card class="message-card text-black-alpha-70">
-          <template v-slot:content>
+          <template #content>
             {{ m.text }}
           </template>
-          <!-- <template #footer class="message-date">{{ m.date }}</template> -->
+          <template #footer>
+            {{ m.created_at }}
+          </template>
+          <template #header>
+            {{ m.user.username }}
+          </template>
         </Card>
       </div>
     </div>
@@ -61,14 +66,12 @@ onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName);
 
   socket.on("getMessagesForRoom", (response) => {
-    console.log("Msgs of this room: ", response);
     messages.value = response;
+    console.log(messages.value);
   });
 
   socket.on("messageAdded", (message: MessageI) => {
-    console.log("Here is you msg saved to DB: ", message.text);
-    // messages.value.push(message);
-    socket.emit("getMessagesForRoom", "general"); //TODO discuss this approach of updating messages
+    socket.emit("getMessagesForRoom", route.params.roomName); //TODO discuss this approach of updating messages
   }); //event triggered when a msg is saved to DB
 });
 
@@ -86,7 +89,7 @@ function sendMessage() {
 <style scoped>
 #all-messages {
   height: 50vh; /*if there is no height it does not scroll */
-  overflow: scroll; /* FIXME school computer shows white bars */
+  overflow-y: scroll; /* FIXME school computer shows white bars */
 }
 
 .message-card {

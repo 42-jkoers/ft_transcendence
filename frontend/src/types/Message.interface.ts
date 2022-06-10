@@ -6,4 +6,5 @@ export default interface MessageI {
   text: string;
   user: UserProfileI;
   room: Room;
+  created_at: Date;
 }
