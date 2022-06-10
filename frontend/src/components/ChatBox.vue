@@ -14,9 +14,10 @@
       >
         <Card class="message-card text-black-alpha-70">
           <template #title>
-            <p class="card-title">
-              {{ m.user.username }}
-            </p>
+            <Chip
+              :label="m.user.username"
+              :image="storeUser.state.user.avatar"
+            />
           </template>
           <template #subtitle>
             <p class="card-title">
@@ -63,6 +64,8 @@ import PrimeVueButton from "primevue/button";
 import Panel from "primevue/panel";
 import { useRoute } from "vue-router";
 import moment from "moment";
+import Chip from "primevue/chip";
+import storeUser from "@/store";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
