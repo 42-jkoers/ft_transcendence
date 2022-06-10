@@ -13,14 +13,20 @@
         :key="m.id"
       >
         <Card class="message-card text-black-alpha-70">
+          <template #title>
+            <p class="card-title">
+              {{ m.user.username }}
+            </p>
+          </template>
+          <template #subtitle>
+            <p class="card-title">
+              {{ moment(m.created_at).format("lll") }}
+            </p>
+          </template>
           <template #content>
-            {{ m.text }}
-          </template>
-          <template #footer>
-            {{ m.created_at }}
-          </template>
-          <template #header>
-            {{ m.user.username }}
+            <p class="card-content">
+              {{ m.text }}
+            </p>
           </template>
         </Card>
       </div>
@@ -56,6 +62,7 @@ import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
 import Panel from "primevue/panel";
 import { useRoute } from "vue-router";
+import moment from "moment";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
@@ -63,16 +70,15 @@ const input = ref<string>("");
 const route = useRoute();
 
 onMounted(() => {
-  socket.emit("getMessagesForRoom", route.params.roomName);
+  socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
 
   socket.on("getMessagesForRoom", (response) => {
     messages.value = response;
-    console.log(messages.value);
-  });
+  }); //listen to an event for updated messages from backend
 
   socket.on("messageAdded", (message: MessageI) => {
     socket.emit("getMessagesForRoom", route.params.roomName); //TODO discuss this approach of updating messages
-  }); //event triggered when a msg is saved to DB
+  }); //load msgs again when a msg is sent
 });
 
 //binding a click event listener to a method named 'sendMessage'
@@ -94,5 +100,18 @@ function sendMessage() {
 
 .message-card {
   background: #9da3d2;
+}
+
+.card-title {
+  font-size: small;
+  margin-bottom: 0;
+  text-align: left;
+  margin-top: 0;
+}
+
+.card-content {
+  text-align: left;
+  font-size: small;
+  margin: 0;
 }
 </style>
