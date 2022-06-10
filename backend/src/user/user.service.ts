@@ -22,8 +22,16 @@ export class UserService {
 		});
 	}
 
-	async findByIntraID(intraID: string): Promise<UserI> {
-		return await this.userRepository.findOne({ intraID });
+	async findByIntraID(intraIDToFind: string): Promise<UserI> {
+		return await this.userRepository.findOne({
+			where: { intraID: intraIDToFind },
+		});
+	}
+
+	async findByUserName(userNameToFind: string): Promise<UserI> {
+		return await this.userRepository.findOne({
+			where: { username: userNameToFind },
+		});
 	}
 
 	async createUser(userData: CreateUserDto): Promise<UserI> {
@@ -71,12 +79,32 @@ export class UserService {
 		return await this.findByID(userData.id);
 	}
 
-	async addFriend(user: UserI, friend: UserI) {
+	async isFriends(id1: number, id2: number): Promise<boolean> {
+		const friend = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.friends', 'friend')
+			.where('friend.id = :id1', { id1 })
+			.andWhere('user.id = :id2', { id2 })
+			.getOne();
+		return !(friend === undefined);
+	}
+
+	async addFriend(user: UserI, friendToAdd: UserI) {
 		user.friends = await this.getFriends(user.id);
-		user.friends.push(friend);
+		user.friends.push(friendToAdd);
 		await this.userRepository.save(user);
-		friend.friends = await this.getFriends(friend.id);
-		await this.userRepository.save(friend);
+		friendToAdd.friends = await this.getFriends(friendToAdd.id);
+		await this.userRepository.save(friendToAdd);
+	}
+
+	async removeFriend(user: UserI, friendToRemove: UserI) {
+		const friends = await this.getFriends(user.id);
+		user.friends = friends.filter((friend) => {
+			return friend.id !== friendToRemove.id;
+		});
+		await this.userRepository.save(user);
+		friendToRemove.friends = await this.getFriends(friendToRemove.id);
+		await this.userRepository.save(friendToRemove);
 	}
 
 	async getFriends(userId: number): Promise<UserI[]> {

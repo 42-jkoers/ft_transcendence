@@ -12,23 +12,30 @@
         </template>
         <template #title>
           <h3>{{ user?.username }}</h3>
-        </template>
-        <template #content>
-          <p>[other info to be added]</p>
-        </template>
-        <template #footer>
-          <div v-if="isShowMessageButton">
-            <Button
-              label="Message"
-              icon="pi pi-envelope"
-              @click="toPrivateMessage"
+          <div v-if="!isSelf">
+            <FriendButton
+              :friend-id="user?.id"
+              :is-friend="isFriend"
+              @is-friend="changeFriendStatus($event)"
             />
           </div>
-          <div v-else>
+        </template>
+        <template #content>
+          <p>To add content</p>
+        </template>
+        <template #footer>
+          <div v-if="isSelf">
             <Button
               label="Edit Profile"
               icon="pi pi-user-edit"
               @click="toSetting"
+            />
+          </div>
+          <div v-if="isFriend">
+            <Button
+              label="Message"
+              icon="pi pi-envelope"
+              @click="toPrivateMessage"
             />
           </div>
         </template>
@@ -45,18 +52,33 @@ import Card from "primevue/card";
 import Button from "primevue/button";
 import UserProfileI from "@/types/UserProfile.interface";
 import storeUser from "@/store";
+import FriendButton from "./FriendButton.vue";
 import { useRouter } from "vue-router";
 
 const route = useRoute();
 const id = route.params.id;
 const user = ref<UserProfileI>();
 const isError = ref<boolean>(false);
-const isShowMessageButton = ref<boolean>(false);
+const isSelf = ref<boolean>();
+const isFriend = ref<boolean>();
 
 onMounted(async () => {
   await findUser();
-  if (id !== String(storeUser.state.user.id)) {
-    isShowMessageButton.value = true;
+  isSelf.value = id === String(storeUser.state.user.id);
+  if (!isSelf.value) {
+    await axios(
+      "http://localhost:3000/user/is-friend?id1=" +
+        storeUser.state.user.id +
+        "&id2=" +
+        id,
+      { withCredentials: true }
+    )
+      .then((response) => {
+        isFriend.value = response.data;
+      })
+      .catch(() => {
+        isError.value = true;
+      });
   }
 });
 
@@ -68,9 +90,6 @@ async function findUser() {
     .then((response) => {
       if (response.data) {
         user.value = response.data;
-        // if (user.value?.username === "admin") {
-        //   isError.value = true;
-        // }
       } else {
         isError.value = true;
       }
@@ -78,6 +97,10 @@ async function findUser() {
     .catch(() => {
       isError.value = true;
     });
+}
+
+function changeFriendStatus(event: any) {
+  isFriend.value = event;
 }
 
 const router = useRouter();

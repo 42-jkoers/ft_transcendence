@@ -8,6 +8,8 @@ import {
 	UploadedFile,
 	Query,
 	ParseIntPipe,
+	HttpException,
+	HttpStatus,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from '../auth/oauth/oauth.guard';
 import { UserI } from './user.interface';
@@ -17,6 +19,7 @@ import { diskStorage } from 'multer';
 import { Express } from 'express';
 import { UploadFileHelper } from './util/uploadfile.helper';
 import { UpdateUserProfileDto } from './dto';
+import { FriendDto } from './dto/Friend.dto';
 
 @UseGuards(AuthenticatedGuard)
 @Controller('user')
@@ -52,19 +55,38 @@ export class UserController {
 		return user;
 	}
 
-	@Get('friend')
-	async addFriend() {
-		const userId = 2;
-		const friendId = 1;
-		const user: UserI | undefined = await this.userService.findByID(userId);
-		const fr: UserI | undefined = await this.userService.findByID(friendId);
+	@Get('is-friend?')
+	async isFriend(
+		@Query('id1', ParseIntPipe) id1: number,
+		@Query('id2', ParseIntPipe) id2: number,
+	) {
+		return await this.userService.isFriends(id1, id2);
+	}
+
+	@Post('edit-friend')
+	async addFriend(@Body() friendDto: FriendDto) {
+		const user: UserI | undefined = await this.userService.findByID(
+			friendDto.userId,
+		);
+		const fr: UserI | undefined = await this.userService.findByID(
+			friendDto.friendId,
+		);
 		if (!user || !fr) {
-			// TODO: error;
+			throw new HttpException(
+				'User or friend does not exist',
+				HttpStatus.BAD_REQUEST,
+			);
 		}
-		await this.userService.addFriend(user, fr);
-		const friendOf1: UserI[] = await this.userService.getFriends(1);
-		const friendOf2: UserI[] = await this.userService.getFriends(2);
-		console.log('>>friend of user 1: ', friendOf1);
-		console.log('>>friend of user 2: ', friendOf2);
+		const isFriend = await this.userService.isFriends(
+			friendDto.userId,
+			friendDto.friendId,
+		);
+		if (isFriend) {
+			await this.userService.removeFriend(user, fr);
+			return { isFriend: false };
+		} else {
+			await this.userService.addFriend(user, fr);
+			return { isFriend: true };
+		}
 	}
 }

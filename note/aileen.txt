@@ -155,7 +155,10 @@ Tutorial:
 	- add Regex rule to both front/backend (allow space in between)
 
 (Tue) 2022-06-07
-	- build getFriend and addFriend method in userService
+	- build getFriend and addFriend method in userService (new table in DB)
+
+(Fri) 2022-06-10
+	- addFriend/removeFriend feature added on UserProfileCard
 
 **************************
 **		Next To To				**
@@ -164,7 +167,12 @@ Tutorial:
 	https://michaelnthiessen.com/force-re-render/
 
 ******************************
-**		General To To		**
+**			General To To				**
 ******************************
 - try/catch all axios exception
 - deregister user
+
+******************************
+**					Issues					**
+******************************
+- Login Button sometimes needs to be clicked twice (console.log for each step to check)
