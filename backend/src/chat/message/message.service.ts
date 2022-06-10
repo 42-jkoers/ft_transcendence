@@ -30,6 +30,7 @@ export class MessageService {
 			.createQueryBuilder('message')
 			.leftJoinAndSelect('message.room', 'room')
 			.where('room.name = :roomName', { roomName })
+			.leftJoinAndSelect('message.user', 'user')
 			.orderBy('message.created_at', 'DESC') //helps to display msg in order
 			.getMany();
 		return query;
