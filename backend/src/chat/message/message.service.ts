@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserI } from 'src/user/user.interface';
 import { Repository } from 'typeorm';
+import { RoomI } from '../room/room.interface';
 import { MessageEntity } from './message.entity';
 import { MessageI } from './message.interface';
 
@@ -11,29 +13,26 @@ export class MessageService {
 		private readonly messageRepository: Repository<MessageEntity>,
 	) {}
 
-	async create(message: MessageI): Promise<MessageI> {
+	async create(
+		message: MessageI,
+		user: UserI,
+		room: RoomI,
+	): Promise<MessageI> {
+		message.user = user;
+		message.room = room; //TODO ask if modifying interface is best practice
 		return this.messageRepository.save(
 			this.messageRepository.create(message),
 		);
 	}
 
-	// findAll() {
-	// 	return `This action returns all Message`;
-	// }
-
-	// findOne(id: number) {
-	// 	return `This action returns a #${id} Message`;
-	// }
-
-	// update(id: number, updateMessageDto: UpdateMessageDto) {
-	// 	return `This action updates a #${id} Message`;
-	// }
-
-	// remove(id: number) {
-	// 	return `This action removes a #${id} Message`;
-	// }
-
-	// async findMessagesForRoom(room: RoomI...) {
-	//     return paginate(?) //Min 26 in 14/17 video of tutorial
-	// }
+	async findMessagesForRoom(roomName: string): Promise<MessageI[]> {
+		const query = this.messageRepository
+			.createQueryBuilder('message')
+			.leftJoinAndSelect('message.room', 'room')
+			.where('room.name = :roomName', { roomName })
+			.leftJoinAndSelect('message.user', 'user')
+			.orderBy('message.created_at', 'DESC') //helps to display msg in order
+			.getMany();
+		return query;
+	}
 }

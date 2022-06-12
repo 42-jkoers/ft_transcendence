@@ -17,7 +17,7 @@
               <ChatRoomsList />
             </div>
             <div class="col-12 md:col-8 xl:col-9">
-              <router-view></router-view>
+              <router-view :key="$route.fullPath"></router-view>
             </div>
           </div>
         </div>
