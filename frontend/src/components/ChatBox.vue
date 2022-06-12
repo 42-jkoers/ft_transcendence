@@ -14,15 +14,17 @@
       >
         <Card class="message-card text-black-alpha-70">
           <template #title>
-            <Chip
-              :label="m.user.username"
-              :image="storeUser.state.user.avatar"
-            />
-          </template>
-          <template #subtitle>
-            <p class="card-title">
-              {{ moment(m.created_at).format("lll") }}
-            </p>
+            <div class="msg-top flex flex-row">
+              <Chip
+                class="custom-chip"
+                :label="m.user.username"
+                :image="storeUser.state.user.avatar"
+              />
+              <Chip
+                class="custom-chip"
+                :label="moment(m.created_at).format('LT')"
+              />
+            </div>
           </template>
           <template #content>
             <p class="card-content">
@@ -39,6 +41,7 @@
         <InputText
           type="text"
           v-model.trim="input"
+          maxlength="200"
           placeholder="Type your message..."
           @keyup.enter="sendMessage"
           class="w-11"
@@ -103,18 +106,23 @@ function sendMessage() {
 
 .message-card {
   background: #9da3d2;
+  max-width: 35vw;
+  font-size: small;
+  text-align: left;
 }
 
-.card-title {
-  font-size: small;
+.p-chip.custom-chip {
+  font-size: 50%;
   margin-bottom: 0;
-  text-align: left;
-  margin-top: 0;
+  height: 2vh;
+}
+
+.msg-top {
+  justify-content: space-between;
+  margin-bottom: 0;
 }
 
 .card-content {
-  text-align: left;
-  font-size: small;
   margin: 0;
 }
 </style>
