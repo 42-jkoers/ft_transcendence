@@ -11,7 +11,6 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { UserI } from 'src/user/user.interface';
-import { RoomI } from 'src/chat/room/room.interface';
 import { AuthService } from '../auth/auth.service';
 import { ConnectedUserService } from '../chat/connected-user/connected-user.service';
 import { RoomService } from '../chat/room/room.service';
@@ -20,6 +19,9 @@ import { MessageService } from '../chat/message/message.service';
 import { createRoomDto } from '../chat/room/dto';
 import { WsExceptionFilter } from '../exceptions/WsExceptionFilter';
 import { UseFilters } from '@nestjs/common';
+import { RoomEntity } from 'src/chat/room/entities/room.entity';
+import { plainToClass } from 'class-transformer';
+import { RoomForUserDto } from 'src/chat/room/dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -93,9 +95,16 @@ export class ChatGateway
 
 	@SubscribeMessage('getUserRoomsList')
 	async getRoomsList(client: Socket) {
-		const response: RoomI[] = await this.roomService.getRoomsForUser(
-			client.data.user.id,
-		);
+		const roomEntities: RoomEntity[] =
+			await this.roomService.getRoomsForUser(client.data.user.id);
+		// we don't need all information from the RoomEntity returned to the user, we'll have to serialize it
+		// by converting roomentity type to dto with several excluded and transformed properties
+		const response: RoomForUserDto[] = roomEntities.map((room) => {
+			const listedRoom = plainToClass(RoomForUserDto, room); //
+			listedRoom.userRole = room.userToRooms[0].role; // getting role from userToRooms array
+			listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
+			return listedRoom;
+		});
 		client.emit('getUserRoomsList', response);
 	}
 
@@ -104,7 +113,7 @@ export class ChatGateway
 		client: Socket,
 		roomToUnlock: { name: string; password: string },
 	) {
-		const room: RoomI = await this.roomService.findByName(
+		const room: RoomEntity = await this.roomService.findRoomByName(
 			roomToUnlock.name,
 		);
 		const isMatched = await this.roomService.compareRoomPassword(
