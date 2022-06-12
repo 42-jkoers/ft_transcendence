@@ -85,9 +85,7 @@ export class RoomService {
 		const userToRoom: UserToRoomEntity =
 			this.userToroomEntityRepository.create();
 		//FIXME: temp workaround getting user of type UserEntity instead of UserI. Will be replaced with UserEntity
-		const user: User = await this.userEntityRepository.findOne({
-			where: { id: userIdToAdd },
-		});
+		const user: User = await this.userService.getUserByID(userIdToAdd);
 		userToRoom.user = user;
 		userToRoom.room = newRoom;
 		userToRoom.role = userRole;
@@ -115,6 +113,20 @@ export class RoomService {
 		);
 	}
 
+	// TODO: remove this temp room for testing protected
+	async createDefaultProtectedRoom() {
+		const defaultUser: User = await this.userService.getUserByID(1);
+		return await this.createAndSaveNewRoom(
+			{
+				name: 'general protected',
+				isDirectMessage: false,
+				visibility: RoomVisibilityType.PUBLIC,
+				password: '1',
+			},
+			defaultUser.id,
+		);
+	}
+
 	async updateRoom(roomToUpdate: RoomEntity) {
 		await this.roomEntityRepository.save(roomToUpdate);
 	}
@@ -125,6 +137,7 @@ export class RoomService {
 			userToAddId,
 			UserRole.VISITOR,
 		);
+		await this.roomEntityRepository.save(room);
 	}
 
 	async getRoomsForUser(userId: number): Promise<RoomEntity[]> {
