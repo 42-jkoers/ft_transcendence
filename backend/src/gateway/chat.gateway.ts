@@ -89,7 +89,7 @@ export class ChatGateway
 		@ConnectedSocket() client: Socket,
 	) {
 		const response: { status: string; data: string } =
-			await this.roomService.createRoom(room, client.data.user);
+			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
 	}
 

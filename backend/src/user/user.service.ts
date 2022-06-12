@@ -31,7 +31,7 @@ export class UserService {
 		const defaultRoom: RoomEntity = await this.roomService.getDefaultRoom();
 		const newUser = this.userRepository.create(userData);
 		const createdUser: UserI = await this.userRepository.save(newUser);
-		await this.roomService.addVisitorToRoom(createdUser, defaultRoom);
+		await this.roomService.addVisitorToRoom(createdUser.id, defaultRoom);
 		await this.roomService.updateRoom(defaultRoom);
 		return createdUser;
 	}
