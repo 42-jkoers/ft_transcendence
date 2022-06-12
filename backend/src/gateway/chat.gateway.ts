@@ -69,7 +69,6 @@ export class ChatGateway
 
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages
 	async handleMessage(client: Socket, message: MessageI) {
-		console.log(message);
 		const selectedRoom: RoomI = await this.roomService.findByName(
 			message.room.name,
 		);
@@ -78,7 +77,6 @@ export class ChatGateway
 			client.data.user,
 			selectedRoom,
 		);
-		console.log('created msg : ', createdMessage);
 		// this.server.to(client.id).emit('messageAdded', createdMessage); //TODO check the difference and decide
 		client.emit('messageAdded', createdMessage);
 	}
