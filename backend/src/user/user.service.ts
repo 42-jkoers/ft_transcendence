@@ -21,6 +21,13 @@ export class UserService {
 		});
 	}
 
+	//FIXME: this is a kind of duplicate findOne function to return User entity instead of UserI
+	async getUserByID(idToFind: number): Promise<User> {
+		return await this.userRepository.findOne({
+			where: { id: idToFind },
+		});
+	}
+
 	async findByIntraID(intraID: string): Promise<UserI> {
 		return await this.userRepository.findOne({ intraID });
 	}
@@ -32,7 +39,15 @@ export class UserService {
 		const newUser = this.userRepository.create(userData);
 		const createdUser: UserI = await this.userRepository.save(newUser);
 		await this.roomService.addVisitorToRoom(createdUser.id, defaultRoom);
-		await this.roomService.updateRoom(defaultRoom);
+
+		//FIXME: temp for testing protected rooms:
+		const protectedWithPassword: RoomEntity =
+			await this.roomService.createDefaultProtectedRoom();
+		await this.roomService.addVisitorToRoom(
+			createdUser.id,
+			protectedWithPassword,
+		);
+
 		return createdUser;
 	}
 
