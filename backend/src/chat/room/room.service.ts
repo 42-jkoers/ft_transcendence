@@ -36,9 +36,21 @@ export class RoomService {
 		});
 	}
 
-	async createNewRoom(
+	// emit
+	async createRoom(
 		roomPayload: createRoomDto,
-		userToAddToRoom: UserI,
+		userIdToAdd: number,
+	): Promise<{ status: string; data: string }> {
+		const newRoom: RoomEntity = await this.createAndSaveNewRoom(
+			roomPayload,
+			userIdToAdd,
+		);
+		return { status: newRoom ? 'OK' : 'ERROR', data: `${newRoom.name}` };
+	}
+
+	async createAndSaveNewRoom(
+		roomPayload: createRoomDto,
+		userIdToAdd: number,
 	): Promise<RoomEntity | undefined> {
 		const newRoom = this.roomEntityRepository.create(roomPayload);
 		newRoom.name = roomPayload.name;
@@ -50,9 +62,10 @@ export class RoomService {
 		}
 		try {
 			await this.roomEntityRepository.save(newRoom); // Saves a given entity in the database if the new room name doesn't exist.
+			// manyToOne and oneToMany with additional userToRoomEntity makes manyToMany relationship
 			await this.createManyToManyRelationship(
 				newRoom,
-				userToAddToRoom,
+				userIdToAdd,
 				UserRole.OWNER,
 			);
 		} catch (err) {
@@ -64,34 +77,16 @@ export class RoomService {
 		return newRoom;
 	}
 
-	//FIXME: create one function that will throw exception which will be caught on frontend
-	async createRoom(
-		roomPayload: createRoomDto,
-		userToAddToRoom: UserI,
-	): Promise<{ status: string; data: string }> {
-		const newRoom = await this.createNewRoom(roomPayload, userToAddToRoom);
-		const response = {
-			status: '',
-			data: `${newRoom.name}`,
-		};
-		if (newRoom) {
-			response.status = 'OK';
-		} else {
-			response.status = 'ERROR';
-		}
-		return response;
-	}
-
 	async createManyToManyRelationship(
 		newRoom: RoomEntity,
-		userToAddToRoom: UserI,
+		userIdToAdd: number,
 		userRole: UserRole,
 	) {
 		const userToRoom: UserToRoomEntity =
 			this.userToroomEntityRepository.create();
-		//FIXME: temp workaround getting user of type UserEntity instead of UserI
+		//FIXME: temp workaround getting user of type UserEntity instead of UserI. Will be replaced with UserEntity
 		const user: User = await this.userEntityRepository.findOne({
-			where: { id: userToAddToRoom.id },
+			where: { id: userIdToAdd },
 		});
 		userToRoom.user = user;
 		userToRoom.room = newRoom;
@@ -109,14 +104,14 @@ export class RoomService {
 
 	async createDefaultRoom() {
 		const defaultUser = await this.userService.createDefaultUser();
-		return await this.createNewRoom(
+		return await this.createAndSaveNewRoom(
 			{
 				name: 'general',
 				isDirectMessage: false,
 				visibility: RoomVisibilityType.PUBLIC,
 				password: null,
 			},
-			defaultUser,
+			defaultUser.id,
 		);
 	}
 
@@ -124,10 +119,10 @@ export class RoomService {
 		await this.roomEntityRepository.save(roomToUpdate);
 	}
 
-	async addVisitorToRoom(userToAddToRoom: UserI, room: RoomEntity) {
+	async addVisitorToRoom(userToAddId: number, room: RoomEntity) {
 		await this.createManyToManyRelationship(
 			room,
-			userToAddToRoom,
+			userToAddId,
 			UserRole.VISITOR,
 		);
 	}
