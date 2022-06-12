@@ -82,7 +82,7 @@ onMounted(() => {
     messages.value = response;
   }); //listen to an event for updated messages from backend
 
-  socket.on("messageAdded", (message: MessageI) => {
+  socket.on("messageAdded", () => {
     socket.emit("getMessagesForRoom", route.params.roomName); //TODO discuss this approach of updating messages
   }); //load msgs again when a msg is sent
 });
