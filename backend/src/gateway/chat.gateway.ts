@@ -71,7 +71,7 @@ export class ChatGateway
 
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages
 	async handleMessage(client: Socket, message: MessageI) {
-		const selectedRoom: RoomI = await this.roomService.findByName(
+		const selectedRoom: RoomEntity = await this.roomService.findRoomByName(
 			message.room.name,
 		);
 		const createdMessage: MessageI = await this.messageService.create(
