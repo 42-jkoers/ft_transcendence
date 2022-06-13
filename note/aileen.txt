@@ -160,6 +160,10 @@ Tutorial:
 (Fri) 2022-06-10
 	- addFriend/removeFriend feature added on UserProfileCard
 
+(Mon) 2022-06-13
+	- [ Branch - redis_debug ]
+	- set up FriendsView in menu
+
 **************************
 **		Next To To				**
 **************************

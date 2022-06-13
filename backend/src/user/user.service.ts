@@ -45,6 +45,7 @@ export class UserService {
 		// FIXME: this has to be replaced by default admin and default room instantiation right after the db has been connected
 		const defaultRoom: RoomEntity = await this.roomService.getDefaultRoom();
 		const newUser = this.userRepository.create(userData);
+		newUser.friendRequests = [];
 		newUser.friends = [];
 		const createdUser: UserI = await this.userRepository.save(newUser);
 		await this.roomService.addVisitorToRoom(createdUser.id, defaultRoom);
@@ -67,6 +68,7 @@ export class UserService {
 			avatar: '/default_avatar.png',
 		};
 		const defaultUser = this.userRepository.create(defaultUserData);
+		defaultUser.friendRequests = [];
 		defaultUser.friends = [];
 		await this.userRepository.save(defaultUser);
 		return defaultUser;

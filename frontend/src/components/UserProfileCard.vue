@@ -99,7 +99,7 @@ async function findUser() {
     });
 }
 
-function changeFriendStatus(event: any) {
+function changeFriendStatus(event) {
   isFriend.value = event;
 }
 

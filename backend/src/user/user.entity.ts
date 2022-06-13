@@ -6,11 +6,8 @@ import {
 	Column,
 	Entity,
 	JoinColumn,
-<<<<<<< HEAD
 	JoinTable,
 	ManyToMany,
-=======
->>>>>>> origin/main
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -28,6 +25,9 @@ export class User {
 
 	@Column()
 	public avatar: string;
+
+	@Column('int', { array: true, nullable: true })
+	public friendRequests: number[];
 
 	@ManyToMany(() => User, { cascade: true })
 	@JoinTable({ joinColumn: { name: 'userId_1' } })

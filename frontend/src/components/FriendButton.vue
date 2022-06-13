@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Message from "primevue/message";
-import { ref, defineEmits, defineProps, onMounted } from "vue";
+import { ref, defineEmits, defineProps } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
 const props = defineProps({
