@@ -6,7 +6,7 @@ import UnAuthorizedView from "@/views/UnAuthorizedView.vue";
 import LogOutView from "@/views/LogOutView.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
-import CreateRoom from "@/views/CreateRoom.vue";
+import CreateRoom from "@/views/CreateRoomView.vue";
 import ChatView from "@/views/ChatView.vue";
 import ChatBox from "@/components/ChatBox.vue";
 import UserProfileCard from "@/components/UserProfileCard.vue";

@@ -1,5 +1,7 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
+	ConnectedSocket,
+	MessageBody,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
 	OnGatewayInit,
@@ -15,6 +17,9 @@ import { ConnectedUserService } from '../chat/connected-user/connected-user.serv
 import { RoomService } from '../chat/room/room.service';
 import { MessageI } from '../chat/message/message.interface';
 import { MessageService } from '../chat/message/message.service';
+import { createRoomDto } from '../chat/room/dto';
+import { WsExceptionFilter } from '../exceptions/WsExceptionFilter';
+import { UseFilters } from '@nestjs/common';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -63,23 +68,35 @@ export class ChatGateway
 	}
 
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages
-	// @UseGuards(AuthenticatedGuard) //TODO check if it works
-	async handleMessage(client: Socket, message: MessageI): Promise<any> {
-		this.logger.log(message);
+	async handleMessage(client: Socket, message: MessageI) {
+		const selectedRoom: RoomI = await this.roomService.findByName(
+			message.room.name,
+		);
 		const createdMessage: MessageI = await this.messageService.create(
 			message,
+			client.data.user,
+			selectedRoom,
 		);
-		console.log('created msg.text : ', createdMessage.text);
 		// this.server.to(client.id).emit('messageAdded', createdMessage); //TODO check the difference and decide
 		client.emit('messageAdded', createdMessage);
 	}
 
+	@SubscribeMessage('getMessagesForRoom')
+	async getMessagesForRoom(client: Socket, roomName: string) {
+		const response: MessageI[] =
+			await this.messageService.findMessagesForRoom(roomName);
+		client.emit('getMessagesForRoom', response);
+	}
+
+	@UseFilters(new WsExceptionFilter())
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('createRoom')
-	async handleCreateRoom(client: Socket, room: RoomI) {
+	async handleCreateRoom(
+		@MessageBody() room: createRoomDto,
+		@ConnectedSocket() client: Socket,
+	) {
 		const response: { status: string; data: string } =
 			await this.roomService.createRoom(room, client.data.user);
-		this.logger.log('response from DB: ', response);
-
 		client.emit('createRoom', response);
 	}
 

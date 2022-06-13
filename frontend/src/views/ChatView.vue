@@ -17,7 +17,7 @@
               <ChatRoomsList />
             </div>
             <div class="col-12 md:col-8 xl:col-9">
-              <router-view></router-view>
+              <router-view :key="$route.fullPath"></router-view>
             </div>
           </div>
         </div>
@@ -33,7 +33,7 @@ import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 
 import ChatRoomsList from "../components/ChatRoomsList.vue";
-import CreateRoom from "./CreateRoom.vue";
+import CreateRoom from "./CreateRoomView.vue";
 import PrimeVueButton from "primevue/button";
 
 const socket: Socket = inject("socketioInstance");

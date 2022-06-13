@@ -4,23 +4,27 @@
     style="height: 100%; min-height: 100vh"
   >
     <div
-      class="surface-card grid p-4 shadow-2 border-round w-full lg:w-6"
+      class="surface-card grid p-4 mt-4 w-full lg:w-6"
       style="height: 60%; min-height: 60vh"
     >
       <div class="col-12 text-900 text-3xl font-medium mb-3">
         Create a Chat Room
       </div>
       <div class="col-12">
-        <label for="room-name" class="block text-900 font-medium mb-2"
-          >Name</label
-        >
-        <InputText
-          id="room-name"
-          required
-          type="text"
-          class="w-full mb-4"
-          v-model="name"
-        />
+        <span class="p-float-label">
+          <InputText
+            id="room-name"
+            type="text"
+            class="room-name-input w-full"
+            v-model="newRoomName"
+            required="true"
+            maxlength="64"
+          />
+          <label for="room-name">Select a unique name for your room</label>
+          <small v-if="!isValidRoomName" id="room-name" class="p-error">{{
+            invalidRoomNameResponseMessage
+          }}</small>
+        </span>
 
         <div class="card">
           <div
@@ -40,7 +44,12 @@
           <div class="field grid">
             <BlockUI :blocked="blockedPasswordInput">
               <span class="p-float-label">
-                <Password id="password" v-model="passwordValue" toggleMask />
+                <Password
+                  id="password"
+                  v-model="passwordValue"
+                  toggleMask
+                  maxlength="64"
+                />
                 <label for="password">Protect with password</label>
               </span>
             </BlockUI>
@@ -52,13 +61,21 @@
             >
           </div>
         </div>
-
-        <PrimeVueButton
-          @click="saveNewRoom"
-          label="Create"
-          icon="pi pi-check"
-          class="p-button-primary"
-        ></PrimeVueButton>
+        <div class="flex flex-wrap justify-content-center mt-6">
+          <PrimeVueButton
+            @click="closeCreateRoomView"
+            label="Cancel"
+            icon="pi pi-times"
+            class="p-button-text m-3"
+          ></PrimeVueButton>
+          <PrimeVueButton
+            @click="saveNewRoom"
+            label="Create"
+            icon="pi pi-check"
+            class="m-3"
+            v-bind:disabled="!newRoomName.length"
+          ></PrimeVueButton>
+        </div>
       </div>
     </div>
     <router-view></router-view>
@@ -82,16 +99,16 @@ import BlockUI from "primevue/blockui";
 const router = useRouter();
 
 //reactive state:
-// for visibility categories:
+// for available visibility categories:
 const visibilityTypes = ref([
   { name: "Public", key: "1", type: RoomVisibilityType.PUBLIC },
   { name: "Private", key: "2", type: RoomVisibilityType.PRIVATE },
 ]);
-
 const selectedCategory = ref(visibilityTypes.value[0].type); // public visibility will always be the default one
+
+// for password
 const blockedPasswordInput = ref<boolean>(false);
 const passwordValue = ref(null);
-
 function togglePasswordBlock() {
   if (selectedCategory.value === RoomVisibilityType.PRIVATE) {
     blockedPasswordInput.value = true;
@@ -101,7 +118,7 @@ function togglePasswordBlock() {
 }
 
 // state of the new room name:
-const name = ref<string>("My New Room");
+const newRoomName = ref<string>("");
 // push user to a newly created room
 function pushToNewRoom(newRoomName: string) {
   router.push({
@@ -109,33 +126,52 @@ function pushToNewRoom(newRoomName: string) {
     params: { roomName: newRoomName },
   });
 }
+
+// enjecting the socketIO instance  for catching incoming events
 const socket: Socket = inject("socketioInstance");
+
+// reactive state for showing error message for invalid room name
+const isValidRoomName = ref<boolean>(true);
+const invalidRoomNameResponseMessage = ref<string>("");
+socket.on("BadRequestException", (response) => {
+  isValidRoomName.value = false;
+  invalidRoomNameResponseMessage.value = response.message[0];
+});
 
 onMounted(() => {
   socket.on("createRoom", (response: { status: string; data: string }) => {
-    console.log("Response is :", response.status);
     if (response.status === "OK") {
+      isValidRoomName.value = true;
       pushToNewRoom(response.data);
     } else {
-      console.log(
-        `The Chat Room '${response.data}' exists. Please choose another name` //FIXME: create message popup
-      );
+      isValidRoomName.value = false;
+      invalidRoomNameResponseMessage.value = `'${response.data}' is already in use. Please choose another name`;
     }
   });
 });
 
 function saveNewRoom() {
   const newRoom: Room = {
-    name: name.value,
+    name: newRoomName.value,
     isDirectMessage: false,
     visibility: selectedCategory.value,
     password: passwordValue.value,
   };
-  console.log("newRoom created on frontend: ", newRoom);
+  console.log("newRoom data sent from the client: ", newRoom);
   socket.emit("createRoom", newRoom);
+  isValidRoomName.value = true;
+}
+
+function closeCreateRoomView() {
+  router.push({
+    name: "Chat",
+  });
 }
 </script>
 <style scoped>
+.card {
+  margin-top: 2rem;
+}
 .field {
   margin-bottom: 0;
 }
@@ -143,3 +179,9 @@ function saveNewRoom() {
   margin-top: 2rem;
 }
 </style>
+
+<!-- <div v-if="!isValidRoomName">
+        <InlineMessage severity="error">{{
+          invalidRoomNameResponseMessage
+        }}</InlineMessage>
+      </div> -->
