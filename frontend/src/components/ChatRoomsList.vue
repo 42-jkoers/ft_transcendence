@@ -1,5 +1,6 @@
 <template>
   <div id="chatrooms-list">
+    <ConfirmDialog></ConfirmDialog>
     <ChatRoomPasswordDialogue
       :isDialogVisible="displayPasswordDialog"
       :roomName="selectedRoomName"
@@ -16,6 +17,9 @@
       selectionMode="single"
       dataKey="name"
       @rowSelect="onRowSelect"
+      contextMenu
+      v-model:contextMenuSelection="selectedRoom"
+      @rowContextmenu="onRowContextMenu"
     >
       <Column field="visibility" style="max-width: 2.5rem">
         <template #body="slotProps">
@@ -41,6 +45,7 @@
         headerStyle="padding-left:0"
       ></Column>
     </DataTable>
+    <ContextMenu :model="menuItems" ref="cm" />
   </div>
 </template>
 
@@ -53,6 +58,10 @@ import ChatRoomPasswordDialogue from "./ChatRoomPasswordDialogue.vue";
 
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
+import ContextMenu from "primevue/contextmenu";
+import ConfirmDialog from "primevue/confirmdialog";
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
 
 const socket: Socket = inject("socketioInstance");
 
@@ -74,7 +83,6 @@ const route = useRoute();
 const displayPasswordDialog = ref(false);
 
 const selectedRoomName = ref("");
-// const selectedRoomIcon = ref("pi pi-hashtag");
 
 const onRowSelect = (event) => {
   const room = event.data;
@@ -88,4 +96,67 @@ const onRowSelect = (event) => {
     });
   }
 };
+
+const cm = ref();
+const selectedRoom = ref();
+const menuItems = ref([
+  {
+    label: "Edit privacy",
+    icon: "pi pi-pencil",
+    visible: () => isOwner(selectedRoom.value.userRole),
+    command: () => editRoomPrivacy(selectedRoom),
+  },
+  {
+    label: "Leave",
+    icon: "pi pi-exclamation-circle",
+    command: () => confirmLeave(selectedRoom),
+  },
+]);
+
+const onRowContextMenu = (event) => {
+  cm.value.show(event.originalEvent);
+};
+const isOwner = (userRole) => (userRole === 0 ? true : false);
+
+const confirm = useConfirm();
+const toast = useToast();
+
+const confirmLeave = (room) => {
+  confirm.require({
+    message: "Are you sure you want to leave?",
+    header: "Leave Confirmation",
+    icon: "pi pi-info-circle",
+    accept: () => {
+      toast.add({
+        severity: "info",
+        summary: "Confirmed",
+        detail: "Record deleted",
+        life: 3000,
+      });
+      if (route.params.roomName === room.value.name) {
+        router.push({
+          name: "Chat",
+        });
+      }
+      console.log(
+        `Let's pretend you've just left the room ${room.value.name}. Check that you're moved to the general room`
+      );
+    },
+    reject: () => {
+      toast.add({
+        severity: "error",
+        summary: "Rejected",
+        detail: "You have rejected",
+        life: 3000,
+      });
+    },
+  });
+};
+
+const editRoomPrivacy = (room) => {
+  console.log(
+    `Room ${room.value.name}'s visibility is ${room.value.visibility}. Is it protected with a password? ${room.value.protected}`
+  );
+};
 </script>
+<style></style>
