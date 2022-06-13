@@ -75,10 +75,11 @@ const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
 
+socket.off("messageAdded"); //removes all the existing handler for this event //FIXME prettier solution?
 socket.on("messageAdded", (message: MessageI) => {
-  console.log(message);
+  //console.log(message);
   messages.value.unshift(message);
-  console.log(messages);
+  //console.log(messages.value);
 }); //load msgs again when a msg is sent
 
 onMounted(() => {
