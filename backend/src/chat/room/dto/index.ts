@@ -1,1 +1,2 @@
-export * from './createRoom.dto';
+export * from './create.room.dto';
+export * from './room.for.user.dto';

@@ -1,6 +1,5 @@
 import {
 	IsBoolean,
-	IsEmpty,
 	IsEnum,
 	IsNotEmpty,
 	IsString,
@@ -9,8 +8,7 @@ import {
 	MinLength,
 	ValidateIf,
 } from 'class-validator';
-import { RoomVisibilityType } from '../entities/room.entity';
-import { UserI } from 'src/user/user.interface';
+import { RoomVisibilityType } from '../enums/room.visibility.enum';
 
 export class createRoomDto {
 	@IsNotEmpty()
@@ -48,7 +46,4 @@ export class createRoomDto {
 		},
 	}) // Maximum password length should not be set too low, as it will prevent users from creating passphrases
 	password: string;
-
-	@IsEmpty()
-	users?: UserI[];
 }
