@@ -138,18 +138,18 @@ export class ChatGateway
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('createFriendRequest')
 	async createFriendRequest(
-		@MessageBody() friendId: number,
+		@MessageBody() receiverId: number,
 		@ConnectedSocket() client: Socket,
 	) {
-		await this.userService.createFriendRequest(client.data.user, friendId);
+		const receiver: UserI = await this.userService.findByID(receiverId);
+		await this.userService.addFriendRequest(receiver, client.data.user);
 		client.emit('createFriendRequest');
 	}
 
 	@SubscribeMessage('getFriendRequests')
 	async getFriendRequests(client: Socket) {
-		const friendRequests = await this.userService.getFriendRequests(
-			client.data.user.id,
-		);
+		const friendRequests: UserI[] =
+			await this.userService.getFriendRequests(client.data.user.id);
 		client.emit('getFriendRequests', friendRequests);
 	}
 }

@@ -6,6 +6,6 @@ export interface UserI {
 	username?: string;
 	avatar?: string;
 	rooms?: RoomI[];
-	friendRequests?: number[];
+	friendRequests?: UserI[];
 	friends?: UserI[];
 }

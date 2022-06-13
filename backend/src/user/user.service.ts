@@ -99,17 +99,10 @@ export class UserService {
 		return !(friend === undefined);
 	}
 
-	async createFriendRequest(user: UserI, friendId: number) {
-		user.friendRequests = [];
-		user.friendRequests.push(friendId);
-		await this.userRepository.update(user.id, {
-			friendRequests: user.friendRequests,
-		}); // TODO: error management
-	}
-
-	async getFriendRequests(userId: number): Promise<number[]> {
-		const user: UserI = await this.findByID(userId);
-		return user.friendRequests;
+	async addFriendRequest(user: UserI, sender: UserI) {
+		user.friendRequests = await this.getFriendRequests(user.id);
+		user.friendRequests.push(sender);
+		await this.userRepository.save(user);
 	}
 
 	async addFriend(user: UserI, friendToAdd: UserI) {
@@ -137,5 +130,14 @@ export class UserService {
 			.where('friend.id = :userId', { userId })
 			.getMany();
 		return friends;
+	}
+
+	async getFriendRequests(userId: number): Promise<UserI[]> {
+		const friendRequests = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.friendRequests', 'request')
+			.where('request.id = :userId', { userId })
+			.getMany();
+		return friendRequests;
 	}
 }

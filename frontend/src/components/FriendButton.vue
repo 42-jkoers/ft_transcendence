@@ -48,10 +48,6 @@ async function editFriend() {
   };
   try {
     socket.emit("createFriendRequest", props.friendId);
-    socket.emit("getFriendRequests");
-    socket.on("getFriendRequests", (response) => {
-      console.log("socket response: ", response);
-    });
 
     await axios
       .post("http://localhost:3000/user/edit-friend", postBody, {

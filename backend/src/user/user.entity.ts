@@ -26,8 +26,9 @@ export class User {
 	@Column()
 	public avatar: string;
 
-	@Column('int', { array: true, nullable: true })
-	public friendRequests: number[];
+	@ManyToMany(() => User)
+	@JoinTable({ joinColumn: { name: 'receiver_id' } })
+	friendRequests: User[];
 
 	@ManyToMany(() => User, { cascade: true })
 	@JoinTable({ joinColumn: { name: 'userId_1' } })
