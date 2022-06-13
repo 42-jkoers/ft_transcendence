@@ -75,16 +75,16 @@ const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
 
+socket.on("messageAdded", (message: MessageI) => {
+  messages.value.unshift(message);
+}); //load msgs again when a msg is sent
+
 onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
 
   socket.on("getMessagesForRoom", (response) => {
     messages.value = response;
   }); //listen to an event for updated messages from backend
-
-  socket.on("messageAdded", () => {
-    socket.emit("getMessagesForRoom", route.params.roomName); //TODO discuss this approach of updating messages
-  }); //load msgs again when a msg is sent
 });
 
 //binding a click event listener to a method named 'sendMessage'
