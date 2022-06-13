@@ -4,6 +4,8 @@ import { ChannelModule } from './channel/channel.module';
 import { MessageModule } from './message/message.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomEntity } from './room/entities/room.entity';
+import { User } from '../user/user.entity';
+import { UserToRoomEntity } from './room/entities/user.to.room.entity';
 import { RoomService } from './room/room.service';
 import { AuthModule } from '../auth/auth.module';
 import { ConnectedUserService } from './connected-user/connected-user.service';
@@ -21,6 +23,8 @@ import { UserModule } from 'src/user/user.module';
 		MessageModule,
 		TypeOrmModule.forFeature([
 			RoomEntity,
+			User,
+			UserToRoomEntity,
 			ConnectedUserEntity,
 			MessageEntity,
 		]),

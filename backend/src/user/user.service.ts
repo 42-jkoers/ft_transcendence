@@ -4,13 +4,12 @@ import { Repository } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto, UpdateUserProfileDto } from './dto';
 import { UserI } from './user.interface';
-import { RoomI } from '../chat/room/room.interface';
 import { RoomService } from '../chat/room/room.service';
+import { RoomEntity } from 'src/chat/room/entities/room.entity';
 
 @Injectable()
 export class UserService {
 	constructor(
-		// @Inject(forwardRef(() => RoomService))
 		private roomService: RoomService,
 		@InjectRepository(User)
 		private userRepository: Repository<User>,
@@ -34,25 +33,34 @@ export class UserService {
 		});
 	}
 
-	async createUser(userData: CreateUserDto): Promise<UserI> {
-		// if user entity is empty it will create a default user in db and make him the admin of default room:
-		const defaultUser: UserI | undefined = await this.findByID(1);
-		if (defaultUser === undefined) {
-			await this.roomService.createDefaultRoom();
-		}
+	//FIXME: this is a kind of duplicate findOne function to return User entity instead of UserI
+	async getUserByID(idToFind: number): Promise<User> {
+		return await this.userRepository.findOne({
+			where: { id: idToFind },
+		});
+	}
 
+	async createUser(userData: CreateUserDto): Promise<UserI> {
+		// we need to get the default room(which is the public room for all the users) to push the newly created user in there
+		// FIXME: this has to be replaced by default admin and default room instantiation right after the db has been connected
+		const defaultRoom: RoomEntity = await this.roomService.getDefaultRoom();
 		const newUser = this.userRepository.create(userData);
 		newUser.friends = [];
 		const createdUser: UserI = await this.userRepository.save(newUser);
+		await this.roomService.addVisitorToRoom(createdUser.id, defaultRoom);
 
-		const defaultRoom: RoomI = await this.roomService.findByName('general');
-		defaultRoom.users = await this.roomService.getUsersForRoom('general');
-		defaultRoom.users.push(newUser);
-		await this.roomService.updateRoom(defaultRoom);
+		//FIXME: temp for testing protected rooms:
+		const protectedWithPassword: RoomEntity =
+			await this.roomService.findRoomById(2);
+		await this.roomService.addVisitorToRoom(
+			createdUser.id,
+			protectedWithPassword,
+		);
+
 		return createdUser;
 	}
 
-	async createDefaultUser(): Promise<UserI> {
+	async createDefaultUser(): Promise<User> {
 		const defaultUserData = {
 			intraID: '00000',
 			username: 'admin',
@@ -60,8 +68,8 @@ export class UserService {
 		};
 		const defaultUser = this.userRepository.create(defaultUserData);
 		defaultUser.friends = [];
-		const createdUser: UserI = await this.userRepository.save(defaultUser);
-		return createdUser;
+		await this.userRepository.save(defaultUser);
+		return defaultUser;
 	}
 
 	/* return undefined if username is duplicated */

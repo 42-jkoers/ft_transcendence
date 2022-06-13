@@ -21,7 +21,7 @@
         <template #body="slotProps">
           <div>
             <i
-              v-if="slotProps.data.password !== null"
+              v-if="slotProps.data.protected"
               class="pi pi-shield"
               style="font-size: 0.8rem"
             ></i>
@@ -62,6 +62,8 @@ onMounted(() => {
     socket.emit("getUserRoomsList");
   }, 90); // FIXME: find a better solution?
   socket.on("getUserRoomsList", (response) => {
+    console.log("rooms from server", response);
+
     rooms.value = response;
   });
 });
@@ -75,14 +77,14 @@ const selectedRoomName = ref("");
 // const selectedRoomIcon = ref("pi pi-hashtag");
 
 const onRowSelect = (event) => {
-  if (event.data.password !== null) {
+  const room = event.data;
+  if (room.protected && room.userRole !== 0) {
     displayPasswordDialog.value = true;
-    selectedRoomName.value = event.data.name;
-    // selectedRoomIcon.value = "pi pi-hashtag"; // TODO: update
+    selectedRoomName.value = room.name;
   } else {
     router.push({
       name: "ChatBox",
-      params: { roomName: event.data.name },
+      params: { roomName: room.name },
     });
   }
 };
