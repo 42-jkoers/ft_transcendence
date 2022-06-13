@@ -22,6 +22,7 @@ import { UseFilters } from '@nestjs/common';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { plainToClass } from 'class-transformer';
 import { RoomForUserDto } from 'src/chat/room/dto';
+import { UserService } from 'src/user/user.service';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -34,6 +35,7 @@ export class ChatGateway
 		private readonly roomService: RoomService,
 		private readonly connectedUserService: ConnectedUserService,
 		private readonly messageService: MessageService,
+		private readonly userService: UserService,
 	) {}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -74,12 +76,14 @@ export class ChatGateway
 		const selectedRoom: RoomEntity = await this.roomService.findRoomByName(
 			message.room.name,
 		);
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
 		const createdMessage: MessageI = await this.messageService.create(
 			message,
-			client.data.user,
+			user,
 			selectedRoom,
 		);
-		console.log(createdMessage);
 		this.server.emit('messageAdded', createdMessage); //server socket emits to all clients
 	}
 
