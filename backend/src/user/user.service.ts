@@ -99,6 +99,19 @@ export class UserService {
 		return !(friend === undefined);
 	}
 
+	async createFriendRequest(user: UserI, friendId: number) {
+		user.friendRequests = [];
+		user.friendRequests.push(friendId);
+		await this.userRepository.update(user.id, {
+			friendRequests: user.friendRequests,
+		}); // TODO: error management
+	}
+
+	async getFriendRequests(userId: number): Promise<number[]> {
+		const user: UserI = await this.findByID(userId);
+		return user.friendRequests;
+	}
+
 	async addFriend(user: UserI, friendToAdd: UserI) {
 		user.friends = await this.getFriends(user.id);
 		user.friends.push(friendToAdd);

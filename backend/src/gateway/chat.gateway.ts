@@ -22,6 +22,7 @@ import { UseFilters } from '@nestjs/common';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { plainToClass } from 'class-transformer';
 import { RoomForUserDto } from 'src/chat/room/dto';
+import { UserService } from 'src/user/user.service';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -34,6 +35,7 @@ export class ChatGateway
 		private readonly roomService: RoomService,
 		private readonly connectedUserService: ConnectedUserService,
 		private readonly messageService: MessageService,
+		private readonly userService: UserService,
 	) {}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -130,5 +132,24 @@ export class ChatGateway
 			room.password,
 		);
 		client.emit('isRoomPasswordMatched', isMatched);
+	}
+
+	@UseFilters(new WsExceptionFilter())
+	@UsePipes(new ValidationPipe({ transform: true }))
+	@SubscribeMessage('createFriendRequest')
+	async createFriendRequest(
+		@MessageBody() friendId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		await this.userService.createFriendRequest(client.data.user, friendId);
+		client.emit('createFriendRequest');
+	}
+
+	@SubscribeMessage('getFriendRequests')
+	async getFriendRequests(client: Socket) {
+		const friendRequests = await this.userService.getFriendRequests(
+			client.data.user.id,
+		);
+		client.emit('getFriendRequests', friendRequests);
 	}
 }

@@ -15,9 +15,13 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Message from "primevue/message";
-import { ref, defineEmits, defineProps } from "vue";
+import { ref, defineEmits, defineProps, inject } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
+import { Socket } from "socket.io-client";
+
+const socket: Socket = inject("socketioInstance");
+
 const props = defineProps({
   friendId: Number,
   isFriend: Boolean,
@@ -43,6 +47,12 @@ async function editFriend() {
     friendId: props.friendId,
   };
   try {
+    socket.emit("createFriendRequest", props.friendId);
+    socket.emit("getFriendRequests");
+    socket.on("getFriendRequests", (response) => {
+      console.log("socket response: ", response);
+    });
+
     await axios
       .post("http://localhost:3000/user/edit-friend", postBody, {
         withCredentials: true,
