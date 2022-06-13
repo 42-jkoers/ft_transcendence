@@ -76,7 +76,9 @@ const input = ref<string>("");
 const route = useRoute();
 
 socket.on("messageAdded", (message: MessageI) => {
+  console.log(message);
   messages.value.unshift(message);
+  console.log(messages);
 }); //load msgs again when a msg is sent
 
 onMounted(() => {

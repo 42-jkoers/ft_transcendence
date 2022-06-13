@@ -77,6 +77,7 @@ export class ChatGateway
 			client.data.user,
 			selectedRoom,
 		);
+		console.log(createdMessage);
 		this.server.emit('messageAdded', createdMessage); //server socket emits to all clients
 	}
 
