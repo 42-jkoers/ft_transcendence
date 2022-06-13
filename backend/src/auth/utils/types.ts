@@ -1,3 +1,3 @@
-import { UserI } from "../../user/user.interface";
+import { UserI } from '../../user/user.interface';
 
 export type Done = (err: Error, user: UserI) => void;

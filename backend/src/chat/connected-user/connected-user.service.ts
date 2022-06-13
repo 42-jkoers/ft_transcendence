@@ -12,8 +12,9 @@ export class ConnectedUserService {
 		private readonly connectedUserRepository: Repository<ConnectedUserEntity>, //built-in repo
 	) {}
 	//create function
-	async createConnectedUser(connectedUser: ConnectedUserI,): Promise<ConnectedUserI> {
-		//it's already created and this.userService.findOneById helps you get it back in handleConnection;
+	async createConnectedUser(
+		connectedUser: ConnectedUserI,
+	): Promise<ConnectedUserI> {
 		return this.connectedUserRepository.save(connectedUser);
 	}
 

@@ -52,10 +52,10 @@ Tutorial:
 (Wed) 2022-05-11
 	- solve conflict with main and pull request
 
-**********************************************
+******************************************
 **		Branch - auth_register_new_user		**
-**********************************************
-(Wed) 2022-05-11 ([deleted branch] register_new_user)
+******************************************
+(Mon) 2022-05-16 ([deleted branch] register_new_user)
 	- 1. replace validateUser dto with just intraID; 2.redirect login successful page to /user/me
 	- 1. setup route for existed user vs new user; 2. housekeeping
 
@@ -72,12 +72,95 @@ Tutorial:
 	- setting CORS(https://medium.com/developer-rants/session-cookies-between-express-js-and-vue-js-with-axios-98a10274fae7)
 	- Set up register user page to update username and avatar in database
 	- Add /update-profile view to homepage
+	- Protect route with AuthenticatedGuard
+
+**************************************************
+**		Branch - frontend_menu/protected-route		**
+**************************************************
+(Fri) 2022-05-20
+	- Wrap Login to a component
+	- setup Menu bar 
+	- prote all route except for "/" and "/login"
+	- Remove router-link on app, add website title
+	- Improve un-authorized page
+
+(Mon) 2022-05-23
+	- add WebsiteTitle component (link to /userhome) to App.vue
+	- merge with main
+	- improve front end authentication process (use vuex store)
+
+******************************************
+**			Branch - login improvement			**
+******************************************
+(Wed) 2022-05-25
+	- Style change: Login button, BackToHome button, Logout page
+	- [branch: backend_fix_lint]
+	- replace LogInState component with store's mutation function login() => check login at app start
+	- merge with main ()
+	- home page show either login or userhome button based on isAuthenticated
+
+
+******************************************
+**		Branch - frontend_user_profile		**
+******************************************
+(Thu) 2022-05-26
+	- style Update User Profile
+	- build new ConfirmButton component, add to LogOut and UserSetting view
+	- build new update user profile view
+	- add UpdateUserInfo component to Regsiter view, replace old version, house cleaning files
+
+******************************************
+**				Branch - upload_avatar				**
+******************************************
+(Thu) 2022-05-27
+	- add upload component (issue: cannot show image with variable name)
+(Fri) 2022-05-28
+	- fix issue: img shown with variable name (height:100 instead of 100px)
+	- add post request to backend /user/avatar (issue: unable to print out file information in backend)
+
+(Tue) 2022-05-31
+	- fix issue: upload file now is saved in local drive with customized name.
+		https://www.learmoreseekmore.com/2021/01/nestjs-file-upload.html
+	- understand img src path
+		https://developpaper.com/explain-several-ways-of-introducing-image-path-in-vue-js/
+	- error management for file upload
+(Wed) 2022-06-01
+	- save default avatar in /public/ folder
+	
+(Thu) 2022-06-02
+	- change storeUser login() from mutation to async action
+	- fix issue in /setting, upon refresh, image/username is shown.
+	- merge with main, add HomeMenu to ChatView
+	- add ProgressSpinner to avatar upload
+	- change all message style to PrimeVue style
+	- add radioButton for avatar source + add Avatar component from PrimeVue
+	- move all HomeMenu component to WebsiteTitle component
+
+******************************************
+**				Branch - user_profile					**
+******************************************
+(Fri) 2022-06-03
+	- run.sh: add rebuild database volume
+	- house-cleaning for UploadAvatar
+	- build component UserProfileCard
+	- add button Message/EditProfile to UserProfileCard
+	- add 2F InputSwitch in UserSetting
+
+********************************************
+**	Branch - backend_username_validation	**
+********************************************
+(Tue) 2022-06-07
+	- username validation correct on backend
+	- add Regex rule to both front/backend (allow space in between)
+
 
 **************************
-**		Next To To		**
+**		Next To To				**
 **************************
-- upload avatar
+- key change event - force render
+	https://michaelnthiessen.com/force-re-render/
 
 ******************************
 **		General To To		**
 ******************************
+- try/catch all axios exception

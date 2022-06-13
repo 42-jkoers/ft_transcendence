@@ -9,23 +9,27 @@ import * as connectRedis from 'connect-redis';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-	
+
 	// general setting
 	const configService = app.get(ConfigService);
-	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-	
+	app.useGlobalPipes(
+		new ValidationPipe({
+			transform: true, // automatically transform payloads to be objects typed according to their DTO classes
+		}),
+	);
+
 	// to enable session cookie pass to frontend (authenticate user)
 	app.enableCors({
-		origin: [
-			'http://localhost:8080'
-		],
+		origin: ['http://localhost:8080'],
 		credentials: true,
 		exposedHeaders: ['set-cookie'],
 	});
-	
+
 	// login sessions
-	let RedisStore = connectRedis(session);
-	let redisClient = redis.createClient({ url: configService.get('REDIS_URI')});
+	const RedisStore = connectRedis(session);
+	const redisClient = redis.createClient({
+		url: configService.get('REDIS_URI'),
+	});
 	redisClient.on('connect', () => console.log('Connected to Redis'));
 	app.use(
 		session({
@@ -40,7 +44,7 @@ async function bootstrap() {
 	);
 	app.use(passport.initialize());
 	app.use(passport.session());
-	
+
 	// listen to port
 	const port = configService.get('PORT') ?? 3000;
 	await app.listen(port);

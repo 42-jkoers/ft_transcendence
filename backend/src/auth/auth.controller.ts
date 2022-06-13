@@ -1,8 +1,5 @@
-import { Controller, Get, Post, Body, Res, Req, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { STATUS_CODES } from 'http';
-import { nextTick } from 'process';
-import { UserI } from 'src/user/user.interface';
 import { UserService } from 'src/user/user.service';
 import { AuthenticatedGuard, OAuthGuard } from './oauth/oauth.guard';
 
@@ -18,14 +15,8 @@ export class AuthController {
 
 	@Get('redirect')
 	@UseGuards(OAuthGuard)
-	redirect(@Req() req: Request, @Res() res: Response) {
-		const user: UserI = req.user;
-		if (user.username) {
-			res.redirect("http://localhost:8080");
-		}
-		else {
-			res.redirect("http://localhost:8080/register");
-		}
+	redirect(@Res() res: Response) {
+		res.redirect('http://localhost:8080/userhome');
 	}
 
 	@Get('status')
@@ -38,6 +29,6 @@ export class AuthController {
 	@UseGuards(AuthenticatedGuard)
 	logout(@Req() req: Request) {
 		req.logOut();
-		return "User has logged out. Goodbye!";
+		return 'User has logged out. Goodbye!';
 	}
 }

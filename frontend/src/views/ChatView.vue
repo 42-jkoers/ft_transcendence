@@ -1,33 +1,69 @@
 <template>
-  <div class="card">
-    <h2>Chat</h2>
-    <div class="grid">
-      <div class="col-12">
-        <div class="grid">
-          <div class="col-12 md:col-6 xl:col-6">
-            <ChatRooms />
-          </div>
-          <div class="col-12 md:col-6 xl:col-6">
-            <ChatBox />
+  <div>
+    <div v-if="$route.name === 'Create-chatroom'">
+      <CreateRoom />
+    </div>
+    <div v-else class="card">
+      <div class="grid">
+        <div class="col-12">
+          <div class="grid">
+            <div class="col-12 md:col-4 xl:col-3">
+              <PrimeVueButton
+                @click="openCreateRoomCard"
+                label="New Chat Room"
+                icon="pi pi-plus"
+                class="p-button-primary"
+              />
+              <ChatRoomsList />
+            </div>
+            <div class="col-12 md:col-8 xl:col-9">
+              <router-view :key="$route.fullPath"></router-view>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+//TODO align and add flex to ChatRoomsList and ChatBox
 
-<script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import ChatRooms from "@/components/ChatRooms.vue";
-import ChatBox from "@/components/ChatBox.vue"; // @ is an alias to /src
+<script setup lang="ts">
+import { onMounted, inject } from "vue";
+import { useRouter } from "vue-router";
+import { Socket } from "socket.io-client";
 
-@Options({
-  components: {
-    ChatRooms,
-    ChatBox,
-  },
-})
-export default class ChatView extends Vue {}
+import ChatRoomsList from "../components/ChatRoomsList.vue";
+import CreateRoom from "./CreateRoomView.vue";
+import PrimeVueButton from "primevue/button";
+
+const socket: Socket = inject("socketioInstance");
+
+onMounted(() => {
+  socket.on("rooms", (args: string) => {
+    args;
+  }); //to get all rooms of the user?
+
+  socket.on("messages", (args: string) => {
+    args;
+  }); //to get all messages of the user for this room?
+});
+
+const router = useRouter();
+function openCreateRoomCard() {
+  router.push({
+    name: "Create-chatroom", // FIXME : temporarily pushing back to chat
+  });
+}
 </script>
+
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped></style>
+<style scoped>
+.card {
+  padding: 0.25rem;
+  border-color: aliceblue;
+  border-radius: 1rem;
+}
+.p-button-primary {
+  margin: 1.5rem 0rem;
+}
+</style>
