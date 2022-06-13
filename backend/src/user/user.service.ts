@@ -42,7 +42,7 @@ export class UserService {
 
 		//FIXME: temp for testing protected rooms:
 		const protectedWithPassword: RoomEntity =
-			await this.roomService.createDefaultProtectedRoom();
+			await this.roomService.findRoomById(2);
 		await this.roomService.addVisitorToRoom(
 			createdUser.id,
 			protectedWithPassword,

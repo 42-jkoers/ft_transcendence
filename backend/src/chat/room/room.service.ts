@@ -102,7 +102,7 @@ export class RoomService {
 
 	async createDefaultRoom() {
 		const defaultUser = await this.userService.createDefaultUser();
-		return await this.createAndSaveNewRoom(
+		const defaultRoom: RoomEntity = await this.createAndSaveNewRoom(
 			{
 				name: 'general',
 				isDirectMessage: false,
@@ -111,6 +111,8 @@ export class RoomService {
 			},
 			defaultUser.id,
 		);
+		await this.createDefaultProtectedRoom();
+		return defaultRoom;
 	}
 
 	// TODO: remove this temp room for testing protected
