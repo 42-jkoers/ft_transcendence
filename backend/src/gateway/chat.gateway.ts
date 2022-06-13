@@ -77,9 +77,7 @@ export class ChatGateway
 			client.data.user,
 			selectedRoom,
 		);
-		// this.server.to(client.id).emit('messageAdded', createdMessage); //TODO check the difference and decide
-		// client.emit('messageAdded', createdMessage);
-		this.server.emit('messageAdded', createdMessage);
+		this.server.emit('messageAdded', createdMessage); //server socket emits to all clients
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
