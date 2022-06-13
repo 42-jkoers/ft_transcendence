@@ -8,6 +8,7 @@ import {
 	JoinColumn,
 	JoinTable,
 	ManyToMany,
+	ManyToOne,
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -27,8 +28,8 @@ export class User {
 	public avatar: string;
 
 	@ManyToMany(() => User)
-	@JoinTable({ joinColumn: { name: 'receiver_id' } })
-	friendRequests: User[];
+	@JoinTable({ joinColumn: { name: 'sender_id' } })
+	requestedFriends: User[];
 
 	@ManyToMany(() => User, { cascade: true })
 	@JoinTable({ joinColumn: { name: 'userId_1' } })

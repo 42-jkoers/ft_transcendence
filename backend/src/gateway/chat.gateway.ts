@@ -23,6 +23,7 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { plainToClass } from 'class-transformer';
 import { RoomForUserDto } from 'src/chat/room/dto';
 import { UserService } from 'src/user/user.service';
+import { OAuthGuard } from 'src/auth/oauth/oauth.guard';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -141,15 +142,31 @@ export class ChatGateway
 		@MessageBody() receiverId: number,
 		@ConnectedSocket() client: Socket,
 	) {
-		const receiver: UserI = await this.userService.findByID(receiverId);
-		await this.userService.addFriendRequest(receiver, client.data.user);
-		client.emit('createFriendRequest');
+		await this.userService.addFriendRequest(
+			client.data.user.id,
+			receiverId,
+		);
+		client.emit('createFriendRequest', true);
 	}
 
 	@SubscribeMessage('getFriendRequests')
 	async getFriendRequests(client: Socket) {
-		const friendRequests: UserI[] =
-			await this.userService.getFriendRequests(client.data.user.id);
-		client.emit('getFriendRequests', friendRequests);
+		const requests: UserI[] = await this.userService.getFriendRequests(
+			client.data.user.id,
+		);
+		client.emit('getFriendRequests', requests);
+	}
+
+	// TODO: to delete
+	@SubscribeMessage('tempFriendRequest1')
+	async temp1(client: Socket) {
+		await this.userService.addFriendRequest(1, 2);
+		console.log('temp request made');
+	}
+	// TODO: to delete
+	@SubscribeMessage('tempFriendRequest2')
+	async temp2(client: Socket) {
+		await this.userService.addFriendRequest(2, 1);
+		console.log('temp request made');
 	}
 }

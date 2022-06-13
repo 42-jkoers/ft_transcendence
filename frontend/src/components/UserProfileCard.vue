@@ -13,11 +13,15 @@
         <template #title>
           <h3>{{ user?.username }}</h3>
           <div v-if="!isSelf">
-            <FriendButton
-              :friend-id="user?.id"
-              :is-friend="isFriend"
-              @is-friend="changeFriendStatus($event)"
-            />
+            <div v-if="isFriend">
+              <RemoveFriendButton
+                :friend-id="user?.id"
+                @is-friend="changeFriendStatus($event)"
+              />
+            </div>
+            <div v-else>
+              <AddFriendButton :friend-id="user?.id" />
+            </div>
           </div>
         </template>
         <template #content>
@@ -52,7 +56,8 @@ import Card from "primevue/card";
 import Button from "primevue/button";
 import UserProfileI from "@/types/UserProfile.interface";
 import storeUser from "@/store";
-import FriendButton from "./FriendButton.vue";
+import RemoveFriendButton from "./RemoveFriendButton.vue";
+import AddFriendButton from "./AddFriendButton.vue";
 import { useRouter } from "vue-router";
 
 const route = useRoute();
@@ -75,6 +80,7 @@ onMounted(async () => {
     )
       .then((response) => {
         isFriend.value = response.data;
+        console.log("card mounted: ", isFriend.value);
       })
       .catch(() => {
         isError.value = true;

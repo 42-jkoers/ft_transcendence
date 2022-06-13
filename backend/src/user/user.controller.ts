@@ -20,6 +20,7 @@ import { Express } from 'express';
 import { UploadFileHelper } from './util/uploadfile.helper';
 import { UpdateUserProfileDto } from './dto';
 import { FriendDto } from './dto/Friend.dto';
+import { EditFriend } from './enum/edit.friend.enum';
 
 @UseGuards(AuthenticatedGuard)
 @Controller('user')
@@ -64,29 +65,31 @@ export class UserController {
 	}
 
 	@Post('edit-friend')
-	async addFriend(@Body() friendDto: FriendDto) {
+	async editFriend(@Body() friendDto: FriendDto) {
 		const user: UserI | undefined = await this.userService.findByID(
 			friendDto.userId,
 		);
-		const fr: UserI | undefined = await this.userService.findByID(
+		const friend: UserI | undefined = await this.userService.findByID(
 			friendDto.friendId,
 		);
-		if (!user || !fr) {
+		if (!user || !friend) {
 			throw new HttpException(
 				'User or friend does not exist',
 				HttpStatus.BAD_REQUEST,
 			);
 		}
-		const isFriend = await this.userService.isFriends(
-			friendDto.userId,
-			friendDto.friendId,
-		);
-		if (isFriend) {
-			await this.userService.removeFriend(user, fr);
-			return { isFriend: false };
+		console.log('edit-friend request: ', friendDto);
+		console.log('user: ', user.id, ' | friend: ', friend.id);
+		if (friendDto.action === EditFriend.REMOVE_FRIEND) {
+			await this.userService.removeFriend(user, friend);
+		} else if (friendDto.action === EditFriend.ADD_FRIEND) {
+			await this.userService.removeFriendRequest(friend, user);
+			await this.userService.removeFriendRequest(user, friend); // prevent duplicate request from the other side
+			await this.userService.addFriend(user, friend);
 		} else {
-			await this.userService.addFriend(user, fr);
-			return { isFriend: true };
+			await this.userService.removeFriendRequest(friend, user);
+			await this.userService.removeFriendRequest(user, friend); // prevent duplicate request from the other side
 		}
+		return friend.username;
 	}
 }

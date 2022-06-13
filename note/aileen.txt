@@ -164,10 +164,12 @@ Tutorial:
 	- [ Branch - redis_debug ]
 	- set up FriendsView in menu
 	- add friendRequest (User[]) to User Entity, load request in FriendsView
+	- setup flow for approve/reject friend request
 
 **************************
 **		Next To To				**
 **************************
+- optimize friendRequest data structure (OneToMany?)
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 
