@@ -78,7 +78,8 @@ export class ChatGateway
 			selectedRoom,
 		);
 		// this.server.to(client.id).emit('messageAdded', createdMessage); //TODO check the difference and decide
-		client.emit('messageAdded', createdMessage);
+		// client.emit('messageAdded', createdMessage);
+		this.server.emit('messageAdded', createdMessage);
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
