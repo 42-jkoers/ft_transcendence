@@ -163,6 +163,7 @@ Tutorial:
 (Mon) 2022-06-13
 	- [ Branch - redis_debug ]
 	- set up FriendsView in menu
+	- add friendRequest (User[]) to User Entity, load request in FriendsView
 
 **************************
 **		Next To To				**
