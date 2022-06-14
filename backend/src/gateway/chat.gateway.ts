@@ -56,7 +56,7 @@ export class ChatGateway
 			socketID: client.id,
 			user,
 		}); // save connection to DB
-		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set
+		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set //FIXME check
 		client.join('general'); //everyone joins the general on default
 	}
 
@@ -105,6 +105,7 @@ export class ChatGateway
 		const response: { status: string; data: string } =
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
+		client.join(response.data); //FIXME temporary trial with one person in the room, fix it when someone joins the room
 	}
 
 	@SubscribeMessage('getUserRoomsList')
