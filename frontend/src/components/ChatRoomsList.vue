@@ -40,6 +40,17 @@
         header="Chat Rooms"
         headerStyle="padding-left:0"
       ></Column>
+      <Column field="joined" style="max-width: 2.5rem">
+        <template #body="slotProps">
+          <div>
+            <i
+              v-if="slotProps.data.userRole !== undefined"
+              class="pi pi-user"
+              style="font-size: 0.8rem"
+            ></i>
+          </div>
+        </template>
+      </Column>
     </DataTable>
   </div>
 </template>
