@@ -1,11 +1,5 @@
 <template>
   <div>
-    <Button @click="tempRequest1">user 1 send request to user 2</Button>
-  </div>
-  <div>
-    <Button @click="tempRequest2">user 2 send request to user 1</Button>
-  </div>
-  <div>
     <Message v-if="showSuccessMessage" severity="success" :closable="false">
       {{ successMessage }}
     </Message>
@@ -18,30 +12,29 @@
       <template #header>
         <div class="flex justify-content-center align-items-center"></div>
       </template>
-      <Column
-        field="username"
-        header="Pending Request"
-        headerStyle="width: 30%"
-      ></Column>
-      <Column header="Action" headerStyle="width: 70%">
+      <Column header="Pending Request" headerStyle="width: 40%">
+        <template #body="slotProps">
+          <Chip
+            :label="slotProps.data.username"
+            :image="slotProps.data.avatar"
+          />
+        </template>
+      </Column>
+      <Column header="Action" headerStyle="width: 60%">
         <template #body="slotProps">
           <div>
-            <span class="p-buttonset">
-              <Button
-                label="Approve"
-                class="p-button-success p-button-sm"
-                icon="pi pi-check"
-                iconPos="left"
-                style="width: 30%"
-                @click="addFriend(slotProps.data.id)"
+            <span align="middle">
+              <EditFriendButton
+                :friendId="slotProps.data.id"
+                buttonLabel="Approve"
+                buttonIcon="pi pi-check"
+                :action="EditFriend.ADD_FRIEND"
               />
-              <Button
-                label="Reject"
-                class="p-button-danger p-button-sm"
-                icon="pi pi-times"
-                iconPos="left"
-                style="width: 30%"
-                @click="rejectRequest(slotProps.data.id)"
+              <EditFriendButton
+                :friendId="slotProps.data.id"
+                buttonLabel="Reject"
+                buttonIcon="pi pi-times"
+                :action="EditFriend.REJECT_REQUEST"
               />
             </span>
           </div>
@@ -49,89 +42,70 @@
       </Column>
     </DataTable>
   </div>
+  <div>
+    <br />
+    <Button class="p-button-sm" @click="tempRequest1"
+      >Test: user 1 send request to user 2</Button
+    >
+  </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, inject } from "vue";
-import { Socket } from "socket.io-client";
+import { onMounted, ref } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Message from "primevue/message";
 import Column from "primevue/column";
+import Chip from "primevue/chip";
 import axios from "axios";
 import storeUser from "@/store";
 import EditFriend from "@/types/EditFriend";
+import EditFriendButton from "./EditFriendButton.vue";
 
-const socket: Socket = inject("socketioInstance");
 const requests = ref([]);
 const showSuccessMessage = ref<boolean>(false);
 const showFailMessage = ref<boolean>(false);
 const successMessage = ref<string>();
-onMounted(() => {
-  refreshFriendRequests();
+onMounted(async () => {
+  await refreshFriendRequests();
 });
 
 async function tempRequest1() {
-  socket.emit("tempFriendRequest1");
-}
-async function tempRequest2() {
-  socket.emit("tempFriendRequest2");
+  const postBody = {
+    userId: 1,
+    friendId: 2,
+    action: EditFriend.SEND_REQUEST,
+  };
+  await axios
+    .post("http://localhost:3000/user/edit-friend", postBody, {
+      withCredentials: true,
+    })
+    .then(async () => {
+      await refreshFriendRequests();
+    })
+    .catch((error) => {
+      console.log("catch: ", error);
+      displayErrorMessage();
+    });
 }
 
-function refreshFriendRequests() {
-  setTimeout(() => {
-    socket.emit("getFriendRequests");
-  }, 100); // FIXME: find a better solution?
-  socket.on("getFriendRequests", (response) => {
-    requests.value = response;
-  });
-}
-
-function displaySuccessMessage(message: string) {
-  successMessage.value = message;
-  showSuccessMessage.value = true;
-  setTimeout(() => (showSuccessMessage.value = false), 2000);
+async function refreshFriendRequests() {
+  await axios
+    .get(
+      "http://localhost:3000/user/friend-request?id=" + storeUser.state.user.id,
+      {
+        withCredentials: true,
+      }
+    )
+    .then((response) => {
+      requests.value = response.data;
+    })
+    .catch(() => {
+      displayErrorMessage();
+    });
 }
 
 function displayErrorMessage() {
   showFailMessage.value = true;
   setTimeout(() => (showFailMessage.value = false), 2000);
-}
-
-async function addFriend(friendId: number) {
-  const postBody = {
-    userId: storeUser.state.user.id,
-    friendId: friendId,
-    action: EditFriend.ADD_FRIEND,
-  };
-  await axios
-    .post("http://localhost:3000/user/edit-friend", postBody, {
-      withCredentials: true,
-    })
-    .then((response) => {
-      refreshFriendRequests();
-      displaySuccessMessage("Successfully add friend: " + response.data);
-    })
-    .catch(() => {
-      displayErrorMessage();
-    });
-}
-
-async function rejectRequest(friendId: number) {
-  const postBody = {
-    userId: storeUser.state.user.id,
-    friendId: friendId,
-    action: EditFriend.REJECT_REQUEST,
-  };
-  await axios
-    .post("http://localhost:3000/user/edit-friend", postBody, {
-      withCredentials: true,
-    })
-    .then((response) => {
-      refreshFriendRequests();
-      displaySuccessMessage("Reject request from: " + response.data);
-    })
-    .catch(() => {
-      displayErrorMessage();
-    });
 }
 </script>

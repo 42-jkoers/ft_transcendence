@@ -99,6 +99,16 @@ export class UserService {
 		return !(friend === undefined);
 	}
 
+	async isUserRequested(userId: number, senderId: number): Promise<boolean> {
+		const request = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.requestedFriends', 'requested')
+			.where('requested.id = :userId', { userId })
+			.andWhere('user.id = :senderId', { senderId })
+			.getOne();
+		return !(request === undefined);
+	}
+
 	async addFriendRequest(userId: number, requestedId: number) {
 		let user: UserI = await this.findByID(userId);
 		// prevent duplicate User in the array
@@ -118,13 +128,23 @@ export class UserService {
 		await this.userRepository.save(user);
 	}
 
-	async removeFriendRequest(user: UserI, requestedToRemove: UserI) {
-		const requestedFriends = await this.getFriendRequests(user.id);
+	async removeFriendRequest(userId: number, user2Id: number) {
+		let user: UserI = await this.findByID(userId);
+		const requestedFriends = await this.getFriendRequests(userId);
 		if (requestedFriends) {
 			user.requestedFriends = requestedFriends.filter((request) => {
-				return request.id !== requestedToRemove.id;
+				return request.id !== user2Id;
 			});
 			await this.userRepository.save(user);
+		}
+
+		let user2: UserI = await this.findByID(user2Id);
+		const requestedFriends2 = await this.getFriendRequests(user2Id);
+		if (requestedFriends2) {
+			user2.requestedFriends = requestedFriends.filter((request) => {
+				return request.id !== user2Id;
+			});
+			await this.userRepository.save(user2);
 		}
 	}
 

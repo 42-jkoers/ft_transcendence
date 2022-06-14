@@ -14,13 +14,20 @@
           <h3>{{ user?.username }}</h3>
           <div v-if="!isSelf">
             <div v-if="isFriend">
-              <RemoveFriendButton
-                :friend-id="user?.id"
-                @is-friend="changeFriendStatus($event)"
+              <EditFriendButton
+                :friendId="user?.id"
+                buttonLabel="Unfriend"
+                buttonIcon="pi pi-user-minus"
+                :action="EditFriend.REMOVE_FRIEND"
               />
             </div>
             <div v-else>
-              <AddFriendButton :friend-id="user?.id" />
+              <EditFriendButton
+                :friendId="user?.id"
+                buttonLabel="Add friend"
+                buttonIcon="pi pi-user-plus"
+                :action="EditFriend.ADD_FRIEND"
+              />
             </div>
           </div>
         </template>
@@ -31,6 +38,7 @@
           <div v-if="isSelf">
             <Button
               label="Edit Profile"
+              class="p-button-rounded p-button-outlined"
               icon="pi pi-user-edit"
               @click="toSetting"
             />
@@ -38,6 +46,7 @@
           <div v-if="isFriend">
             <Button
               label="Message"
+              class="p-button-rounded p-button-outlined"
               icon="pi pi-envelope"
               @click="toPrivateMessage"
             />
@@ -56,9 +65,9 @@ import Card from "primevue/card";
 import Button from "primevue/button";
 import UserProfileI from "@/types/UserProfile.interface";
 import storeUser from "@/store";
-import RemoveFriendButton from "./RemoveFriendButton.vue";
-import AddFriendButton from "./AddFriendButton.vue";
 import { useRouter } from "vue-router";
+import EditFriendButton from "./EditFriendButton.vue";
+import EditFriend from "@/types/EditFriend";
 
 const route = useRoute();
 const id = route.params.id;
@@ -80,7 +89,6 @@ onMounted(async () => {
     )
       .then((response) => {
         isFriend.value = response.data;
-        console.log("card mounted: ", isFriend.value);
       })
       .catch(() => {
         isError.value = true;
@@ -105,9 +113,9 @@ async function findUser() {
     });
 }
 
-function changeFriendStatus(event) {
-  isFriend.value = event;
-}
+// function changeFriendStatus(event) {
+//   isFriend.value = event;
+// }
 
 const router = useRouter();
 

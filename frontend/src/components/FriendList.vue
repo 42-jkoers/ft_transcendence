@@ -1,2 +1,80 @@
-<template>Friend List</template>
-<script setup lang="ts"></script>
+<template>
+  <div>
+    <Message v-if="showFailMessage" severity="error" :closable="false">
+      Something went wrong, please retry!
+    </Message>
+  </div>
+  <div>
+    <DataTable :value="friendList" responsiveLayout="scroll">
+      <template #header>
+        <div class="flex justify-content-center align-items-center"></div>
+      </template>
+      <Column header="Friends" headerStyle="width: 40%">
+        <template #body="slotProps">
+          <Chip
+            :label="slotProps.data.username"
+            :image="slotProps.data.avatar"
+          />
+        </template>
+      </Column>
+      <Column header="Action" headerStyle="width: 60%">
+        <template #body="slotProps">
+          <div class="flex align-items-center flex-column sm:flex-row">
+            <Button
+              icon="pi pi-envelope"
+              class="p-button-rounded p-button-outlined"
+            />
+            <Button
+              icon="pi pi-discord"
+              class="p-button-rounded p-button-outlined"
+            />
+            <EditFriendButton
+              :friendId="slotProps.data.id"
+              buttonIcon="pi pi-user-minus"
+              :action="EditFriend.REMOVE_FRIEND"
+            />
+          </div>
+        </template>
+      </Column>
+    </DataTable>
+  </div>
+</template>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import Button from "primevue/button";
+import DataTable from "primevue/datatable";
+import Message from "primevue/message";
+import Column from "primevue/column";
+import Chip from "primevue/chip";
+import axios from "axios";
+import storeUser from "@/store";
+import EditFriend from "@/types/EditFriend";
+import EditFriendButton from "./EditFriendButton.vue";
+
+const friendList = ref([]);
+const showFailMessage = ref<boolean>(false);
+onMounted(() => {
+  refreshFriendList();
+});
+
+async function refreshFriendList() {
+  await axios
+    .get(
+      "http://localhost:3000/user/friend-list?id=" + storeUser.state.user.id,
+      {
+        withCredentials: true,
+      }
+    )
+    .then((response) => {
+      friendList.value = response.data;
+    })
+    .catch(() => {
+      displayErrorMessage();
+    });
+}
+
+function displayErrorMessage() {
+  showFailMessage.value = true;
+  setTimeout(() => (showFailMessage.value = false), 2000);
+}
+</script>

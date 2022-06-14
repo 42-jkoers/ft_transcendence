@@ -134,39 +134,4 @@ export class ChatGateway
 		);
 		client.emit('isRoomPasswordMatched', isMatched);
 	}
-
-	@UseFilters(new WsExceptionFilter())
-	@UsePipes(new ValidationPipe({ transform: true }))
-	@SubscribeMessage('createFriendRequest')
-	async createFriendRequest(
-		@MessageBody() receiverId: number,
-		@ConnectedSocket() client: Socket,
-	) {
-		await this.userService.addFriendRequest(
-			client.data.user.id,
-			receiverId,
-		);
-		client.emit('createFriendRequest', true);
-	}
-
-	@SubscribeMessage('getFriendRequests')
-	async getFriendRequests(client: Socket) {
-		const requests: UserI[] = await this.userService.getFriendRequests(
-			client.data.user.id,
-		);
-		client.emit('getFriendRequests', requests);
-	}
-
-	// TODO: to delete
-	@SubscribeMessage('tempFriendRequest1')
-	async temp1(client: Socket) {
-		await this.userService.addFriendRequest(1, 2);
-		console.log('temp request made');
-	}
-	// TODO: to delete
-	@SubscribeMessage('tempFriendRequest2')
-	async temp2(client: Socket) {
-		await this.userService.addFriendRequest(2, 1);
-		console.log('temp request made');
-	}
 }

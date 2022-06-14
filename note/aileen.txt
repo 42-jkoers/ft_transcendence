@@ -165,11 +165,12 @@ Tutorial:
 	- set up FriendsView in menu
 	- add friendRequest (User[]) to User Entity, load request in FriendsView
 	- setup flow for approve/reject friend request
+	- consolidate all friend related button to EditFriendButton
+	- error management for friend request process
 
 **************************
 **		Next To To				**
 **************************
-- show friends list
 - notification of adding friend?
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
