@@ -8,7 +8,7 @@
       class="flex flex-column-reverse gap-1 md:gap-2 xl:gap-4"
     >
       <div
-        class="message-item flex align-items-start py-2"
+        class="flex align-items-start py-2"
         v-for="m in messages"
         :key="m.id"
       >
@@ -126,6 +126,7 @@ function sendMessage() {
 .msg-top {
   justify-content: space-between;
   margin-bottom: 0;
+  max-width: 100%;
 }
 
 .card-content {
