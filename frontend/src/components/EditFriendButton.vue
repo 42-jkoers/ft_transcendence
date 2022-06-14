@@ -1,29 +1,28 @@
 <template>
-  <div>
-    <Message v-if="showSuccessMessage" severity="success" :closable="false">
+  <Button
+    class="p-button-rounded p-button-text p-button-outlined"
+    :label="props.buttonLabel"
+    :icon="props.buttonIcon"
+    @click="editFriend(props.friendId, props.action)"
+  />
+  <div v-if="showSuccessMessage">
+    <Message severity="success" :closable="false">
       {{ successMessage }}
     </Message>
-    <Message v-if="showFailMessage" severity="error" :closable="false">
+  </div>
+  <div v-if="showFailMessage">
+    <Message severity="error" :closable="false">
       Something went wrong, please retry!
     </Message>
   </div>
-  <div>
-    <Button
-      class="p-button-rounded p-button-text p-button-outlined"
-      :label="props.buttonLabel"
-      :icon="props.buttonIcon"
-      @click="editFriend(props.friendId, props.action)"
-    />
-  </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, defineProps } from "vue";
+import { defineEmits, ref, defineProps } from "vue";
 import Button from "primevue/button";
 import Message from "primevue/message";
 import axios from "axios";
 import storeUser from "@/store";
 
-const requests = ref([]);
 const showSuccessMessage = ref<boolean>(false);
 const showFailMessage = ref<boolean>(false);
 const successMessage = ref<string>();
@@ -35,25 +34,9 @@ const props = defineProps({
   action: Number,
 });
 
-onMounted(async () => {
-  await refreshFriendRequests();
-});
-
-async function refreshFriendRequests() {
-  await axios
-    .get(
-      "http://localhost:3000/user/friend-request?id=" + storeUser.state.user.id,
-      {
-        withCredentials: true,
-      }
-    )
-    .then((response) => {
-      requests.value = response.data;
-    })
-    .catch(() => {
-      displayErrorMessage();
-    });
-}
+const emit = defineEmits<{
+  (event: "processed"): boolean;
+}>();
 
 function displaySuccessMessage(message: string) {
   successMessage.value = message;
@@ -79,9 +62,11 @@ async function editFriend(
     .post("http://localhost:3000/user/edit-friend", postBody, {
       withCredentials: true,
     })
-    .then(async (response) => {
-      await refreshFriendRequests();
-      displaySuccessMessage("Successfully processed friend: " + response.data);
+    .then(async () => {
+      displaySuccessMessage("Action processed.");
+      setTimeout(() => {
+        emit("processed", true);
+      }, 2000);
     })
     .catch(() => {
       displayErrorMessage();

@@ -1,9 +1,9 @@
 <template>
   <div class="grid">
-    <div class="col-offset-1 col-5" align="center">
+    <div class="col-4" align="center">
       <FriendRequest />
     </div>
-    <div class="col-6" align="center">
+    <div class="col-8" align="center">
       <FriendList />
     </div>
   </div>

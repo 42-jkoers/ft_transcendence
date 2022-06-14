@@ -19,6 +19,7 @@
                 buttonLabel="Unfriend"
                 buttonIcon="pi pi-user-minus"
                 :action="EditFriend.REMOVE_FRIEND"
+                @processed="changeFriendStatus()"
               />
             </div>
             <div v-else>
@@ -27,6 +28,7 @@
                 buttonLabel="Add friend"
                 buttonIcon="pi pi-user-plus"
                 :action="EditFriend.ADD_FRIEND"
+                @processed="changeFriendStatus()"
               />
             </div>
           </div>
@@ -113,9 +115,9 @@ async function findUser() {
     });
 }
 
-// function changeFriendStatus(event) {
-//   isFriend.value = event;
-// }
+function changeFriendStatus() {
+  isFriend.value = !isFriend.value;
+}
 
 const router = useRouter();
 

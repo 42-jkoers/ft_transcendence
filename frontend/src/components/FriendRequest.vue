@@ -1,18 +1,17 @@
 <template>
-  <div>
-    <Message v-if="showSuccessMessage" severity="success" :closable="false">
-      {{ successMessage }}
-    </Message>
-    <Message v-if="showFailMessage" severity="error" :closable="false">
+  <div v-if="showFailMessage">
+    <Message severity="error" :closable="false">
       Something went wrong, please retry!
     </Message>
   </div>
   <div>
     <DataTable :value="requests" responsiveLayout="scroll">
       <template #header>
-        <div class="flex justify-content-center align-items-center"></div>
+        <div class="flex justify-content-center align-items-center">
+          <h3>Pending Request List</h3>
+        </div>
       </template>
-      <Column header="Pending Request" headerStyle="width: 40%">
+      <Column header="Friend Requests" headerStyle="width: 50%">
         <template #body="slotProps">
           <Chip
             :label="slotProps.data.username"
@@ -20,23 +19,21 @@
           />
         </template>
       </Column>
-      <Column header="Action" headerStyle="width: 60%">
+      <Column header="Action" headerStyle="width: 50%">
         <template #body="slotProps">
           <div>
-            <span align="middle">
-              <EditFriendButton
-                :friendId="slotProps.data.id"
-                buttonLabel="Approve"
-                buttonIcon="pi pi-check"
-                :action="EditFriend.ADD_FRIEND"
-              />
-              <EditFriendButton
-                :friendId="slotProps.data.id"
-                buttonLabel="Reject"
-                buttonIcon="pi pi-times"
-                :action="EditFriend.REJECT_REQUEST"
-              />
-            </span>
+            <EditFriendButton
+              :friendId="slotProps.data.id"
+              buttonIcon="pi pi-check"
+              :action="EditFriend.ADD_FRIEND"
+              @processed="refreshFriendRequests()"
+            />
+            <EditFriendButton
+              :friendId="slotProps.data.id"
+              buttonIcon="pi pi-times"
+              :action="EditFriend.REJECT_REQUEST"
+              @processed="refreshFriendRequests()"
+            />
           </div>
         </template>
       </Column>
@@ -62,9 +59,7 @@ import EditFriend from "@/types/EditFriend";
 import EditFriendButton from "./EditFriendButton.vue";
 
 const requests = ref([]);
-const showSuccessMessage = ref<boolean>(false);
 const showFailMessage = ref<boolean>(false);
-const successMessage = ref<string>();
 onMounted(async () => {
   await refreshFriendRequests();
 });

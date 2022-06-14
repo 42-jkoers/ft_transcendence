@@ -1,13 +1,15 @@
 <template>
-  <div>
-    <Message v-if="showFailMessage" severity="error" :closable="false">
+  <div v-if="showFailMessage">
+    <Message severity="error" :closable="false">
       Something went wrong, please retry!
     </Message>
   </div>
   <div>
     <DataTable :value="friendList" responsiveLayout="scroll">
       <template #header>
-        <div class="flex justify-content-center align-items-center"></div>
+        <div class="flex justify-content-center align-items-center">
+          <h3>Friend List</h3>
+        </div>
       </template>
       <Column header="Friends" headerStyle="width: 40%">
         <template #body="slotProps">
@@ -32,6 +34,7 @@
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-user-minus"
               :action="EditFriend.REMOVE_FRIEND"
+              @processed="refreshFriendList"
             />
           </div>
         </template>
@@ -53,8 +56,8 @@ import EditFriendButton from "./EditFriendButton.vue";
 
 const friendList = ref([]);
 const showFailMessage = ref<boolean>(false);
-onMounted(() => {
-  refreshFriendList();
+onMounted(async () => {
+  await refreshFriendList();
 });
 
 async function refreshFriendList() {
