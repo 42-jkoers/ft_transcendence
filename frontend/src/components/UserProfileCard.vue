@@ -18,7 +18,7 @@
                 :friendId="user?.id"
                 buttonLabel="Unfriend"
                 buttonIcon="pi pi-user-minus"
-                :action="EditFriend.REMOVE_FRIEND"
+                :action="EditFriendActionType.REMOVE_FRIEND"
                 @processed="changeFriendStatus()"
               />
             </div>
@@ -27,7 +27,7 @@
                 :friendId="user?.id"
                 buttonLabel="Add friend"
                 buttonIcon="pi pi-user-plus"
-                :action="EditFriend.SEND_REQUEST"
+                :action="EditFriendActionType.SEND_REQUEST"
                 @processed="changeFriendStatus()"
               />
             </div>
@@ -69,7 +69,7 @@ import UserProfileI from "@/types/UserProfile.interface";
 import storeUser from "@/store";
 import { useRouter } from "vue-router";
 import EditFriendButton from "./EditFriendButton.vue";
-import EditFriend from "@/types/EditFriend";
+import EditFriendActionType from "@/types/EditFriendActionType";
 
 const route = useRoute();
 const id = route.params.id;

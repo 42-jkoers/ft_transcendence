@@ -42,7 +42,7 @@
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-user-minus"
-              :action="EditFriend.REMOVE_FRIEND"
+              :action="EditFriendActionType.REMOVE_FRIEND"
               @processed="refreshFriendList"
             />
           </div>
@@ -60,7 +60,7 @@ import Column from "primevue/column";
 import Chip from "primevue/chip";
 import axios from "axios";
 import storeUser from "@/store";
-import EditFriend from "@/types/EditFriend";
+import EditFriendActionType from "@/types/EditFriendActionType";
 import EditFriendButton from "./EditFriendButton.vue";
 
 const friendList = ref([]);

@@ -40,13 +40,13 @@
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-check"
-              :action="EditFriend.ADD_FRIEND"
+              :action="EditFriendActionType.ADD_FRIEND"
               @processed="refreshFriendRequests"
             />
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-times"
-              :action="EditFriend.REJECT_REQUEST"
+              :action="EditFriendActionType.REJECT_REQUEST"
               @processed="refreshFriendRequests"
             />
           </div>
@@ -71,7 +71,7 @@ import Chip from "primevue/chip";
 import Badge from "primevue/badge";
 import axios from "axios";
 import storeUser from "@/store";
-import EditFriend from "@/types/EditFriend";
+import EditFriendActionType from "@/types/EditFriendActionType";
 import EditFriendButton from "./EditFriendButton.vue";
 
 const requests = ref([]);
@@ -84,7 +84,7 @@ async function tempRequest1() {
   const postBody = {
     userId: 1,
     friendId: 2,
-    action: EditFriend.SEND_REQUEST,
+    action: EditFriendActionType.SEND_REQUEST,
   };
   await axios
     .post("http://localhost:3000/user/edit-friend", postBody, {
@@ -93,8 +93,7 @@ async function tempRequest1() {
     .then(async () => {
       await refreshFriendRequests();
     })
-    .catch((error) => {
-      console.log("catch: ", error);
+    .catch(() => {
       displayErrorMessage();
     });
 }

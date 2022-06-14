@@ -20,7 +20,7 @@ import e, { Express } from 'express';
 import { UploadFileHelper } from './util/uploadfile.helper';
 import { UpdateUserProfileDto } from './dto';
 import { FriendDto } from './dto/Friend.dto';
-import { EditFriend } from './enum/edit.friend.enum';
+import { EditFriendActionType } from './enum/edit.friend.enum';
 
 @UseGuards(AuthenticatedGuard)
 @Controller('user')
@@ -96,11 +96,9 @@ export class UserController {
 		);
 		// if they are friend, the request can only be REMOVE_FRIEND
 		if (isFriend) {
-			if (dto.action === EditFriend.REMOVE_FRIEND) {
-				console.log('ok to remove friend');
+			if (dto.action === EditFriendActionType.REMOVE_FRIEND) {
 				await this.userService.removeFriend(user, friend);
 			} else {
-				console.log('error 1');
 				throw new HttpException(
 					'User and requested user is not friend.',
 					HttpStatus.BAD_REQUEST,
@@ -113,21 +111,18 @@ export class UserController {
 			);
 			// if user has been requested, the user can approve (ADD_FRIEND) or reject (REMOVE_REQUEST)
 			if (isUserBeingRequested) {
-				if (dto.action === EditFriend.ADD_FRIEND) {
-					console.log('ok to add friend');
+				if (dto.action === EditFriendActionType.ADD_FRIEND) {
 					await this.userService.removeFriendRequest(
 						dto.friendId,
 						dto.userId,
 					);
 					await this.userService.addFriend(user, friend);
-				} else if (dto.action === EditFriend.REJECT_REQUEST) {
-					console.log('ok to reject request');
+				} else if (dto.action === EditFriendActionType.REJECT_REQUEST) {
 					await this.userService.removeFriendRequest(
 						dto.friendId,
 						dto.userId,
 					);
-				} else if (dto.action === EditFriend.REMOVE_FRIEND) {
-					console.log('error 2');
+				} else if (dto.action === EditFriendActionType.REMOVE_FRIEND) {
 					throw new HttpException(
 						'User has no authorization',
 						HttpStatus.BAD_REQUEST,
@@ -135,20 +130,17 @@ export class UserController {
 				}
 			}
 			// the user can always send a reques, but it will only be processed if request does not exist
-			if (dto.action === EditFriend.SEND_REQUEST) {
+			if (dto.action === EditFriendActionType.SEND_REQUEST) {
 				const isFriendBeingRequested =
 					await this.userService.isUserRequested(
 						dto.friendId,
 						dto.userId,
 					);
 				if (!isFriendBeingRequested) {
-					console.log('ok to send request');
 					await this.userService.addFriendRequest(
 						dto.userId,
 						dto.friendId,
 					);
-				} else {
-					console.log('request has already sent');
 				}
 			}
 		}

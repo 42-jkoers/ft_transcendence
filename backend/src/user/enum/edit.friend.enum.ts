@@ -1,4 +1,4 @@
-export enum EditFriend {
+export enum EditFriendActionType {
 	ADD_FRIEND,
 	REMOVE_FRIEND,
 	SEND_REQUEST,
