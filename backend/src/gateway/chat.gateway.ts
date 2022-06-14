@@ -102,8 +102,25 @@ export class ChatGateway
 		client.emit('createRoom', response);
 	}
 
+	@SubscribeMessage('getPublicRoomsList')
+	async getPublicRoomsList(client: Socket) {
+		const publicRooms: RoomEntity[] =
+			// await this.roomService.getAllPublicRoomsWithUserRole();
+			await this.roomService.getAllPublicRoomsWithUserRole(
+				client.data.user.id,
+			);
+		const response = publicRooms.map((room) => {
+			const listedRoom = plainToClass(RoomForUserDto, room); //
+			listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
+			listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
+			return listedRoom;
+		});
+		console.log('response:', response);
+		client.emit('postPublicRoomsList', response);
+	}
+
 	@SubscribeMessage('getUserRoomsList')
-	async getRoomsList(client: Socket) {
+	async getUserRoomsList(client: Socket) {
 		const roomEntities: RoomEntity[] =
 			await this.roomService.getRoomsForUser(client.data.user.id);
 		// we don't need all information from the RoomEntity returned to the user, we'll have to serialize it

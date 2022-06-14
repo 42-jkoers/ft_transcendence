@@ -59,9 +59,11 @@ const socket: Socket = inject("socketioInstance");
 const rooms = ref();
 onMounted(() => {
   setTimeout(() => {
-    socket.emit("getUserRoomsList");
+    // socket.emit("getUserRoomsList");
+    socket.emit("getPublicRoomsList");
   }, 90); // FIXME: find a better solution?
-  socket.on("getUserRoomsList", (response) => {
+  socket.on("postPublicRoomsList", (response) => {
+    // socket.on("getUserRoomsList", (response) => {
     console.log("rooms from server", response);
 
     rooms.value = response;
