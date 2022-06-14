@@ -12,7 +12,7 @@
         v-for="m in messages"
         :key="m.id"
       >
-        <Card class="message-card text-black-alpha-70">
+        <Card class="text-black-alpha-70">
           <template #title>
             <div class="msg-top flex flex-row flex-wrap">
               <Chip
@@ -110,7 +110,7 @@ function sendMessage() {
   overflow-wrap: break-word;
 }
 
-.message-card {
+.p-card {
   background: #9da3d2;
   max-width: 35vw;
   font-size: small;
