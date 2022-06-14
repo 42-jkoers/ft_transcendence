@@ -14,7 +14,7 @@
       >
         <Card class="message-card text-black-alpha-70">
           <template #title>
-            <div class="msg-top flex flex-row">
+            <div class="msg-top flex flex-row flex-wrap">
               <Chip
                 class="custom-chip"
                 :label="m.user.username"
@@ -107,6 +107,7 @@ function sendMessage() {
 #all-messages {
   height: 50vh; /*if there is no height it does not scroll */
   overflow-y: scroll; /* FIXME school computer shows white bars */
+  overflow-wrap: break-word;
 }
 
 .message-card {
