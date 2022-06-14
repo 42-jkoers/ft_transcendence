@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted } from "vue";
+import { ref, inject, onMounted, onUnmounted } from "vue";
 import { Socket } from "socket.io-client";
 import MessageI from "../types/Message.interface";
 import Card from "primevue/card";
@@ -75,7 +75,6 @@ const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
 
-socket.off("messageAdded"); //removes all the existing handler for this event //FIXME prettier solution?
 socket.on("messageAdded", (message: MessageI) => {
   //console.log(message);
   messages.value.unshift(message);
@@ -88,6 +87,10 @@ onMounted(() => {
   socket.on("getMessagesForRoom", (response) => {
     messages.value = response;
   }); //listen to an event for updated messages from backend
+});
+
+onUnmounted(() => {
+  socket.off("messageAdded"); //to prevent multiple event binding in every rerender
 });
 
 //binding a click event listener to a method named 'sendMessage'
