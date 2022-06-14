@@ -12,18 +12,15 @@
         v-for="m in messages"
         :key="m.id"
       >
-        <Card class="text-black-alpha-70">
+        <Card>
           <template #title>
-            <div class="msg-top flex flex-row flex-wrap">
+            <div class="msg-top flex flex-row flex-wrap gap-2">
               <Chip
-                class="custom-chip"
+                class="user"
                 :label="m.user.username"
                 :image="m.user.avatar"
               />
-              <Chip
-                class="custom-chip"
-                :label="moment(m.created_at).format('LT')"
-              />
+              <Chip class="time" :label="moment(m.created_at).format('LT')" />
             </div>
           </template>
           <template #content>
@@ -117,9 +114,15 @@ function sendMessage() {
   text-align: left;
 }
 
-.p-chip.custom-chip {
+.p-chip.user {
   font-size: 50%;
   height: 2vh;
+}
+
+.p-chip.time {
+  font-size: 50%;
+  height: 2vh;
+  background-color: #9da3d2;
 }
 
 .msg-top {
@@ -130,5 +133,6 @@ function sendMessage() {
 
 .card-content {
   margin: 0;
+  color: #1e1e1e;
 }
 </style>
