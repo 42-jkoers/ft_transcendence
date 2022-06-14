@@ -119,7 +119,6 @@ function sendMessage() {
 
 .p-chip.custom-chip {
   font-size: 50%;
-  margin-bottom: 0;
   height: 2vh;
 }
 
