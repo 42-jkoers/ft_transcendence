@@ -57,6 +57,7 @@ export class ChatGateway
 			user,
 		}); // save connection to DB
 		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set
+		client.join('general'); //everyone joins the general on default
 	}
 
 	afterInit() {
@@ -84,7 +85,7 @@ export class ChatGateway
 			user,
 			selectedRoom,
 		);
-		this.server.emit('messageAdded', createdMessage); //server socket emits to all clients
+		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
