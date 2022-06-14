@@ -23,6 +23,7 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { plainToClass } from 'class-transformer';
 import { RoomForUserDto } from 'src/chat/room/dto';
 import { UserService } from 'src/user/user.service';
+import { OAuthGuard } from 'src/auth/oauth/oauth.guard';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
