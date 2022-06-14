@@ -21,6 +21,18 @@ export class UserService {
 		});
 	}
 
+	async findByIntraID(intraIDToFind: string): Promise<UserI> {
+		return await this.userRepository.findOne({
+			where: { intraID: intraIDToFind },
+		});
+	}
+
+	async findByUserName(userNameToFind: string): Promise<UserI> {
+		return await this.userRepository.findOne({
+			where: { username: userNameToFind },
+		});
+	}
+
 	//FIXME: this is a kind of duplicate findOne function to return User entity instead of UserI
 	async getUserByID(idToFind: number): Promise<User> {
 		return await this.userRepository.findOne({
@@ -28,15 +40,13 @@ export class UserService {
 		});
 	}
 
-	async findByIntraID(intraID: string): Promise<UserI> {
-		return await this.userRepository.findOne({ intraID });
-	}
-
 	async createUser(userData: CreateUserDto): Promise<UserI> {
 		// we need to get the default room(which is the public room for all the users) to push the newly created user in there
 		// FIXME: this has to be replaced by default admin and default room instantiation right after the db has been connected
 		const defaultRoom: RoomEntity = await this.roomService.getDefaultRoom();
 		const newUser = this.userRepository.create(userData);
+		newUser.requestedFriends = [];
+		newUser.friends = [];
 		const createdUser: UserI = await this.userRepository.save(newUser);
 		await this.roomService.addVisitorToRoom(createdUser.id, defaultRoom);
 
@@ -58,6 +68,8 @@ export class UserService {
 			avatar: '/default_avatar.png',
 		};
 		const defaultUser = this.userRepository.create(defaultUserData);
+		defaultUser.requestedFriends = [];
+		defaultUser.friends = [];
 		await this.userRepository.save(defaultUser);
 		return defaultUser;
 	}
@@ -75,5 +87,107 @@ export class UserService {
 			return undefined;
 		}
 		return await this.findByID(userData.id);
+	}
+
+	async isFriends(id1: number, id2: number): Promise<boolean> {
+		const friend = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.friends', 'friend')
+			.where('friend.id = :id1', { id1 })
+			.andWhere('user.id = :id2', { id2 })
+			.getOne();
+		return !(friend === undefined);
+	}
+
+	async isUserRequested(userId: number, senderId: number): Promise<boolean> {
+		const request = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.requestedFriends', 'requested')
+			.where('requested.id = :userId', { userId })
+			.andWhere('user.id = :senderId', { senderId })
+			.getOne();
+		return !(request === undefined);
+	}
+
+	async addFriendRequest(userId: number, requestedId: number) {
+		let user: UserI = await this.findByID(userId);
+		// prevent duplicate User in the array
+		const requestedFriends = await this.getFriendRequests(userId);
+		if (requestedFriends) {
+			user.requestedFriends = requestedFriends.filter((request) => {
+				return request.id !== requestedId;
+			});
+		}
+		// push new user
+		if (!user.requestedFriends) {
+			user.requestedFriends = [];
+		}
+		const requested: UserI = await this.findByID(requestedId);
+		user.requestedFriends.push(requested);
+		// save
+		await this.userRepository.save(user);
+	}
+
+	async removeFriendRequest(userId: number, user2Id: number) {
+		let user: UserI = await this.findByID(userId);
+		const requestedFriends = await this.getFriendRequests(userId);
+		if (requestedFriends) {
+			user.requestedFriends = requestedFriends.filter((request) => {
+				return request.id !== user2Id;
+			});
+			await this.userRepository.save(user);
+		}
+
+		let user2: UserI = await this.findByID(user2Id);
+		const requestedFriends2 = await this.getFriendRequests(user2Id);
+		if (requestedFriends2) {
+			user2.requestedFriends = requestedFriends.filter((request) => {
+				return request.id !== user2Id;
+			});
+			await this.userRepository.save(user2);
+		}
+	}
+
+	async addFriend(user: UserI, friendToAdd: UserI) {
+		const friends = await this.getFriends(user.id);
+		if (friends) {
+			user.friends = friends.filter((friend) => {
+				return friend.id !== friendToAdd.id;
+			});
+		} // prevent duplicate User in the array
+		user.friends.push(friendToAdd);
+		await this.userRepository.save(user);
+		friendToAdd.friends = await this.getFriends(friendToAdd.id);
+		await this.userRepository.save(friendToAdd);
+	}
+
+	async removeFriend(user: UserI, friendToRemove: UserI) {
+		const friends = await this.getFriends(user.id);
+		if (friends) {
+			user.friends = friends.filter((friend) => {
+				return friend.id !== friendToRemove.id;
+			});
+			await this.userRepository.save(user);
+			friendToRemove.friends = await this.getFriends(friendToRemove.id);
+			await this.userRepository.save(friendToRemove);
+		}
+	}
+
+	async getFriends(userId: number): Promise<UserI[]> {
+		const friends = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.friends', 'friend')
+			.where('friend.id = :userId', { userId })
+			.getMany();
+		return friends;
+	}
+
+	async getFriendRequests(userId: number): Promise<UserI[]> {
+		const friendRequests = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.requestedFriends', 'requested')
+			.where('requested.id = :userId', { userId })
+			.getMany();
+		return friendRequests;
 	}
 }
