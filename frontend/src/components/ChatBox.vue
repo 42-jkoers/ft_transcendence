@@ -18,7 +18,7 @@
               <Chip
                 class="custom-chip"
                 :label="m.user.username"
-                :image="storeUser.state.user.avatar"
+                :image="m.user.avatar"
               />
               <Chip
                 class="custom-chip"
@@ -68,7 +68,6 @@ import Panel from "primevue/panel";
 import { useRoute } from "vue-router";
 import moment from "moment";
 import Chip from "primevue/chip";
-import storeUser from "@/store";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
