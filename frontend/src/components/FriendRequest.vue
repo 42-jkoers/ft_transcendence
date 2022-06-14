@@ -15,9 +15,12 @@
   </div>
   <div>
     <DataTable :value="requests" responsiveLayout="scroll">
+      <template #header>
+        <div class="flex justify-content-center align-items-center"></div>
+      </template>
       <Column
         field="username"
-        header="Requested User"
+        header="Pending Request"
         headerStyle="width: 30%"
       ></Column>
       <Column header="Action" headerStyle="width: 70%">
@@ -26,7 +29,7 @@
             <span class="p-buttonset">
               <Button
                 label="Approve"
-                class="p-button-success"
+                class="p-button-success p-button-sm"
                 icon="pi pi-check"
                 iconPos="left"
                 style="width: 30%"
@@ -34,7 +37,7 @@
               />
               <Button
                 label="Reject"
-                class="p-button-danger"
+                class="p-button-danger p-button-sm"
                 icon="pi pi-times"
                 iconPos="left"
                 style="width: 30%"

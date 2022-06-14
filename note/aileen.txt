@@ -169,13 +169,15 @@ Tutorial:
 **************************
 **		Next To To				**
 **************************
-- optimize friendRequest data structure (OneToMany?)
+- show friends list
+- notification of adding friend?
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 
 ******************************
 **			General To To				**
 ******************************
+- optimize friendRequest data structure (OneToMany?)
 - try/catch all axios exception
 - deregister user
 

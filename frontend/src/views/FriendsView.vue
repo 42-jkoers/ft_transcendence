@@ -1,9 +1,15 @@
 <template>
-  <div class="col-offset-2 col-8" align="center">
-    <FriendRequest />
+  <div class="grid">
+    <div class="col-offset-1 col-5" align="center">
+      <FriendRequest />
+    </div>
+    <div class="col-6" align="center">
+      <FriendList />
+    </div>
   </div>
 </template>
 <script setup lang="ts">
 import FriendRequest from "@/components/FriendRequest.vue";
+import FriendList from "@/components/FriendList.vue";
 </script>
 <style scoped></style>
