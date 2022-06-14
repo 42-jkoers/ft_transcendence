@@ -79,9 +79,6 @@ onMounted(() => {
   }); //recevies the existing messages from backend when room is first loaded
 
   socket.on("messageAdded", (message: MessageI) => {
-    console.log(message);
-    console.log(route.params.roomName);
-    console.log(route.params.roomName === message.room.name);
     if (route.params.roomName === message.room.name)
       messages.value.unshift(message);
     //console.log(messages.value);
