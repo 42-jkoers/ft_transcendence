@@ -37,7 +37,7 @@ export class UserController {
 	@UseInterceptors(
 		FileInterceptor('file', {
 			storage: diskStorage({
-				destination: UploadFileHelper.destinationPath,
+				destination: '../upload',
 				filename: UploadFileHelper.customFileName,
 			}),
 		}),
