@@ -116,7 +116,7 @@ async function findUser() {
 }
 
 function changeFriendStatus() {
-  isFriend.value = !isFriend.value;
+  isFriend.value = false;
 }
 
 const router = useRouter();

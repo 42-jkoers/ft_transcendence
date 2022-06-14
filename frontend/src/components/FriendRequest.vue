@@ -54,12 +54,6 @@
       </Column>
     </DataTable>
   </div>
-  <div>
-    <br />
-    <Button class="p-button-sm" @click="tempRequest1"
-      >Test: user 1 send request to user 2</Button
-    >
-  </div>
 </template>
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
@@ -79,24 +73,6 @@ const showFailMessage = ref<boolean>(false);
 onMounted(async () => {
   await refreshFriendRequests();
 });
-
-async function tempRequest1() {
-  const postBody = {
-    userId: 1,
-    friendId: 2,
-    action: EditFriendActionType.SEND_REQUEST,
-  };
-  await axios
-    .post("http://localhost:3000/user/edit-friend", postBody, {
-      withCredentials: true,
-    })
-    .then(async () => {
-      await refreshFriendRequests();
-    })
-    .catch(() => {
-      displayErrorMessage();
-    });
-}
 
 async function refreshFriendRequests() {
   await axios
