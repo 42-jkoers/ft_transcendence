@@ -154,9 +154,12 @@ export class RoomService {
 					userId,
 				},
 			)
-			.where('room.visibility = :publicRoom', {
-				publicRoom: RoomVisibilityType.PUBLIC,
-			})
+			.where(
+				'room.visibility = :publicRoom or userToRooms.userId is not null',
+				{
+					publicRoom: RoomVisibilityType.PUBLIC,
+				},
+			)
 			.orderBy('userToRooms.role')
 			.addOrderBy('room.name')
 			.getMany();
