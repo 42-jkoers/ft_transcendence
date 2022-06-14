@@ -27,7 +27,7 @@
                 :friendId="user?.id"
                 buttonLabel="Add friend"
                 buttonIcon="pi pi-user-plus"
-                :action="EditFriend.ADD_FRIEND"
+                :action="EditFriend.SEND_REQUEST"
                 @processed="changeFriendStatus()"
               />
             </div>
@@ -45,7 +45,7 @@
               @click="toSetting"
             />
           </div>
-          <div v-if="isFriend">
+          <div v-else>
             <Button
               label="Message"
               class="p-button-rounded p-button-outlined"

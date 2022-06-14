@@ -165,8 +165,11 @@ Tutorial:
 	- set up FriendsView in menu
 	- add friendRequest (User[]) to User Entity, load request in FriendsView
 	- setup flow for approve/reject friend request
+
+(Tue) 2022-06-14
 	- consolidate all friend related button to EditFriendButton
 	- error management for friend request process
+	- add refreshh button to request and friend list
 
 **************************
 **		Next To To				**

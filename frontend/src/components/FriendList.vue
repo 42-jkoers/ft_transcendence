@@ -11,7 +11,16 @@
           <h3>Friend List</h3>
         </div>
       </template>
-      <Column header="Friends" headerStyle="width: 40%">
+      <Column headerStyle="width: 5%">
+        <template #header>
+          <Button
+            icon="pi pi-refresh"
+            class="p-button-rounded p-button-text p-button-outlined p-button-sm"
+            @click="refreshFriendList"
+          />
+        </template>
+      </Column>
+      <Column header="Friends" headerStyle="width: 45%">
         <template #body="slotProps">
           <Chip
             :label="slotProps.data.username"
@@ -19,7 +28,7 @@
           />
         </template>
       </Column>
-      <Column header="Action" headerStyle="width: 60%">
+      <Column header="Action" headerStyle="width: 50%">
         <template #body="slotProps">
           <div class="flex align-items-center flex-column sm:flex-row">
             <Button

@@ -8,10 +8,25 @@
     <DataTable :value="requests" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
+          <Badge
+            :value="requests.length"
+            severity="warning"
+            class="mr-2"
+            size="large"
+          />
           <h3>Pending Request List</h3>
         </div>
       </template>
-      <Column header="Friend Requests" headerStyle="width: 50%">
+      <Column headerStyle="width: 5%">
+        <template #header>
+          <Button
+            icon="pi pi-refresh"
+            class="p-button-rounded p-button-text p-button-outlined p-button-sm"
+            @click="refreshFriendRequests"
+          />
+        </template>
+      </Column>
+      <Column header="Friend Requests" headerStyle="width: 55%">
         <template #body="slotProps">
           <Chip
             :label="slotProps.data.username"
@@ -19,20 +34,20 @@
           />
         </template>
       </Column>
-      <Column header="Action" headerStyle="width: 50%">
+      <Column header="Action" headerStyle="width: 40%">
         <template #body="slotProps">
           <div>
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-check"
               :action="EditFriend.ADD_FRIEND"
-              @processed="refreshFriendRequests()"
+              @processed="refreshFriendRequests"
             />
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-times"
               :action="EditFriend.REJECT_REQUEST"
-              @processed="refreshFriendRequests()"
+              @processed="refreshFriendRequests"
             />
           </div>
         </template>
@@ -53,6 +68,7 @@ import DataTable from "primevue/datatable";
 import Message from "primevue/message";
 import Column from "primevue/column";
 import Chip from "primevue/chip";
+import Badge from "primevue/badge";
 import axios from "axios";
 import storeUser from "@/store";
 import EditFriend from "@/types/EditFriend";
