@@ -71,18 +71,21 @@ const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
 
-socket.on("messageAdded", (message: MessageI) => {
-  //console.log(message);
-  messages.value.unshift(message);
-  //console.log(messages.value);
-}); //place the new message on top of the messages arrayy
-
 onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
 
   socket.on("getMessagesForRoom", (response) => {
     messages.value = response;
   }); //recevies the existing messages from backend when room is first loaded
+
+  socket.on("messageAdded", (message: MessageI) => {
+    console.log(message);
+    console.log(route.params.roomName);
+    console.log(route.params.roomName === message.room.name);
+    if (route.params.roomName === message.room.name)
+      messages.value.unshift(message);
+    //console.log(messages.value);
+  }); //place the new message on top of the messages arrayy
 });
 
 onUnmounted(() => {
