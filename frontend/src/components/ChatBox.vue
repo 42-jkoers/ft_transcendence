@@ -79,14 +79,14 @@ socket.on("messageAdded", (message: MessageI) => {
   //console.log(message);
   messages.value.unshift(message);
   //console.log(messages.value);
-}); //load msgs again when a msg is sent
+}); //place the new message on top of the messages arrayy
 
 onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
 
   socket.on("getMessagesForRoom", (response) => {
     messages.value = response;
-  }); //listen to an event for updated messages from backend
+  }); //recevies the existing messages from backend when room is first loaded
 });
 
 onUnmounted(() => {
