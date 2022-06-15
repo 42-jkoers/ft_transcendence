@@ -7,11 +7,12 @@ import TwoFactorAuthView from "@/views/TwoFactorAuthView.vue";
 import LogOutView from "@/views/LogOutView.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
-import CreateRoom from "@/views/CreateRoom.vue";
+import CreateRoom from "@/views/CreateRoomView.vue";
 import ChatView from "@/views/ChatView.vue";
 import ChatBox from "@/components/ChatBox.vue";
 import UserProfileCard from "@/components/UserProfileCard.vue";
 import storeUser from "@/store";
+import FriendsView from "@/views/FriendsView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -54,6 +55,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/userhome/logout",
     name: "LogOut",
     component: LogOutView,
+  },
+  {
+    path: "/friends",
+    name: "Friends",
+    component: FriendsView,
   },
   {
     path: "/chat/create-chatroom",

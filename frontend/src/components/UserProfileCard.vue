@@ -12,23 +12,45 @@
         </template>
         <template #title>
           <h3>{{ user?.username }}</h3>
+          <div v-if="!isSelf">
+            <div v-if="isFriend">
+              <EditFriendButton
+                :friendId="user?.id"
+                buttonLabel="Unfriend"
+                buttonIcon="pi pi-user-minus"
+                :action="EditFriendActionType.REMOVE_FRIEND"
+                @processed="changeFriendStatus()"
+              />
+            </div>
+            <div v-else>
+              <EditFriendButton
+                :friendId="user?.id"
+                buttonLabel="Add friend"
+                buttonIcon="pi pi-user-plus"
+                :action="EditFriendActionType.SEND_REQUEST"
+                @processed="changeFriendStatus()"
+              />
+            </div>
+          </div>
         </template>
         <template #content>
-          <p>[other info to be added]</p>
+          <p>To add content</p>
         </template>
         <template #footer>
-          <div v-if="isShowMessageButton">
+          <div v-if="isSelf">
             <Button
-              label="Message"
-              icon="pi pi-envelope"
-              @click="toPrivateMessage"
+              label="Edit Profile"
+              class="p-button-rounded p-button-outlined"
+              icon="pi pi-user-edit"
+              @click="toSetting"
             />
           </div>
           <div v-else>
             <Button
-              label="Edit Profile"
-              icon="pi pi-user-edit"
-              @click="toSetting"
+              label="Message"
+              class="p-button-rounded p-button-outlined"
+              icon="pi pi-envelope"
+              @click="toPrivateMessage"
             />
           </div>
         </template>
@@ -46,17 +68,33 @@ import Button from "primevue/button";
 import UserProfileI from "@/types/UserProfile.interface";
 import storeUser from "@/store";
 import { useRouter } from "vue-router";
+import EditFriendButton from "./EditFriendButton.vue";
+import EditFriendActionType from "@/types/EditFriendActionType";
 
 const route = useRoute();
 const id = route.params.id;
 const user = ref<UserProfileI>();
 const isError = ref<boolean>(false);
-const isShowMessageButton = ref<boolean>(false);
+const isSelf = ref<boolean>();
+const isFriend = ref<boolean>();
 
 onMounted(async () => {
   await findUser();
-  if (id !== String(storeUser.state.user.id)) {
-    isShowMessageButton.value = true;
+  isSelf.value = id === String(storeUser.state.user.id);
+  if (!isSelf.value) {
+    await axios(
+      "http://localhost:3000/user/is-friend?id1=" +
+        storeUser.state.user.id +
+        "&id2=" +
+        id,
+      { withCredentials: true }
+    )
+      .then((response) => {
+        isFriend.value = response.data;
+      })
+      .catch(() => {
+        isError.value = true;
+      });
   }
 });
 
@@ -68,9 +106,6 @@ async function findUser() {
     .then((response) => {
       if (response.data) {
         user.value = response.data;
-        // if (user.value?.username === "admin") {
-        //   isError.value = true;
-        // }
       } else {
         isError.value = true;
       }
@@ -78,6 +113,10 @@ async function findUser() {
     .catch(() => {
       isError.value = true;
     });
+}
+
+function changeFriendStatus() {
+  isFriend.value = false;
 }
 
 const router = useRouter();

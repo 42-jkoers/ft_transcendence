@@ -1,11 +1,14 @@
 import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
-import { RoomEntity } from 'src/chat/room/entities/room.entity';
+import { UserToRoomEntity } from '../chat/room/entities/user.to.room.entity';
+
 import {
 	Column,
 	Entity,
 	JoinColumn,
+	JoinTable,
 	ManyToMany,
+	ManyToOne,
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -21,15 +24,26 @@ export class User {
 	@Column({ unique: true, nullable: true })
 	public username: string;
 
-	@Column({ nullable: true })
+	@Column()
 	public avatar: string;
+
+	@ManyToMany(() => User)
+	@JoinTable({ joinColumn: { name: 'sender_id' } })
+	requestedFriends: User[];
+
+	@ManyToMany(() => User, { cascade: true })
+	@JoinTable({ joinColumn: { name: 'userId_1' } })
+	// https://stackoverflow.com/questions/43747765/self-referencing-manytomany-relationship-typeorm
+	friends: User[];
 
 	@JoinColumn()
 	@OneToMany(() => ConnectedUserEntity, (connection) => connection.user)
 	connections: ConnectedUserEntity[];
 
-	@ManyToMany(() => RoomEntity, (room) => room.users)
-	rooms: RoomEntity[];
+	@OneToMany(() => UserToRoomEntity, (userToRoom) => userToRoom.room, {
+		cascade: true,
+	})
+	public userToRooms!: UserToRoomEntity[];
 
 	@OneToMany(() => MessageEntity, (message) => message.user)
 	messages: MessageEntity[];

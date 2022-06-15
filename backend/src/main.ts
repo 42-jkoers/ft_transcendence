@@ -13,7 +13,11 @@ async function bootstrap() {
 
 	// general setting
 	const configService = app.get(ConfigService);
-	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+	app.useGlobalPipes(
+		new ValidationPipe({
+			transform: true, // automatically transform payloads to be objects typed according to their DTO classes
+		}),
+	);
 
 	// to enable session cookie pass to frontend (authenticate user)
 	app.enableCors({

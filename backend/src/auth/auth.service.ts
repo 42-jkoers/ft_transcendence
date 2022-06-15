@@ -59,7 +59,9 @@ export class AuthService {
 		 */
 		return new Promise((resolve) => {
 			store.get(String(decodeSid), function (err, sessionInfo) {
-				resolve(sessionInfo['passport']['user']);
+				if (sessionInfo) {
+					resolve(sessionInfo['passport']['user']);
+				}
 			});
 		});
 	}
