@@ -4,7 +4,6 @@ import { Repository, getRepository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { RoomEntity } from './entities/room.entity';
 import { RoomVisibilityType } from './enums/room.visibility.enum';
-import { UserI } from 'src/user/user.interface';
 import { User } from 'src/user/user.entity';
 import { UserService } from '../../user/user.service';
 import { createRoomDto } from './dto';
@@ -140,6 +139,31 @@ export class RoomService {
 			UserRole.VISITOR,
 		);
 		await this.roomEntityRepository.save(room);
+	}
+
+	async getAllPublicRoomsWithUserRole(userId: number): Promise<RoomEntity[]> {
+		const userRooms = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			// conditional 'join'; joins userToRooms if the condition 'userToRooms.userId = :userId' is true
+			// if user is not in the room leftjoin returns null and [] is empty
+			.leftJoinAndSelect(
+				'room.userToRooms',
+				'userToRooms',
+				'userToRooms.userId = :userId',
+				{
+					userId,
+				},
+			)
+			.where(
+				'room.visibility = :publicRoom or userToRooms.userId is not null',
+				{
+					publicRoom: RoomVisibilityType.PUBLIC,
+				},
+			)
+			.orderBy('userToRooms.role')
+			.addOrderBy('room.name')
+			.getMany();
+		return userRooms;
 	}
 
 	async getRoomsForUser(userId: number): Promise<RoomEntity[]> {

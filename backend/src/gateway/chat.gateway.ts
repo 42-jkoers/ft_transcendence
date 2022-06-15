@@ -16,14 +16,13 @@ import { ConnectedUserService } from '../chat/connected-user/connected-user.serv
 import { RoomService } from '../chat/room/room.service';
 import { MessageI } from '../chat/message/message.interface';
 import { MessageService } from '../chat/message/message.service';
-import { createRoomDto } from '../chat/room/dto';
 import { WsExceptionFilter } from '../exceptions/WsExceptionFilter';
 import { UseFilters } from '@nestjs/common';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { plainToClass } from 'class-transformer';
 import { RoomForUserDto } from 'src/chat/room/dto';
 import { UserService } from 'src/user/user.service';
-import { OAuthGuard } from 'src/auth/oauth/oauth.guard';
+import { createRoomDto } from '../chat/room/dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -109,8 +108,24 @@ export class ChatGateway
 		client.join(response.data); //FIXME temporary trial with one person in the room, fix it when someone joins the room
 	}
 
+	@SubscribeMessage('getPublicRoomsList')
+	async getPublicRoomsList(client: Socket) {
+		const publicRooms: RoomEntity[] =
+			// await this.roomService.getAllPublicRoomsWithUserRole();
+			await this.roomService.getAllPublicRoomsWithUserRole(
+				client.data.user.id,
+			);
+		const response = publicRooms.map((room) => {
+			const listedRoom = plainToClass(RoomForUserDto, room); //
+			listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
+			listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
+			return listedRoom;
+		});
+		client.emit('postPublicRoomsList', response);
+	}
+
 	@SubscribeMessage('getUserRoomsList')
-	async getRoomsList(client: Socket) {
+	async getUserRoomsList(client: Socket) {
 		const roomEntities: RoomEntity[] =
 			await this.roomService.getRoomsForUser(client.data.user.id);
 		// we don't need all information from the RoomEntity returned to the user, we'll have to serialize it
@@ -122,6 +137,17 @@ export class ChatGateway
 			return listedRoom;
 		});
 		client.emit('getUserRoomsList', response);
+	}
+
+	@SubscribeMessage('addUserToRoom')
+	async addUserToRoom(
+		@MessageBody() roomName: string,
+		@ConnectedSocket() client: Socket,
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			roomName,
+		);
+		await this.roomService.addVisitorToRoom(client.data.user.id, room);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')

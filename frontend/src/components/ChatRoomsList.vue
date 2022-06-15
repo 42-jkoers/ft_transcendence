@@ -40,6 +40,17 @@
         header="Chat Rooms"
         headerStyle="padding-left:0"
       ></Column>
+      <Column field="joined" style="max-width: 2.5rem">
+        <template #body="slotProps">
+          <div>
+            <i
+              v-if="slotProps.data.userRole !== undefined"
+              class="pi pi-user"
+              style="font-size: 0.8rem"
+            ></i>
+          </div>
+        </template>
+      </Column>
     </DataTable>
   </div>
 </template>
@@ -59,9 +70,11 @@ const socket: Socket = inject("socketioInstance");
 const rooms = ref();
 onMounted(() => {
   setTimeout(() => {
-    socket.emit("getUserRoomsList");
+    // socket.emit("getUserRoomsList");
+    socket.emit("getPublicRoomsList");
   }, 90); // FIXME: find a better solution?
-  socket.on("getUserRoomsList", (response) => {
+  socket.on("postPublicRoomsList", (response) => {
+    // socket.on("getUserRoomsList", (response) => {
     console.log("rooms from server", response);
 
     rooms.value = response;
@@ -82,6 +95,7 @@ const onRowSelect = (event) => {
     displayPasswordDialog.value = true;
     selectedRoomName.value = room.name;
   } else {
+    socket.emit("addUserToRoom", room.name); // FIXME: temp
     router.push({
       name: "ChatBox",
       params: { roomName: room.name },
