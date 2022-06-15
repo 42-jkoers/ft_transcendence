@@ -171,10 +171,14 @@ Tutorial:
 	- error management for friend request process
 	- add refreshh button to request and friend list
 
+(Wed) 2022-06-15
+	- test friend function / team test
+	-
+
 **************************
 **		Next To To				**
 **************************
-- notification of adding friend?
+- improve notification of friend action
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 
