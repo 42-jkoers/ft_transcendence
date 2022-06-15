@@ -1,8 +1,9 @@
 <template>
-  <div v-if="showFailMessage">
-    <Message severity="error" :closable="false">
-      Something went wrong, please retry!
-    </Message>
+  <div>
+    <FriendActionMessage
+      :action="currentAction"
+      :notify="notifyFriendActionMessage"
+    />
   </div>
   <div>
     <DataTable :value="requests" responsiveLayout="scroll">
@@ -41,13 +42,17 @@
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-check"
               :action="EditFriendActionType.ADD_FRIEND"
-              @processed="refreshFriendRequests"
+              @isActionSuccess="
+                catchEvent($event, EditFriendActionType.ADD_FRIEND)
+              "
             />
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-times"
               :action="EditFriendActionType.REJECT_REQUEST"
-              @processed="refreshFriendRequests"
+              @isActionSuccess="
+                catchEvent($event, EditFriendActionType.REJECT_REQUEST)
+              "
             />
           </div>
         </template>
@@ -56,10 +61,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, defineEmits } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
-import Message from "primevue/message";
 import Column from "primevue/column";
 import Chip from "primevue/chip";
 import Badge from "primevue/badge";
@@ -67,9 +71,15 @@ import axios from "axios";
 import storeUser from "@/store";
 import EditFriendActionType from "@/types/EditFriendActionType";
 import EditFriendButton from "./EditFriendButton.vue";
+import FriendActionMessage from "./FriendActionMessage.vue";
 
+const currentAction = ref<EditFriendActionType>();
+const notifyFriendActionMessage = ref<boolean>();
 const requests = ref([]);
-const showFailMessage = ref<boolean>(false);
+const emit = defineEmits<{
+  (event: "error"): boolean;
+}>();
+
 onMounted(async () => {
   await refreshFriendRequests();
 });
@@ -86,12 +96,22 @@ async function refreshFriendRequests() {
       requests.value = response.data;
     })
     .catch(() => {
-      displayErrorMessage();
+      emit("error", true);
     });
 }
 
-function displayErrorMessage() {
-  showFailMessage.value = true;
-  setTimeout(() => (showFailMessage.value = false), 2000);
+function showFriendActionMessage() {
+  notifyFriendActionMessage.value = !notifyFriendActionMessage.value;
+}
+
+function catchEvent(event, action: EditFriendActionType) {
+  if (event) {
+    currentAction.value = action;
+    showFriendActionMessage();
+    refreshFriendRequests();
+  } else {
+    currentAction.value = EditFriendActionType.ERROR;
+    showFriendActionMessage();
+  }
 }
 </script>

@@ -17,4 +17,5 @@ inject-secrets.sh
 .env
 # Uploaded avatars
 upload/*
+!upload/.gitkeep
 

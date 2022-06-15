@@ -1,8 +1,9 @@
 <template>
-  <div v-if="showFailMessage">
-    <Message severity="error" :closable="false">
-      Something went wrong, please retry!
-    </Message>
+  <div>
+    <FriendActionMessage
+      :action="currentAction"
+      :notify="notifyFriendActionMessage"
+    />
   </div>
   <div>
     <DataTable :value="friendList" responsiveLayout="scroll">
@@ -43,7 +44,9 @@
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-user-minus"
               :action="EditFriendActionType.REMOVE_FRIEND"
-              @processed="refreshFriendList"
+              @isActionSuccess="
+                catchEvent($event, EditFriendActionType.REMOVE_FRIEND)
+              "
             />
           </div>
         </template>
@@ -52,19 +55,25 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, defineEmits } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
-import Message from "primevue/message";
 import Column from "primevue/column";
 import Chip from "primevue/chip";
 import axios from "axios";
 import storeUser from "@/store";
 import EditFriendActionType from "@/types/EditFriendActionType";
 import EditFriendButton from "./EditFriendButton.vue";
+import FriendActionMessage from "./FriendActionMessage.vue";
 
 const friendList = ref([]);
-const showFailMessage = ref<boolean>(false);
+const currentAction = ref<EditFriendActionType>();
+const notifyFriendActionMessage = ref<boolean>();
+
+const emit = defineEmits<{
+  (event: "error"): boolean;
+}>();
+
 onMounted(async () => {
   await refreshFriendList();
 });
@@ -81,12 +90,22 @@ async function refreshFriendList() {
       friendList.value = response.data;
     })
     .catch(() => {
-      displayErrorMessage();
+      emit("error", true);
     });
 }
 
-function displayErrorMessage() {
-  showFailMessage.value = true;
-  setTimeout(() => (showFailMessage.value = false), 2000);
+function showFriendActionMessage() {
+  notifyFriendActionMessage.value = !notifyFriendActionMessage.value;
+}
+
+function catchEvent(event, action: EditFriendActionType) {
+  if (event) {
+    currentAction.value = action;
+    showFriendActionMessage();
+    refreshFriendList();
+  } else {
+    currentAction.value = EditFriendActionType.ERROR;
+    showFriendActionMessage();
+  }
 }
 </script>
