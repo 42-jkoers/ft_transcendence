@@ -74,8 +74,14 @@ export class UserService {
 
 	// async setTwoFactorAuthenticationSecret(secret: string, username: string) {
 	async setTwoFactorAuthSecret(secret: string, id: number) {
-		return this.userRepository.update(id, {
+		return this.userRepository.update(id, {//TODO understand user repository
 			twoFactorAuthSecret: secret
+		});
+	}
+
+	async turnOnTwoFactorAuth(userId: number) {
+		return this.userRepository.update(userId, {
+			isTwoFactorAuthEnabled: true
 		});
 	}
 }

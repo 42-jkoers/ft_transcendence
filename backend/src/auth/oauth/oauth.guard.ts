@@ -7,6 +7,8 @@ export class OAuthGuard extends AuthGuard('oauth') {
 		const activate = (await super.canActivate(context)) as boolean;
 		const request = context.switchToHttp().getRequest();
 		await super.logIn(request);
+		console.log('cookies in the open auth',request.cookies);
+		console.log('sessions in the open auth',request.session);
 		return activate;
 	}
 }

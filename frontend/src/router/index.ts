@@ -3,6 +3,7 @@ import HomeView from "@/views/HomeView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import UserSettingView from "@/views/UserSettingView.vue";
 import UnAuthorizedView from "@/views/UnAuthorizedView.vue";
+import TwoFactorAuthView from "@/views/TwoFactorAuthView.vue";
 import LogOut from "@/components/LogOut.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
@@ -73,6 +74,12 @@ const routes: Array<RouteRecordRaw> = [
     name: "ComingSoon",
     component: ComingSoonView,
   },
+  //TODO
+  {
+    path: "/temp",
+    name: "temp",
+    component: TwoFactorAuthView,
+  },
 ];
 
 const router = createRouter({
@@ -104,7 +111,9 @@ router.beforeEach((to) => {
   if (
     to.name !== "Home" &&
     to.name !== "Register" &&
-    to.name != "UnAuthorized"
+    to.name !== "UnAuthorized" &&
+    //TODO delete later
+    to.name !== "temp"
   ) {
     checkLogInState();
   }

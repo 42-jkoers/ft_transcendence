@@ -1,7 +1,8 @@
-import { ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as CookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import * as redis from 'redis';
@@ -40,6 +41,24 @@ async function bootstrap() {
 	);
 	app.use(passport.initialize());
 	app.use(passport.session());
+	app.useGlobalPipes(new ValidationPipe());//TODO: for validator and transformer, check if actually needed
+	app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));//TODO: for validator and transformer, check if actually needed
+	app.use(CookieParser());
+
+	//add error handler, to understand where the error is from
+	// app.use(require('body-parser').json()); 
+	// app.use(require('body-parser').urlencoded({ extended: true }));
+
+	// app.use((err, req, res, next) => {
+    // // This check makes sure this is a JSON parsing issue, but it might be
+    // // coming from any middleware, not just body-parser:
+	// 	if (err instanceof SyntaxError && 'body' in err) {
+	// 		console.error(err);
+	// 		return res.sendStatus(400); // Bad request
+	// 	}
+    // 	next();
+	// });
+
 
 	// listen to port
 	const port = configService.get('PORT') ?? 3000;
