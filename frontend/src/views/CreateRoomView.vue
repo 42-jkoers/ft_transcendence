@@ -157,6 +157,10 @@ function saveNewRoom() {
     visibility: selectedCategory.value,
     password: passwordValue.value,
   };
+  // setting an empty password value to null:
+  if (newRoom.password === "") {
+    newRoom.password = null;
+  }
   console.log("newRoom data sent from the client: ", newRoom);
   socket.emit("createRoom", newRoom);
   isValidRoomName.value = true;
