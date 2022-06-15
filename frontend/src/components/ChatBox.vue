@@ -19,7 +19,9 @@
                 class="user"
                 :label="m.user.username"
                 :image="m.user.avatar"
+                @contextmenu="onChipRightClick"
               />
+              <ContextMenu ref="menu" :model="items" />
               <Chip class="time" :label="moment(m.created_at).format('LT')" />
             </div>
           </template>
@@ -65,11 +67,26 @@ import Panel from "primevue/panel";
 import { useRoute } from "vue-router";
 import moment from "moment";
 import Chip from "primevue/chip";
+import ContextMenu from "primevue/contextmenu";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
+const menu = ref();
+const items = ref([
+  {
+    label: "Quit",
+    icon: "pi pi-fw pi-power-off",
+  },
+]);
+
+const onChipRightClick = (event) => {
+  console.log(menu.value);
+  console.log(event);
+  console.log(items.value);
+  menu.value.show(event);
+};
 
 onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
@@ -98,6 +115,10 @@ function sendMessage() {
     });
   input.value = "";
 }
+
+// function onChipRightClick((event) => {
+//   menu.value.show(event);
+// })
 </script>
 
 <style scoped>
