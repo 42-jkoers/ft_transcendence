@@ -7,14 +7,10 @@
   />
 </template>
 <script setup lang="ts">
-import { defineEmits, ref, defineProps } from "vue";
+import { defineEmits, defineProps } from "vue";
 import Button from "primevue/button";
 import axios from "axios";
 import storeUser from "@/store";
-
-const showSuccessMessage = ref<boolean>(false);
-const showFailMessage = ref<boolean>(false);
-const successMessage = ref<string>();
 
 const props = defineProps({
   friendId: Number,
