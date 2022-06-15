@@ -8,22 +8,19 @@
       class="flex flex-column-reverse gap-1 md:gap-2 xl:gap-4"
     >
       <div
-        class="message-item flex align-items-start py-2"
+        class="flex align-items-start py-2"
         v-for="m in messages"
         :key="m.id"
       >
-        <Card class="message-card text-black-alpha-70">
+        <Card>
           <template #title>
-            <div class="msg-top flex flex-row">
+            <div class="msg-top flex flex-row flex-wrap gap-2">
               <Chip
-                class="custom-chip"
+                class="user"
                 :label="m.user.username"
-                :image="storeUser.state.user.avatar"
+                :image="m.user.avatar"
               />
-              <Chip
-                class="custom-chip"
-                :label="moment(m.created_at).format('LT')"
-              />
+              <Chip class="time" :label="moment(m.created_at).format('LT')" />
             </div>
           </template>
           <template #content>
@@ -58,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted } from "vue";
+import { ref, inject, onMounted, onUnmounted } from "vue";
 import { Socket } from "socket.io-client";
 import MessageI from "../types/Message.interface";
 import Card from "primevue/card";
@@ -68,7 +65,6 @@ import Panel from "primevue/panel";
 import { useRoute } from "vue-router";
 import moment from "moment";
 import Chip from "primevue/chip";
-import storeUser from "@/store";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
@@ -80,11 +76,17 @@ onMounted(() => {
 
   socket.on("getMessagesForRoom", (response) => {
     messages.value = response;
-  }); //listen to an event for updated messages from backend
+  }); //recevies the existing messages from backend when room is first loaded
 
-  socket.on("messageAdded", () => {
-    socket.emit("getMessagesForRoom", route.params.roomName); //TODO discuss this approach of updating messages
-  }); //load msgs again when a msg is sent
+  socket.on("messageAdded", (message: MessageI) => {
+    if (route.params.roomName === message.room.name)
+      messages.value.unshift(message);
+    //console.log(messages.value);
+  }); //place the new message on top of the messages arrayy
+});
+
+onUnmounted(() => {
+  socket.off("messageAdded"); //to prevent multiple event binding in every rerender
 });
 
 //binding a click event listener to a method named 'sendMessage'
@@ -102,27 +104,35 @@ function sendMessage() {
 #all-messages {
   height: 50vh; /*if there is no height it does not scroll */
   overflow-y: scroll; /* FIXME school computer shows white bars */
+  overflow-wrap: break-word;
 }
 
-.message-card {
+.p-card {
   background: #9da3d2;
   max-width: 35vw;
   font-size: small;
   text-align: left;
 }
 
-.p-chip.custom-chip {
+.p-chip.user {
   font-size: 50%;
-  margin-bottom: 0;
   height: 2vh;
+}
+
+.p-chip.time {
+  font-size: 50%;
+  height: 2vh;
+  background-color: #9da3d2;
 }
 
 .msg-top {
   justify-content: space-between;
   margin-bottom: 0;
+  max-width: 100%;
 }
 
 .card-content {
   margin: 0;
+  color: #1e1e1e;
 }
 </style>

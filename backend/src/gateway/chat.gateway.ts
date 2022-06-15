@@ -56,7 +56,9 @@ export class ChatGateway
 			socketID: client.id,
 			user,
 		}); // save connection to DB
-		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set
+		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set //FIXME check
+		client.join('general'); //everyone joins the general on default
+		client.join('general protected'); //everyone joins the general protected
 	}
 
 	afterInit() {
@@ -76,13 +78,15 @@ export class ChatGateway
 		const selectedRoom: RoomEntity = await this.roomService.findRoomByName(
 			message.room.name,
 		);
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
 		const createdMessage: MessageI = await this.messageService.create(
 			message,
-			client.data.user,
+			user,
 			selectedRoom,
 		);
-		// this.server.to(client.id).emit('messageAdded', createdMessage); //TODO check the difference and decide
-		client.emit('messageAdded', createdMessage);
+		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
@@ -102,6 +106,7 @@ export class ChatGateway
 		const response: { status: string; data: string } =
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
+		client.join(response.data);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
@@ -144,6 +149,7 @@ export class ChatGateway
 			roomName,
 		);
 		await this.roomService.addVisitorToRoom(client.data.user.id, room);
+		client.join(room.name);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
