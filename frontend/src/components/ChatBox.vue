@@ -3,6 +3,7 @@
     <Panel>
       {{ $route.params.roomName }}
     </Panel>
+    <ContextMenu ref="menu" :model="items" />
     <div
       id="all-messages"
       class="flex flex-column-reverse gap-1 md:gap-2 xl:gap-4"
@@ -21,7 +22,6 @@
                 :image="m.user.avatar"
                 @contextmenu="onChipRightClick"
               />
-              <ContextMenu ref="menu" :model="items" />
               <Chip class="time" :label="moment(m.created_at).format('LT')" />
             </div>
           </template>
@@ -76,15 +76,19 @@ const route = useRoute();
 const menu = ref();
 const items = ref([
   {
-    label: "Quit",
-    icon: "pi pi-fw pi-power-off",
+    label: "View profile",
+    icon: "pi pi-fw pi-user",
+  },
+  {
+    separator: true,
+  },
+  {
+    label: "Play pong",
+    icon: "pi pi-fw pi-caret-right",
   },
 ]);
 
 const onChipRightClick = (event) => {
-  console.log(menu.value);
-  console.log(event);
-  console.log(items.value);
   menu.value.show(event);
 };
 
@@ -115,10 +119,6 @@ function sendMessage() {
     });
   input.value = "";
 }
-
-// function onChipRightClick((event) => {
-//   menu.value.show(event);
-// })
 </script>
 
 <style scoped>
