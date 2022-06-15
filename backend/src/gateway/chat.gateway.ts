@@ -16,14 +16,12 @@ import { ConnectedUserService } from '../chat/connected-user/connected-user.serv
 import { RoomService } from '../chat/room/room.service';
 import { MessageI } from '../chat/message/message.interface';
 import { MessageService } from '../chat/message/message.service';
-import { createRoomDto } from '../chat/room/dto';
 import { WsExceptionFilter } from '../exceptions/WsExceptionFilter';
 import { UseFilters } from '@nestjs/common';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { plainToClass } from 'class-transformer';
 import { RoomForUserDto } from 'src/chat/room/dto';
 import { UserService } from 'src/user/user.service';
-import { OAuthGuard } from 'src/auth/oauth/oauth.guard';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -118,7 +116,6 @@ export class ChatGateway
 			listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
 			return listedRoom;
 		});
-		console.log('response:', response);
 		client.emit('postPublicRoomsList', response);
 	}
 
@@ -135,6 +132,17 @@ export class ChatGateway
 			return listedRoom;
 		});
 		client.emit('getUserRoomsList', response);
+	}
+
+	@SubscribeMessage('addUserToRoom')
+	async addUserToRoom(
+		@MessageBody() roomName: string,
+		@ConnectedSocket() client: Socket,
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			roomName,
+		);
+		await this.roomService.addVisitorToRoom(client.data.user.id, room);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')

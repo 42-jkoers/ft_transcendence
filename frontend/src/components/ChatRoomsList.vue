@@ -95,6 +95,7 @@ const onRowSelect = (event) => {
     displayPasswordDialog.value = true;
     selectedRoomName.value = room.name;
   } else {
+    socket.emit("addUserToRoom", room.name); // FIXME: temp
     router.push({
       name: "ChatBox",
       params: { roomName: room.name },

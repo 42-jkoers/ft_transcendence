@@ -163,7 +163,6 @@ export class RoomService {
 			.orderBy('userToRooms.role')
 			.addOrderBy('room.name')
 			.getMany();
-		console.log('userRooms', userRooms);
 		return userRooms;
 	}
 
