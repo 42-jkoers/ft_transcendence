@@ -146,21 +146,46 @@ Tutorial:
 	- add button Message/EditProfile to UserProfileCard
 	- add 2F InputSwitch in UserSetting
 
-********************************************
-**	Branch - backend_username_validation	**
-********************************************
+******************************************
+**			Branch - 	user_add_friend				**
+******************************************
+[ Branch - backend_username_validation ]
 (Tue) 2022-06-07
 	- username validation correct on backend
 	- add Regex rule to both front/backend (allow space in between)
 
+(Tue) 2022-06-07
+	- build getFriend and addFriend method in userService (new table in DB)
+
+(Fri) 2022-06-10
+	- addFriend/removeFriend feature added on UserProfileCard
+
+(Mon) 2022-06-13
+	- [ Branch - redis_debug ]
+	- set up FriendsView in menu
+	- add friendRequest (User[]) to User Entity, load request in FriendsView
+	- setup flow for approve/reject friend request
+
+(Tue) 2022-06-14
+	- consolidate all friend related button to EditFriendButton
+	- error management for friend request process
+	- add refreshh button to request and friend list
 
 **************************
 **		Next To To				**
 **************************
+- notification of adding friend?
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 
 ******************************
-**		General To To		**
+**			General To To				**
 ******************************
+- optimize friendRequest data structure (OneToMany?)
 - try/catch all axios exception
+- deregister user
+
+******************************
+**					Issues					**
+******************************
+- Login Button sometimes needs to be clicked twice (console.log for each step to check)
