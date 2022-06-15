@@ -177,8 +177,6 @@ export class RoomService {
 			.orderBy('userToRooms.role')
 			.addOrderBy('room.name')
 			.getMany();
-		console.log('User Rooms: \n', userRooms);
-
 		return userRooms;
 	}
 
