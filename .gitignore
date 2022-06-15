@@ -12,3 +12,7 @@ logs
 # Tests
 coverage/
 .nyc_output
+
+# Uploaded avatars
+upload/*
+

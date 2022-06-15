@@ -1,10 +1,9 @@
 <template>
-  <h2>User Profile</h2>
+  <h2>User Profile Settings</h2>
   <!-- User Name -->
   <div class="field">
     <div class="grid align-items-center">
-      <div class="col-3"></div>
-      <div class="col-3" align="right">
+      <div class="col-5" align="right">
         <label class="label">User Name</label>
       </div>
       <div class="col-3" align="left">
@@ -16,60 +15,76 @@
         />
       </div>
     </div>
-    <div class="col-offset-6" align="left" margin>
-      <small
-        >Username can only be composed of alphabet letters and digit.</small
-      >
-    </div>
-    <div class="col-offset-6" align="left">
-      <small v-if="isUserNameInvalid" class="p-error"
-        >{{ invalidUserNameMessage }}
+    <div class="col-offset-5" align="left" margin>
+      <small>
+        * Username can only be composed of alphabet letters and digit.
       </small>
+    </div>
+    <div class="col-offset-5" align="left">
+      <Message v-if="isUserNameInvalid" severity="error" :closable="false">
+        {{ invalidUserNameMessage }}
+      </Message>
     </div>
   </div>
   <!-- Avatar -->
   <div class="field">
     <div class="grid align-items-center">
-      <div class="col-3"></div>
-      <div class="col-3" align="right">
+      <div class="col-5" align="right">
         <label class="label">Avatar</label>
       </div>
       <div class="col-3" align="left">
-        <InputText
-          v-model="avatar"
-          type="text"
-          class="description"
-          :class="isAvatarInvalid ? 'p-invalid' : ''"
-        />
+        <Avatar :image="avatar" shape="circle" size="xlarge" />
       </div>
     </div>
-    <div class="col-offset-6" align="left">
-      <small v-if="isAvatarInvalid" class="p-error"
-        >{{ invalidAvatarMessage }}
-      </small>
+    <div class="col-offset-5" align="left">
+      <UploadAvatar
+        @new-avatar="getNewAvatar($event)"
+        @avatar-source="changeAvatarSource($event)"
+      />
     </div>
   </div>
-  <!-- Button -->
-  <div>
-    <Button @click="updateData($event)" label="Save" />
+  <!-- 2 factor authentication -->
+  <div class="field">
+    <div class="grid align-items-center">
+      <div class="col-5" align="right">
+        <label class="label">Two Factor Authentication</label>
+      </div>
+      <div class="col-1" align="left">
+        <InputSwitch v-model="twoFactor" />
+      </div>
+      <div class="col-1">
+        <label v-if="twoFactor">Enabled</label>
+        <label v-else>Disabled</label>
+      </div>
+    </div>
   </div>
-  <div v-if="isUpdateSuccess">
-    <h3 class="successMessage">Your input has been saved successfully!</h3>
+  <!-- Submit Button -->
+  <div class="field">
+    <div class="col-offset-5" align="left">
+      <Button @click="updateData" label="Save" />
+      <Message v-if="isUpdateSuccess" severity="success" :closable="false">
+        Your input has been saved successfully!
+      </Message>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
 import InputText from "primevue/inputtext";
+import Message from "primevue/message";
 import Button from "primevue/button";
+import Avatar from "primevue/avatar";
+import InputSwitch from "primevue/inputswitch";
 import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
+import UploadAvatar from "@/components/UploadAvatar.vue";
+
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
+const twoFactor = ref<boolean>(storeUser.state.user.twoFactor);
 const isUpdateSuccess = ref<boolean>(false);
 const isUserNameInvalid = ref<boolean>(false);
 const invalidUserNameMessage = ref<string>("");
-const isAvatarInvalid = ref<boolean>(false);
-const invalidAvatarMessage = ref<string>("");
 
 const emit = defineEmits<{
   (event: "updated"): boolean;
@@ -97,12 +112,16 @@ function isUserNameValid(input: string) {
   return true;
 }
 
-function isAvatarValid(input: string) {
-  if (input.length === 0) {
-    invalidAvatarMessage.value = "Avatar cannot be empty.";
-    return false;
+function getNewAvatar(event) {
+  avatar.value = require("../../../upload/" + event);
+}
+
+function changeAvatarSource(event) {
+  if (event == "default") {
+    avatar.value = "/default_avatar.png";
+  } else if (event == "current") {
+    avatar.value = storeUser.state.user.avatar;
   }
-  return true;
 }
 
 async function updateData() {
@@ -112,17 +131,13 @@ async function updateData() {
     isUserNameInvalid.value = true;
     setTimeout(() => (isUserNameInvalid.value = false), 2000);
   }
-  if (isAvatarValid(avatar.value) === false) {
-    proceed = false;
-    isAvatarInvalid.value = true;
-    setTimeout(() => (isAvatarInvalid.value = false), 2000);
-  }
   if (proceed) {
     // post username to update user profile
     const postBody = {
       id: storeUser.state.user.id,
       username: username.value,
       avatar: avatar.value,
+      // TODO: add 2F
     };
     const response_post = await axios.post(
       "http://localhost:3000/user/profile/update-userprofile",
@@ -141,6 +156,7 @@ async function updateData() {
       // update storeUser
       storeUser.state.user.username = username.value;
       storeUser.state.user.avatar = avatar.value;
+      storeUser.state.user.twoFactor = twoFactor.value;
       // send signal to parent component
       emit("updated", true);
     }
@@ -152,8 +168,5 @@ async function updateData() {
   padding-right: 12px;
   font-weight: 500;
   font-size: large;
-}
-.successMessage {
-  color: yellowgreen;
 }
 </style>

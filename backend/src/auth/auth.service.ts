@@ -30,7 +30,7 @@ export class AuthService {
 
 	private async registerUser(intraID: string): Promise<UserI> {
 		const username = null;
-		const avatar = 'default avatar'; // TODO: to change to default image
+		const avatar = '/default_avatar.png';
 		const createUserDto = { intraID, username, avatar };
 		return await this.userService.createUser(createUserDto);
 	}

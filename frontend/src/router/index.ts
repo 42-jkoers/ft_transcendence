@@ -4,12 +4,13 @@ import RegisterView from "@/views/RegisterView.vue";
 import UserSettingView from "@/views/UserSettingView.vue";
 import UnAuthorizedView from "@/views/UnAuthorizedView.vue";
 import TwoFactorAuthView from "@/views/TwoFactorAuthView.vue";
-import LogOut from "@/components/LogOut.vue";
+import LogOutView from "@/views/LogOutView.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
 import CreateRoom from "@/views/CreateRoom.vue";
 import ChatView from "@/views/ChatView.vue";
 import ChatBox from "@/components/ChatBox.vue";
+import UserProfileCard from "@/components/UserProfileCard.vue";
 import storeUser from "@/store";
 
 const routes: Array<RouteRecordRaw> = [
@@ -22,34 +23,37 @@ const routes: Array<RouteRecordRaw> = [
     path: "/userhome",
     name: "UserHome",
     component: UserHomeView,
+  },
+  {
+    path: "/user/:id",
+    name: "UserProfileCard",
+    component: UserProfileCard,
+  },
+  {
+    path: "/chat",
+    name: "Chat",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: ChatView,
+    redirect: { name: "ChatBox", params: { roomName: "general" } },
     children: [
       {
-        path: "/chat",
-        name: "Chat",
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: ChatView,
-        redirect: { name: "ChatBox", params: { roomName: "general" } },
-        children: [
-          {
-            path: "room/:roomName",
-            name: "ChatBox",
-            component: ChatBox,
-          },
-        ],
-      },
-      {
-        path: "setting",
-        name: "UserSetting",
-        component: UserSettingView,
-      },
-      {
-        path: "logout",
-        name: "LogOut",
-        component: LogOut,
+        path: "room/:roomName",
+        name: "ChatBox",
+        component: ChatBox,
       },
     ],
+  },
+  {
+    path: "/userhome/setting",
+    name: "UserSetting",
+    component: UserSettingView,
+  },
+  {
+    path: "/userhome/logout",
+    name: "LogOut",
+    component: LogOutView,
   },
   {
     path: "/chat/create-chatroom",
@@ -101,21 +105,18 @@ const checkRegisterStatus = async function () {
 /* Check if the user is logged in */
 const checkLogInState = async function () {
   if (storeUser.state.isAuthenticated === false) {
-    storeUser.commit("login");
+    await storeUser.dispatch("login");
   } else if (storeUser.state.user.username === "") {
     router.push({ name: "Register" });
   }
 };
 
-router.beforeEach((to) => {
-  if (
-    to.name !== "Home" &&
-    to.name !== "Register" &&
-    to.name !== "UnAuthorized" &&
-    //TODO delete later
-    to.name !== "temp"
-  ) {
-    checkLogInState();
+router.beforeEach(async (to) => {
+  if (to.name !== "Register" && to.name !== "UnAuthorized") {
+    await checkLogInState();
+    if (to.name !== "Home" && storeUser.state.isAuthenticated === false) {
+      router.push({ name: "Home" });
+    }
   }
 });
 
