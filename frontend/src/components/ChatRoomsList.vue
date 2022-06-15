@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted } from "vue";
+import { ref, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Socket } from "socket.io-client";
 import RoomVisibility from "@/types/RoomVisibility";
@@ -73,21 +73,25 @@ import ContextMenu from "primevue/contextmenu";
 import ConfirmDialog from "primevue/confirmdialog";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
+import { UserRole } from "@/types/UserRole.Enum";
 
 const socket: Socket = inject("socketioInstance");
 
 const rooms = ref();
-onMounted(() => {
-  setTimeout(() => {
-    // socket.emit("getUserRoomsList");
-    socket.emit("getPublicRoomsList");
-  }, 90); // FIXME: find a better solution?
-  socket.on("postPublicRoomsList", (response) => {
-    // socket.on("getUserRoomsList", (response) => {
-    console.log("rooms from server", response);
 
-    rooms.value = response;
-  });
+setTimeout(() => {
+  // socket.emit("getUserRoomsList");
+  socket.emit("getPublicRoomsList");
+}, 90); // FIXME: find a better solution?
+
+socket.on("updateUserInRoom", () => {
+  socket.emit("getPublicRoomsList");
+});
+
+socket.on("postPublicRoomsList", (response) => {
+  // socket.on("getUserRoomsList", (response) => {
+  console.log("rooms from server", response);
+  rooms.value = response;
 });
 
 const router = useRouter();
@@ -103,7 +107,6 @@ const onRowSelect = (event) => {
     displayPasswordDialog.value = true;
     selectedRoomName.value = room.name;
   } else {
-    socket.emit("addUserToRoom", room.name); // FIXME: temp
     router.push({
       name: "ChatBox",
       params: { roomName: room.name },
@@ -116,21 +119,31 @@ const selectedRoom = ref();
 const menuItems = ref([
   {
     label: "Edit privacy",
-    icon: "pi pi-pencil",
+    // icon: "pi pi-pencil",
     visible: () => isOwner(selectedRoom.value.userRole),
     command: () => editRoomPrivacy(selectedRoom),
   },
   {
-    label: "Leave",
-    icon: "pi pi-exclamation-circle",
+    label: "Leave chat",
+    // icon: "pi pi-exclamation-circle",
+    visible: () => !isInRoom(selectedRoom.value.userRole),
     command: () => confirmLeave(selectedRoom),
+  },
+  {
+    label: "Join chat",
+    // icon: "pi pi-exclamation-circle",
+    visible: () => isInRoom(selectedRoom.value.userRole),
+    command: () => socket.emit("addUserToRoom", selectedRoom.value.name),
   },
 ]);
 
 const onRowContextMenu = (event) => {
   cm.value.show(event.originalEvent);
 };
-const isOwner = (userRole) => (userRole === 0 ? true : false);
+const isOwner = (userRole: UserRole | undefined) =>
+  userRole === 0 ? true : false;
+const isInRoom = (userRole: UserRole | undefined) =>
+  userRole === undefined ? true : false;
 
 const confirm = useConfirm();
 const toast = useToast();
