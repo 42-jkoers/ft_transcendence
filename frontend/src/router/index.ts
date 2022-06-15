@@ -112,7 +112,11 @@ const checkLogInState = async function () {
 };
 
 router.beforeEach(async (to) => {
-  if (to.name !== "Register" && to.name !== "UnAuthorized") {
+  if (
+    to.name !== "Register" &&
+    to.name !== "UnAuthorized" &&
+    to.name !== "temp"
+  ) {
     await checkLogInState();
     if (to.name !== "Home" && storeUser.state.isAuthenticated === false) {
       router.push({ name: "Home" });
