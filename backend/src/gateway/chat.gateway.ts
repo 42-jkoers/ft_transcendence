@@ -153,7 +153,7 @@ export class ChatGateway
 		);
 		await this.roomService.addVisitorToRoom(client.data.user.id, room);
 		client.join(room.name);
-		client.emit('updateUserInRoom');
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('removeUserFromRoom')
@@ -168,7 +168,7 @@ export class ChatGateway
 			client.data.user.id,
 			room,
 		);
-		client.emit('updateUserInRoom');
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
