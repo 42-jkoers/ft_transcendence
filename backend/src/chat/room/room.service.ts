@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, getRepository } from 'typeorm';
+import { Repository, getRepository, getConnection } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { RoomEntity } from './entities/room.entity';
 import { RoomVisibilityType } from './enums/room.visibility.enum';
@@ -91,6 +91,11 @@ export class RoomService {
 		await this.userToroomEntityRepository.save(userToRoom);
 	}
 
+	// async deleteUserRoomRelationship(
+	// 	newRoom: RoomEntity,
+	// 	userToRemoveId: number,
+	// ) {}
+
 	async getDefaultRoom() {
 		let defaultRoom: RoomEntity | undefined = await this.findRoomById(1);
 		if (defaultRoom === undefined) {
@@ -128,16 +133,25 @@ export class RoomService {
 		);
 	}
 
-	async updateRoom(roomToUpdate: RoomEntity) {
-		await this.roomEntityRepository.save(roomToUpdate);
-	}
-
 	async addVisitorToRoom(userToAddId: number, room: RoomEntity) {
 		await this.createManyToManyRelationship(
 			room,
 			userToAddId,
 			UserRole.VISITOR,
 		);
+		await this.roomEntityRepository.save(room);
+	}
+
+	async deleteUserRoomRelationship(userToRemoveId: number, room: RoomEntity) {
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(UserToRoomEntity)
+			.where('userId = :userToRemoveId and roomId = :roomId', {
+				userToRemoveId,
+				roomId: room.id,
+			})
+			.execute();
 		await this.roomEntityRepository.save(room);
 	}
 
@@ -163,6 +177,8 @@ export class RoomService {
 			.orderBy('userToRooms.role')
 			.addOrderBy('room.name')
 			.getMany();
+		console.log('User Rooms: \n', userRooms);
+
 		return userRooms;
 	}
 

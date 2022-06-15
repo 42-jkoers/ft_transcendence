@@ -146,6 +146,20 @@ export class ChatGateway
 		await this.roomService.addVisitorToRoom(client.data.user.id, room);
 	}
 
+	@SubscribeMessage('removeUserFromRoom')
+	async removeUserFromRoom(
+		@MessageBody() roomName: string,
+		@ConnectedSocket() client: Socket,
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			roomName,
+		);
+		await this.roomService.deleteUserRoomRelationship(
+			client.data.user.id,
+			room,
+		);
+	}
+
 	@SubscribeMessage('checkRoomPasswordMatch')
 	async checkRoomPasswordMatch(
 		client: Socket,

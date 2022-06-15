@@ -152,9 +152,7 @@ const confirmLeave = (room) => {
           name: "Chat",
         });
       }
-      console.log(
-        `Let's pretend you've just left the room ${room.value.name}. Check that you're moved to the general room`
-      );
+      socket.emit("removeUserFromRoom", room.value.name);
     },
     reject: () => {
       toast.add({
