@@ -1,4 +1,9 @@
 <template>
+  <div v-if="showSuccessMessage">
+    <Message severity="success" :closable="false">
+      {{ successMessage }}
+    </Message>
+  </div>
   <div v-if="showFailMessage">
     <Message severity="error" :closable="false">
       Something went wrong, please retry!
@@ -43,7 +48,9 @@
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-user-minus"
               :action="EditFriendActionType.REMOVE_FRIEND"
-              @processed="refreshFriendList"
+              @isActionSuccess="
+                catchEvent($event, EditFriendActionType.REMOVE_FRIEND)
+              "
             />
           </div>
         </template>
@@ -62,8 +69,11 @@ import axios from "axios";
 import storeUser from "@/store";
 import EditFriendActionType from "@/types/EditFriendActionType";
 import EditFriendButton from "./EditFriendButton.vue";
+import { friendActionSuccessMessage } from "@/types/editFriend";
 
 const friendList = ref([]);
+const showSuccessMessage = ref<boolean>(false);
+const successMessage = ref<string>();
 const showFailMessage = ref<boolean>(false);
 onMounted(async () => {
   await refreshFriendList();
@@ -88,5 +98,21 @@ async function refreshFriendList() {
 function displayErrorMessage() {
   showFailMessage.value = true;
   setTimeout(() => (showFailMessage.value = false), 2000);
+}
+
+function displaySuccessMessage(message: string) {
+  successMessage.value = message;
+  showSuccessMessage.value = true;
+  setTimeout(() => (showSuccessMessage.value = false), 3000);
+}
+
+function catchEvent(event, action: EditFriendActionType) {
+  if (event) {
+    const message = friendActionSuccessMessage(action);
+    displaySuccessMessage(message);
+    refreshFriendList();
+  } else {
+    displayErrorMessage();
+  }
 }
 </script>

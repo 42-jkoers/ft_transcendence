@@ -173,7 +173,7 @@ Tutorial:
 
 (Wed) 2022-06-15
 	- test friend function / team test
-	-
+	- move friend action notificatoin from button to top of the page
 
 **************************
 **		Next To To				**

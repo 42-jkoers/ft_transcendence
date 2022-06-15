@@ -1,4 +1,9 @@
 <template>
+  <div v-if="showSuccessMessage">
+    <Message severity="success" :closable="false">
+      {{ successMessage }}
+    </Message>
+  </div>
   <div v-if="showFailMessage">
     <Message severity="error" :closable="false">
       Something went wrong, please retry!
@@ -41,13 +46,17 @@
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-check"
               :action="EditFriendActionType.ADD_FRIEND"
-              @processed="refreshFriendRequests"
+              @isActionSuccess="
+                catchEvent($event, EditFriendActionType.ADD_FRIEND)
+              "
             />
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-times"
               :action="EditFriendActionType.REJECT_REQUEST"
-              @processed="refreshFriendRequests"
+              @isActionSuccess="
+                catchEvent($event, EditFriendActionType.REJECT_REQUEST)
+              "
             />
           </div>
         </template>
@@ -67,8 +76,11 @@ import axios from "axios";
 import storeUser from "@/store";
 import EditFriendActionType from "@/types/EditFriendActionType";
 import EditFriendButton from "./EditFriendButton.vue";
+import { friendActionSuccessMessage } from "@/types/editFriend";
 
 const requests = ref([]);
+const showSuccessMessage = ref<boolean>(false);
+const successMessage = ref<string>();
 const showFailMessage = ref<boolean>(false);
 onMounted(async () => {
   await refreshFriendRequests();
@@ -93,5 +105,21 @@ async function refreshFriendRequests() {
 function displayErrorMessage() {
   showFailMessage.value = true;
   setTimeout(() => (showFailMessage.value = false), 2000);
+}
+
+function displaySuccessMessage(message: string) {
+  successMessage.value = message;
+  showSuccessMessage.value = true;
+  setTimeout(() => (showSuccessMessage.value = false), 3000);
+}
+
+function catchEvent(event, action: EditFriendActionType) {
+  if (event) {
+    const message = friendActionSuccessMessage(action);
+    displaySuccessMessage(message);
+    refreshFriendRequests();
+  } else {
+    displayErrorMessage();
+  }
 }
 </script>

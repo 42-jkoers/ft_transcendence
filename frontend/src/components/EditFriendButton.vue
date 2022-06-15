@@ -5,21 +5,10 @@
     :icon="props.buttonIcon"
     @click="editFriend(props.friendId, props.action)"
   />
-  <div v-if="showSuccessMessage">
-    <Message severity="success" :closable="false">
-      {{ successMessage }}
-    </Message>
-  </div>
-  <div v-if="showFailMessage">
-    <Message severity="error" :closable="false">
-      Something went wrong, please retry!
-    </Message>
-  </div>
 </template>
 <script setup lang="ts">
 import { defineEmits, ref, defineProps } from "vue";
 import Button from "primevue/button";
-import Message from "primevue/message";
 import axios from "axios";
 import storeUser from "@/store";
 
@@ -35,19 +24,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-  (event: "processed"): boolean;
+  (event: "isActionSuccess"): boolean;
 }>();
-
-function displaySuccessMessage(message: string) {
-  successMessage.value = message;
-  showSuccessMessage.value = true;
-  setTimeout(() => (showSuccessMessage.value = false), 2000);
-}
-
-function displayErrorMessage() {
-  showFailMessage.value = true;
-  setTimeout(() => (showFailMessage.value = false), 2000);
-}
 
 async function editFriend(
   friendId: number | undefined,
@@ -63,13 +41,10 @@ async function editFriend(
       withCredentials: true,
     })
     .then(async () => {
-      displaySuccessMessage("Action processed.");
-      setTimeout(() => {
-        emit("processed", true);
-      }, 2000);
+      emit("isActionSuccess", true);
     })
     .catch(() => {
-      displayErrorMessage();
+      emit("isActionSuccess", false);
     });
 }
 </script>
