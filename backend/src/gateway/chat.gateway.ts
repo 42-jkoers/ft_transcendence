@@ -148,6 +148,7 @@ export class ChatGateway
 			roomName,
 		);
 		await this.roomService.addVisitorToRoom(client.data.user.id, room);
+		client.join(room.name);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
