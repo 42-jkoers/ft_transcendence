@@ -105,7 +105,7 @@ export class ChatGateway
 		const response: { status: string; data: string } =
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
-		client.join(response.data); //FIXME temporary trial with one person in the room, fix it when someone joins the room
+		client.join(response.data);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
