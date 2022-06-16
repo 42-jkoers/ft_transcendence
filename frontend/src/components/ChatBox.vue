@@ -3,6 +3,7 @@
     <Panel>
       {{ $route.params.roomName }}
     </Panel>
+    <ContextMenu ref="menu" :model="items" />
     <div
       id="all-messages"
       class="flex flex-column-reverse gap-1 md:gap-2 xl:gap-4"
@@ -19,6 +20,7 @@
                 class="user"
                 :label="m.user.username"
                 :image="m.user.avatar"
+                @contextmenu="onChipRightClick(m.user.id)"
               />
               <Chip class="time" :label="moment(m.created_at).format('LT')" />
             </div>
@@ -55,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted, onUnmounted } from "vue";
+import { ref, inject, onMounted, onUnmounted, computed } from "vue";
 import { Socket } from "socket.io-client";
 import MessageI from "../types/Message.interface";
 import Card from "primevue/card";
@@ -65,11 +67,35 @@ import Panel from "primevue/panel";
 import { useRoute } from "vue-router";
 import moment from "moment";
 import Chip from "primevue/chip";
+import ContextMenu from "primevue/contextmenu";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
+const clickedUserID = ref<number>(1);
+const computedID = computed(() => {
+  return clickedUserID.value;
+}); //items ref params need a calculated property
+
+const menu = ref();
+const items = ref([
+  {
+    label: "View profile",
+    icon: "pi pi-fw pi-user",
+    to: {
+      name: "UserProfileCard",
+      params: { id: computedID },
+    },
+  },
+  {
+    separator: true,
+  },
+  {
+    label: "Play pong",
+    icon: "pi pi-fw pi-caret-right",
+  }, //TODO add a View to play game when we have it ready
+]);
 
 onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
@@ -98,6 +124,11 @@ function sendMessage() {
     });
   input.value = "";
 }
+
+function onChipRightClick(userID: number) {
+  clickedUserID.value = userID;
+  menu.value.show(event);
+} //shows ContextMenu when UserChip is right clicked and reassigns the ID value
 </script>
 
 <style scoped>
@@ -117,6 +148,11 @@ function sendMessage() {
 .p-chip.user {
   font-size: 50%;
   height: 2vh;
+}
+
+.p-chip.user:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .p-chip.time {
