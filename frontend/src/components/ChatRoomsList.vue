@@ -143,7 +143,7 @@ const menuItems = ref([
 ]);
 
 const onRowContextMenu = (event) => {
-  cm.value.show(event.originalEvent);
+  if (selectedRoom.value.name != "general") cm.value.show(event.originalEvent);
 };
 const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
