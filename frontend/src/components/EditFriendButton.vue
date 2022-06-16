@@ -15,7 +15,12 @@ import storeUser from "@/store";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from "primevue/confirmdialog";
-import { friendActionMessage } from "@/types/editFriend";
+import {
+  editFriendActionError,
+  friendActionMessage,
+} from "@/types/editFriendAction";
+import { errorMessage } from "@/types/errorManagement";
+
 const props = defineProps({
   friendId: Number,
   buttonLabel: String,
@@ -75,7 +80,7 @@ async function editFriend(
       toast.add({
         severity: "error",
         summary: "Error",
-        detail: "Something went wrong, please retry",
+        detail: errorMessage(editFriendActionError(props.action)),
         life: 3000,
       });
     });

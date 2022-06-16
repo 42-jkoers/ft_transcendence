@@ -47,21 +47,21 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, defineEmits } from "vue";
+import { onMounted, ref } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Chip from "primevue/chip";
 import axios from "axios";
 import storeUser from "@/store";
-import EditFriendActionType from "@/types/EditFriendActionType";
+import { EditFriendActionType } from "@/types/editFriendAction";
 import EditFriendButton from "./EditFriendButton.vue";
+import { useToast } from "primevue/usetoast";
+import { ErrorType, errorMessage } from "@/types/errorManagement";
+
+const toast = useToast();
 
 const friendList = ref([]);
-
-const emit = defineEmits<{
-  (event: "error"): boolean;
-}>();
 
 onMounted(async () => {
   await refreshFriendList();
@@ -79,7 +79,12 @@ async function refreshFriendList() {
       friendList.value = response.data;
     })
     .catch(() => {
-      emit("error", true);
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errorMessage(ErrorType.GENERAL),
+        life: 3000,
+      });
     });
 }
 
