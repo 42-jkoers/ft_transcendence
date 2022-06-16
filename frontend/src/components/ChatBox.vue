@@ -94,7 +94,7 @@ const items = ref([
   {
     label: "Play pong",
     icon: "pi pi-fw pi-caret-right",
-  },
+  }, //TODO add a View to play game when we have it ready
 ]);
 
 onMounted(() => {
