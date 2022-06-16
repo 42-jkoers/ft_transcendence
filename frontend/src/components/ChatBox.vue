@@ -20,7 +20,7 @@
                 class="user"
                 :label="m.user.username"
                 :image="m.user.avatar"
-                @contextmenu="onChipRightClick"
+                @contextmenu="onChipRightClick(m.user.id)"
               />
               <Chip class="time" :label="moment(m.created_at).format('LT')" />
             </div>
@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted, onUnmounted } from "vue";
+import { ref, inject, onMounted, onUnmounted, computed } from "vue";
 import { Socket } from "socket.io-client";
 import MessageI from "../types/Message.interface";
 import Card from "primevue/card";
@@ -73,11 +73,20 @@ const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
+const clickedUserID = ref<number>(1);
+const id = computed(() => {
+  return clickedUserID.value;
+}); //items ref params need a calculated property
+
 const menu = ref();
 const items = ref([
   {
     label: "View profile",
     icon: "pi pi-fw pi-user",
+    to: {
+      name: "UserProfileCard",
+      params: { id: id },
+    },
   },
   {
     separator: true,
@@ -87,10 +96,6 @@ const items = ref([
     icon: "pi pi-fw pi-caret-right",
   },
 ]);
-
-const onChipRightClick = (event: Event) => {
-  menu.value.show(event);
-};
 
 onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
@@ -119,6 +124,11 @@ function sendMessage() {
     });
   input.value = "";
 }
+
+function onChipRightClick(userID: number) {
+  clickedUserID.value = userID;
+  menu.value.show(event);
+} //shows ContextMenu when UserChip is right clicked and reassigns the ID value
 </script>
 
 <style scoped>
