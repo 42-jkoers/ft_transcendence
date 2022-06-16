@@ -6,6 +6,11 @@
       :roomName="selectedRoomName"
       @update:isDialogVisible="displayPasswordDialog = $event"
     />
+    <ChatRoomEditPrivacyDialogue
+      :isDialogVisible="displayEditPrivacyDialog"
+      :room="selectedRoom"
+      @update:isDialogVisible="displayEditPrivacyDialog = $event"
+    />
     <DataTable
       :value="rooms"
       class="p-datatable-sm"
@@ -66,6 +71,7 @@ import { useRouter, useRoute } from "vue-router";
 import { Socket } from "socket.io-client";
 import RoomVisibility from "@/types/RoomVisibility";
 import ChatRoomPasswordDialogue from "./ChatRoomPasswordDialogue.vue";
+import ChatRoomEditPrivacyDialogue from "./ChatRoomEditPrivacyDialogue.vue";
 
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -84,10 +90,6 @@ setTimeout(() => {
   socket.emit("getPublicRoomsList");
 }, 90); // FIXME: find a better solution?
 
-socket.on("updateUserInRoom", () => {
-  socket.emit("getPublicRoomsList");
-});
-
 socket.on("postPublicRoomsList", (response) => {
   // socket.on("getUserRoomsList", (response) => {
   console.log("rooms from server", response);
@@ -98,6 +100,7 @@ const router = useRouter();
 const route = useRoute();
 
 const displayPasswordDialog = ref(false);
+const displayEditPrivacyDialog = ref(false);
 
 const selectedRoomName = ref("");
 
@@ -120,7 +123,9 @@ const menuItems = ref([
   {
     label: "Edit privacy",
     // icon: "pi pi-pencil",
-    visible: () => isOwner(selectedRoom.value.userRole),
+    visible: () =>
+      selectedRoom.value.visibility === RoomVisibility.PUBLIC &&
+      isOwner(selectedRoom.value.userRole),
     command: () => editRoomPrivacy(selectedRoom),
   },
   {
@@ -179,6 +184,8 @@ const confirmLeave = (room) => {
 };
 
 const editRoomPrivacy = (room) => {
+  displayEditPrivacyDialog.value = true;
+
   console.log(
     `Room ${room.value.name}'s visibility is ${room.value.visibility}. Is it protected with a password? ${room.value.protected}`
   );
