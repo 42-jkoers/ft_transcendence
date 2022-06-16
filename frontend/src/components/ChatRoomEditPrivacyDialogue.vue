@@ -94,5 +94,6 @@ const updateRoomPassword = () => {
     password: passwordValue.value,
   });
   closePasswordDialog();
+  removePasswordChecked.value = false;
 };
 </script>
