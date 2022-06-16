@@ -179,7 +179,6 @@ Tutorial:
 **************************
 **		Next To To				**
 **************************
-- improve notification of friend action
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 
