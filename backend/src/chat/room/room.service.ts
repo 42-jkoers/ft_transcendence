@@ -189,7 +189,7 @@ export class RoomService {
 	}
 
 	async setRoomPassword(roomPassword: string | null): Promise<string | null> {
-		if (roomPassword === null) {
+		if (!roomPassword) {
 			return null;
 		}
 		const hash = await this.encryptRoomPassword(roomPassword);

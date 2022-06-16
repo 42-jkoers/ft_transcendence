@@ -86,7 +86,7 @@ const showValue = () =>
   console.log("IS removePasswordChecked? ", removePasswordChecked.value);
 
 const updateRoomPassword = () => {
-  if (passwordValue.value === "") {
+  if (!passwordValue.value || passwordValue.value === "") {
     passwordValue.value = null;
   }
   socket.emit("updateRoomPassword", {
