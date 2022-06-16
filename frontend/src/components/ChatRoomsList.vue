@@ -105,7 +105,7 @@ const selectedRoomName = ref("");
 
 const onRowSelect = (event) => {
   const room = event.data;
-  if (room.protected && room.userRole !== 0) {
+  if (room.protected && room.userRole === undefined) {
     displayPasswordDialog.value = true;
     selectedRoomName.value = room.name;
   } else {
