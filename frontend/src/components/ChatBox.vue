@@ -20,7 +20,8 @@
                 class="user"
                 :label="m.user.username"
                 :image="m.user.avatar"
-                @contextmenu="onChipRightClick(m.user.id)"
+                @contextmenu="onChipRightClick(m.user)"
+                @click="onChipLeftClick(m.user)"
               />
               <Chip class="time" :label="moment(m.created_at).format('LT')" />
             </div>
@@ -68,14 +69,17 @@ import { useRoute } from "vue-router";
 import moment from "moment";
 import Chip from "primevue/chip";
 import ContextMenu from "primevue/contextmenu";
+import Dialog from "primevue/dialog";
+import UserProfileI from "../types/UserProfile.interface";
+import storeUser from "@/store";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
-const clickedUserID = ref<number>(1);
+const clickedUser = ref<UserProfileI>(storeUser.state.user);
 const computedID = computed(() => {
-  return clickedUserID.value;
+  return clickedUser.value.id;
 }); //items ref params need a calculated property
 
 const menu = ref();
@@ -125,8 +129,14 @@ function sendMessage() {
   input.value = "";
 }
 
-function onChipRightClick(userID: number) {
-  clickedUserID.value = userID;
+function onChipLeftClick(user: UserProfileI) {
+  console.log(user);
+  clickedUser.value = user;
+  console.log(clickedUser.value);
+}
+
+function onChipRightClick(user: UserProfileI) {
+  clickedUser.value = user;
   menu.value.show(event);
 } //shows ContextMenu when UserChip is right clicked and reassigns the ID value
 </script>
