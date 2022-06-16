@@ -1,6 +1,6 @@
 <template>
   <br />
-  <div>
+  <div v-if="isVisible">
     <ConfirmDialog></ConfirmDialog>
     <Button
       class="p-button-rounded p-button-text p-button-outlined"
@@ -11,6 +11,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import { ref } from "vue";
 import axios from "axios";
 import storeUser from "@/store";
 import router from "@/router";
@@ -22,6 +23,7 @@ import { ErrorType, errorMessage } from "@/types/errorManagement";
 
 const confirm = useConfirm();
 const toast = useToast();
+const isVisible = ref<boolean>(true);
 
 async function confirmLogOut() {
   confirm.require({
@@ -40,6 +42,7 @@ async function logOut() {
     })
     .then(() => {
       storeUser.dispatch("logout");
+      isVisible.value = false;
       redirectToHome();
     })
     .catch(() => {
