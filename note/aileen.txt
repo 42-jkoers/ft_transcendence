@@ -178,6 +178,7 @@ Tutorial:
 
 (Thu) 2022-06-16
 	- replace customized FriendActionMessage with Toast and Confirm Dialog
+	- set up errorManagement for FriendAction
 
 **************************
 **		Next To To				**
