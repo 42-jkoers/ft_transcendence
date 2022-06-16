@@ -54,11 +54,7 @@ export class RoomService {
 		const newRoom = this.roomEntityRepository.create(roomPayload);
 		newRoom.name = roomPayload.name;
 		newRoom.visibility = roomPayload.visibility;
-		if (roomPayload.password !== null) {
-			newRoom.password = await this.setRoomPassword(roomPayload.password);
-		} else {
-			newRoom.password = null;
-		}
+		newRoom.password = await this.setRoomPassword(roomPayload.password);
 		try {
 			await this.roomEntityRepository.save(newRoom); // Saves a given entity in the database if the new room name doesn't exist.
 			// manyToOne and oneToMany with additional userToRoomEntity makes manyToMany relationship
@@ -192,8 +188,13 @@ export class RoomService {
 		return userRooms;
 	}
 
+	async updateRoomPassword(room: RoomEntity, newPassword: string | null) {
+		room.password = await this.setRoomPassword(newPassword);
+		await this.roomEntityRepository.save(room);
+	}
+
 	async setRoomPassword(roomPassword: string | null): Promise<string | null> {
-		if (!roomPassword === null) {
+		if (roomPassword === null) {
 			return null;
 		}
 		const hash = await this.encryptRoomPassword(roomPassword);

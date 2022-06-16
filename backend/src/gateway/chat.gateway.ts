@@ -143,6 +143,18 @@ export class ChatGateway
 		}
 	}
 
+	@SubscribeMessage('updateRoomPassword')
+	async updateRoomPassword(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() roomToUpdate: { name: string; password: string },
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			roomToUpdate.name,
+		);
+		await this.roomService.updateRoomPassword(room, roomToUpdate.password);
+		await this.getPublicRoomsList(client);
+	}
+
 	@SubscribeMessage('addUserToRoom')
 	async addUserToRoom(
 		@MessageBody() roomName: string,
