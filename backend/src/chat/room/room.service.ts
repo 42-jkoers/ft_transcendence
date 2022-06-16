@@ -87,11 +87,6 @@ export class RoomService {
 		await this.userToroomEntityRepository.save(userToRoom);
 	}
 
-	// async deleteUserRoomRelationship(
-	// 	newRoom: RoomEntity,
-	// 	userToRemoveId: number,
-	// ) {}
-
 	async getDefaultRoom() {
 		let defaultRoom: RoomEntity | undefined = await this.findRoomById(1);
 		if (defaultRoom === undefined) {
@@ -214,6 +209,4 @@ export class RoomService {
 		const isMatch = await bcrypt.compare(password, hash);
 		return isMatch;
 	}
-
-	// async unlockProtectedRoom() {}
 }
