@@ -1,11 +1,10 @@
 <template>
-  <Toast />
   <ConfirmDialog></ConfirmDialog>
   <Button
     class="p-button-rounded p-button-text p-button-outlined"
     :label="props.buttonLabel"
     :icon="props.buttonIcon"
-    @click="confirm1"
+    @click="proceedConfirmation"
   />
 </template>
 <script setup lang="ts">
@@ -16,7 +15,7 @@ import storeUser from "@/store";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from "primevue/confirmdialog";
-import Toast from "primevue/toast";
+import { friendActionMessage } from "@/types/editFriend";
 const props = defineProps({
   friendId: Number,
   buttonLabel: String,
@@ -25,24 +24,18 @@ const props = defineProps({
 });
 const confirm = useConfirm();
 const toast = useToast();
-function confirm1() {
+function proceedConfirmation() {
   confirm.require({
     message: "Are you sure you want to proceed?",
     header: "Confirmation",
     icon: "pi pi-exclamation-triangle",
     accept: () => {
-      toast.add({
-        severity: "info",
-        summary: "Confirmed",
-        detail: "You have confirmed",
-        life: 3000,
-      });
       editFriend(props.friendId, props.action);
     },
     reject: () => {
       toast.add({
-        severity: "error",
-        summary: "Rejected",
+        severity: "info",
+        summary: "Cancelled",
         detail: "You have cancelled",
         life: 3000,
       });
@@ -69,9 +62,22 @@ async function editFriend(
     })
     .then(async () => {
       emit("isActionSuccess", true);
+      console.log("success");
+      toast.add({
+        severity: "success",
+        summary: "Success",
+        detail: friendActionMessage(props.action),
+        life: 3000,
+      });
     })
     .catch(() => {
       emit("isActionSuccess", false);
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Something went wrong, please retry",
+        life: 3000,
+      });
     });
 }
 </script>

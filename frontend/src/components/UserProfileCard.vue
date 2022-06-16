@@ -1,10 +1,4 @@
 <template>
-  <div>
-    <FriendActionMessage
-      :action="currentAction"
-      :notify="notifyFriendActionMessage"
-    />
-  </div>
   <div v-if="isError">
     <Message severity="error" :closable="false">
       Oops, this user does not exist.
@@ -25,9 +19,7 @@
                 buttonLabel="Unfriend"
                 buttonIcon="pi pi-user-minus"
                 :action="EditFriendActionType.REMOVE_FRIEND"
-                @isActionSuccess="
-                  catchEvent($event, EditFriendActionType.REMOVE_FRIEND)
-                "
+                @isActionSuccess="catchEvent($event)"
               />
             </div>
             <div v-else>
@@ -36,9 +28,7 @@
                 buttonLabel="Add friend"
                 buttonIcon="pi pi-user-plus"
                 :action="EditFriendActionType.SEND_REQUEST"
-                @isActionSuccess="
-                  catchEvent($event, EditFriendActionType.SEND_REQUEST)
-                "
+                @isActionSuccess="catchEvent($event)"
               />
             </div>
           </div>
@@ -80,10 +70,7 @@ import storeUser from "@/store";
 import { useRouter } from "vue-router";
 import EditFriendButton from "./EditFriendButton.vue";
 import EditFriendActionType from "@/types/EditFriendActionType";
-import FriendActionMessage from "./FriendActionMessage.vue";
 
-const currentAction = ref<EditFriendActionType>();
-const notifyFriendActionMessage = ref<boolean>();
 const route = useRoute();
 const id = route.params.id;
 const user = ref<UserProfileI>();
@@ -132,10 +119,6 @@ function changeFriendStatus() {
   isFriend.value = false;
 }
 
-function showFriendActionMessage() {
-  notifyFriendActionMessage.value = !notifyFriendActionMessage.value;
-}
-
 const router = useRouter();
 
 function toSetting() {
@@ -146,14 +129,9 @@ function toPrivateMessage() {
   console.log("go to private message"); //TODO: to change route to private chat
 }
 
-function catchEvent(event, action: EditFriendActionType) {
+function catchEvent(event) {
   if (event) {
-    currentAction.value = action;
-    showFriendActionMessage();
     changeFriendStatus();
-  } else {
-    currentAction.value = EditFriendActionType.ERROR;
-    showFriendActionMessage();
   }
 }
 </script>

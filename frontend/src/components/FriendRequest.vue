@@ -1,11 +1,5 @@
 <template>
   <div>
-    <FriendActionMessage
-      :action="currentAction"
-      :notify="notifyFriendActionMessage"
-    />
-  </div>
-  <div>
     <DataTable :value="requests" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
@@ -42,17 +36,13 @@
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-check"
               :action="EditFriendActionType.ADD_FRIEND"
-              @isActionSuccess="
-                catchEvent($event, EditFriendActionType.ADD_FRIEND)
-              "
+              @isActionSuccess="catchEvent($event)"
             />
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-times"
               :action="EditFriendActionType.REJECT_REQUEST"
-              @isActionSuccess="
-                catchEvent($event, EditFriendActionType.REJECT_REQUEST)
-              "
+              @isActionSuccess="catchEvent($event)"
             />
           </div>
         </template>
@@ -71,10 +61,7 @@ import axios from "axios";
 import storeUser from "@/store";
 import EditFriendActionType from "@/types/EditFriendActionType";
 import EditFriendButton from "./EditFriendButton.vue";
-import FriendActionMessage from "./FriendActionMessage.vue";
 
-const currentAction = ref<EditFriendActionType>();
-const notifyFriendActionMessage = ref<boolean>();
 const requests = ref([]);
 const emit = defineEmits<{
   (event: "error"): boolean;
@@ -100,18 +87,9 @@ async function refreshFriendRequests() {
     });
 }
 
-function showFriendActionMessage() {
-  notifyFriendActionMessage.value = !notifyFriendActionMessage.value;
-}
-
-function catchEvent(event, action: EditFriendActionType) {
+function catchEvent(event) {
   if (event) {
-    currentAction.value = action;
-    showFriendActionMessage();
     refreshFriendRequests();
-  } else {
-    currentAction.value = EditFriendActionType.ERROR;
-    showFriendActionMessage();
   }
 }
 </script>
