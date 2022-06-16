@@ -74,7 +74,7 @@ const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
 const clickedUserID = ref<number>(1);
-const id = computed(() => {
+const computedID = computed(() => {
   return clickedUserID.value;
 }); //items ref params need a calculated property
 
@@ -85,7 +85,7 @@ const items = ref([
     icon: "pi pi-fw pi-user",
     to: {
       name: "UserProfileCard",
-      params: { id: id },
+      params: { id: computedID },
     },
   },
   {
