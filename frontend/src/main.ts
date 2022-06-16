@@ -9,8 +9,6 @@ import "primeflex/primeflex.css"; //PrimeFlex
 import ConfirmationService from "primevue/confirmationservice";
 import ToastService from "primevue/toastservice";
 import storeUser from "@/store";
-import ConfirmationService from "primevue/confirmationservice"; //Primevue confirmation dialog
-import ToastService from "primevue/toastservice"; // Primevue notification message
 
 const app = createApp(App);
 app.use(storeUser);
