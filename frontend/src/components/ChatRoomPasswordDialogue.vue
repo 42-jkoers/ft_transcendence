@@ -47,7 +47,6 @@ import Button from "primevue/button";
 
 const socket: Socket = inject("socketioInstance");
 
-// const props = defineProps(["isDialogVisible", "roomName", "roomIcon"]);
 const props = defineProps(["isDialogVisible", "roomName"]);
 
 const emit = defineEmits(["update:isDialogVisible"]);

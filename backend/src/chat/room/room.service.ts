@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, getRepository } from 'typeorm';
+import { Repository, getRepository, getConnection } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { RoomEntity } from './entities/room.entity';
 import { RoomVisibilityType } from './enums/room.visibility.enum';
@@ -54,11 +54,7 @@ export class RoomService {
 		const newRoom = this.roomEntityRepository.create(roomPayload);
 		newRoom.name = roomPayload.name;
 		newRoom.visibility = roomPayload.visibility;
-		if (roomPayload.password !== null) {
-			newRoom.password = await this.setRoomPassword(roomPayload.password);
-		} else {
-			newRoom.password = null;
-		}
+		newRoom.password = await this.setRoomPassword(roomPayload.password);
 		try {
 			await this.roomEntityRepository.save(newRoom); // Saves a given entity in the database if the new room name doesn't exist.
 			// manyToOne and oneToMany with additional userToRoomEntity makes manyToMany relationship
@@ -128,16 +124,25 @@ export class RoomService {
 		);
 	}
 
-	async updateRoom(roomToUpdate: RoomEntity) {
-		await this.roomEntityRepository.save(roomToUpdate);
-	}
-
 	async addVisitorToRoom(userToAddId: number, room: RoomEntity) {
 		await this.createManyToManyRelationship(
 			room,
 			userToAddId,
 			UserRole.VISITOR,
 		);
+		await this.roomEntityRepository.save(room);
+	}
+
+	async deleteUserRoomRelationship(userToRemoveId: number, room: RoomEntity) {
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(UserToRoomEntity)
+			.where('userId = :userToRemoveId and roomId = :roomId', {
+				userToRemoveId,
+				roomId: room.id,
+			})
+			.execute();
 		await this.roomEntityRepository.save(room);
 	}
 
@@ -178,8 +183,13 @@ export class RoomService {
 		return userRooms;
 	}
 
+	async updateRoomPassword(room: RoomEntity, newPassword: string | null) {
+		room.password = await this.setRoomPassword(newPassword);
+		await this.roomEntityRepository.save(room);
+	}
+
 	async setRoomPassword(roomPassword: string | null): Promise<string | null> {
-		if (!roomPassword === null) {
+		if (!roomPassword) {
 			return null;
 		}
 		const hash = await this.encryptRoomPassword(roomPassword);
@@ -199,6 +209,4 @@ export class RoomService {
 		const isMatch = await bcrypt.compare(password, hash);
 		return isMatch;
 	}
-
-	// async unlockProtectedRoom() {}
 }

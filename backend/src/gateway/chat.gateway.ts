@@ -127,17 +127,32 @@ export class ChatGateway
 
 	@SubscribeMessage('getUserRoomsList')
 	async getUserRoomsList(client: Socket) {
-		const roomEntities: RoomEntity[] =
-			await this.roomService.getRoomsForUser(client.data.user.id);
-		// we don't need all information from the RoomEntity returned to the user, we'll have to serialize it
-		// by converting roomentity type to dto with several excluded and transformed properties
-		const response: RoomForUserDto[] = roomEntities.map((room) => {
-			const listedRoom = plainToClass(RoomForUserDto, room); //
-			listedRoom.userRole = room.userToRooms[0].role; // getting role from userToRooms array
-			listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
-			return listedRoom;
-		});
-		client.emit('getUserRoomsList', response);
+		if (client.data.user) {
+			const roomEntities: RoomEntity[] =
+				await this.roomService.getRoomsForUser(client.data.user.id);
+
+			// we don't need all information from the RoomEntity returned to the user, we'll have to serialize it
+			// by converting roomentity type to dto with several excluded and transformed properties
+			const response: RoomForUserDto[] = roomEntities.map((room) => {
+				const listedRoom = plainToClass(RoomForUserDto, room); //
+				listedRoom.userRole = room.userToRooms[0].role; // getting role from userToRooms array
+				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
+				return listedRoom;
+			});
+			client.emit('getUserRoomsList', response);
+		}
+	}
+
+	@SubscribeMessage('updateRoomPassword')
+	async updateRoomPassword(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() roomToUpdate: { name: string; password: string },
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			roomToUpdate.name,
+		);
+		await this.roomService.updateRoomPassword(room, roomToUpdate.password);
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('addUserToRoom')
@@ -150,6 +165,22 @@ export class ChatGateway
 		);
 		await this.roomService.addVisitorToRoom(client.data.user.id, room);
 		client.join(room.name);
+		await this.getPublicRoomsList(client);
+	}
+
+	@SubscribeMessage('removeUserFromRoom')
+	async removeUserFromRoom(
+		@MessageBody() roomName: string,
+		@ConnectedSocket() client: Socket,
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			roomName,
+		);
+		await this.roomService.deleteUserRoomRelationship(
+			client.data.user.id,
+			room,
+		);
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
