@@ -88,7 +88,7 @@ const items = ref([
   },
 ]);
 
-const onChipRightClick = (event) => {
+const onChipRightClick = (event: Event) => {
   menu.value.show(event);
 };
 
@@ -138,6 +138,11 @@ function sendMessage() {
 .p-chip.user {
   font-size: 50%;
   height: 2vh;
+}
+
+.p-chip.user:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .p-chip.time {
