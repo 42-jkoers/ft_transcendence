@@ -6,6 +6,7 @@
     <ChatBoxUserProfileDialogue
       :isDialogVisible="displayUserProfileDialog"
       :clickedUserObject="clickedUser"
+      @update:isDialogVisible="displayUserProfileDialog = $event"
     />
     <ContextMenu ref="menu" :model="items" />
     <div

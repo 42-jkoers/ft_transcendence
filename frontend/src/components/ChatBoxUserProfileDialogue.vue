@@ -2,9 +2,8 @@
   <Dialog
     :header="clickedUserObject.username"
     :visible="isDialogVisible"
-    closeOnEscape
-    :closable="true"
     position="center"
+    @update:visible="handleClose"
   >
     <div class="field p-fluid">
       <Image
@@ -43,5 +42,9 @@ const pushToProfile = () => {
 
 const sendDM = () => {
   //TODO add DM logic
+};
+
+const handleClose = () => {
+  emit("update:isDialogVisible", false);
 };
 </script>
