@@ -3,20 +3,21 @@ import {
 	Get,
 	Post,
 	Body,
+	Res,
 	UseGuards,
 	UseInterceptors,
 	UploadedFile,
 	Query,
 	ParseIntPipe,
-	HttpException,
 	HttpStatus,
+	HttpException,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from '../auth/oauth/oauth.guard';
 import { UserI } from './user.interface';
 import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import e, { Express } from 'express';
+import { Express, Response } from 'express';
 import { UploadFileHelper } from './util/uploadfile.helper';
 import { UpdateUserProfileDto } from './dto';
 import { FriendDto } from './dto/Friend.dto';
@@ -94,56 +95,68 @@ export class UserController {
 			dto.userId,
 			dto.friendId,
 		);
-		// if they are friend, the request can only be REMOVE_FRIEND
-		if (isFriend) {
-			if (dto.action === EditFriendActionType.REMOVE_FRIEND) {
+		if (dto.action === EditFriendActionType.REMOVE_FRIEND) {
+			if (isFriend) {
 				await this.userService.removeFriend(user, friend);
 			} else {
 				throw new HttpException(
-					'User and requested user is not friend.',
-					HttpStatus.BAD_REQUEST,
+					'User and requested user are not friends.',
+					HttpStatus.UNAUTHORIZED,
 				);
 			}
 		} else {
-			const isUserBeingRequested = await this.userService.isUserRequested(
-				dto.userId,
-				dto.friendId,
-			);
-			// if user has been requested, the user can approve (ADD_FRIEND) or reject (REMOVE_REQUEST)
-			if (isUserBeingRequested) {
-				if (dto.action === EditFriendActionType.ADD_FRIEND) {
-					await this.userService.removeFriendRequest(
-						dto.friendId,
+			if (isFriend) {
+				throw new HttpException(
+					'User and requested user are already friends.',
+					HttpStatus.UNAUTHORIZED,
+				);
+			} else {
+				// check current request status between two users
+				const isUserReceivedRequest =
+					await this.userService.isUserRequested(
 						dto.userId,
-					);
-					await this.userService.addFriend(user, friend);
-				} else if (dto.action === EditFriendActionType.REJECT_REQUEST) {
-					await this.userService.removeFriendRequest(
 						dto.friendId,
-						dto.userId,
 					);
-				} else if (dto.action === EditFriendActionType.REMOVE_FRIEND) {
-					throw new HttpException(
-						'User has no authorization',
-						HttpStatus.BAD_REQUEST,
-					);
-				}
-			}
-			// the user can always send a reques, but it will only be processed if request does not exist
-			if (dto.action === EditFriendActionType.SEND_REQUEST) {
-				const isFriendBeingRequested =
+				const isUserSendRequest =
 					await this.userService.isUserRequested(
 						dto.friendId,
 						dto.userId,
 					);
-				if (!isFriendBeingRequested) {
-					await this.userService.addFriendRequest(
-						dto.userId,
-						dto.friendId,
-					);
+				if (dto.action === EditFriendActionType.SEND_REQUEST) {
+					if (isUserSendRequest) {
+						throw new HttpException(
+							'Request has already sent by this user.',
+							HttpStatus.BAD_REQUEST,
+						);
+					} else if (isUserReceivedRequest) {
+						throw new HttpException(
+							'Request has arealdy been sent by the other user.',
+							HttpStatus.BAD_REQUEST,
+						);
+					} else {
+						await this.userService.addFriendRequest(
+							dto.userId,
+							dto.friendId,
+						);
+					}
+				} else {
+					if (isUserReceivedRequest) {
+						// for either ADD_FRIEND or REJECT_REQUEST, need to remove request
+						await this.userService.removeFriendRequest(
+							dto.friendId,
+							dto.userId,
+						);
+						if (dto.action === EditFriendActionType.ADD_FRIEND) {
+							await this.userService.addFriend(user, friend);
+						}
+					} else {
+						throw new HttpException(
+							'User is not authorization',
+							HttpStatus.UNAUTHORIZED,
+						);
+					}
 				}
 			}
 		}
-		return friend.username;
 	}
 }

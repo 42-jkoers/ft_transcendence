@@ -16,11 +16,9 @@ import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import ConfirmDialog from "primevue/confirmdialog";
 import {
-  editFriendActionError,
   EditFriendActionType,
   friendActionMessage,
 } from "@/types/editFriendAction";
-import { errorMessage } from "@/types/errorManagement";
 
 const props = defineProps({
   friendId: Number,
@@ -70,12 +68,13 @@ async function editFriend(
         });
       }
     })
-    .catch(() => {
+    .catch((error) => {
+      console.log(error.response);
       emit("isActionSuccess", false);
       toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: errorMessage(editFriendActionError(props.action)),
+        severity: "warn",
+        summary: "Note",
+        detail: error.response.data.message,
         life: 3000,
       });
     });
