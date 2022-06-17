@@ -5,12 +5,27 @@
     closeOnEscape
     :closable="false"
   >
+    <template #footer>
+      <Button
+        label="Message"
+        icon="pi pi-envelope"
+        @click="sendDM"
+        class="p-button-text"
+      />
+      <Button
+        label="View Profile"
+        icon="pi pi-user"
+        @click="pushToProfile"
+        autofocus
+      />
+    </template>
   </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, defineEmits, defineProps } from "vue";
 import Dialog from "primevue/dialog";
+import Button from "primevue/button";
 
 const props = defineProps(["isDialogVisible", "clickedUserObject"]);
 
