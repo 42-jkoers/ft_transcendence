@@ -67,7 +67,7 @@ export class UserController {
 
 	@Get('friend-request?')
 	async getFriendRequest(@Query('id', ParseIntPipe) id: number) {
-		return await this.userService.getFriendRequests(id);
+		return await this.userService.getReceivedFriendRequests(id);
 	}
 
 	@Get('friend-list?')
@@ -134,17 +134,14 @@ export class UserController {
 							HttpStatus.BAD_REQUEST,
 						);
 					} else {
-						await this.userService.addFriendRequest(
-							dto.userId,
-							dto.friendId,
-						);
+						await this.userService.addFriendRequest(user, friend);
 					}
 				} else {
 					if (isUserReceivedRequest) {
 						// for either ADD_FRIEND or REJECT_REQUEST, need to remove request
 						await this.userService.removeFriendRequest(
-							dto.friendId,
-							dto.userId,
+							friend,
+							user,
 						);
 						if (dto.action === EditFriendActionType.ADD_FRIEND) {
 							await this.userService.addFriend(user, friend);

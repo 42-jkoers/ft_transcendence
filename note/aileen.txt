@@ -188,7 +188,7 @@ Tutorial:
 ******************************************
 (Fri) 2022-06-17
 	- improve user controller editFriend() methods logic
-
+	- debug addFriendRequest methods in backend
 **************************
 **		Next To To				**
 **************************

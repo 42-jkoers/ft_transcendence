@@ -58,7 +58,6 @@ async function editFriend(
     })
     .then(async () => {
       emit("isActionSuccess", true);
-      console.log("success");
       if (props.action !== EditFriendActionType.REJECT_REQUEST) {
         toast.add({
           severity: "success",
@@ -69,7 +68,6 @@ async function editFriend(
       }
     })
     .catch((error) => {
-      console.log(error.response);
       emit("isActionSuccess", false);
       toast.add({
         severity: "warn",
