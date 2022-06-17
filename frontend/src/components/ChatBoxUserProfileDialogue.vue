@@ -1,11 +1,15 @@
 <template>
   <Dialog
-    :header="clickedUserObject.username"
     :visible="isDialogVisible"
     position="left"
     @update:visible="handleClose"
   >
-    <div class="field p-fluid">
+    <template #header>
+      <h3 icon="pi pi-times">{{ clickedUserObject.username }}</h3>
+      <p v-if="isOnline">(online)</p>
+      <p v-else>(offline)</p>
+    </template>
+    <div>
       <Image
         :src="clickedUserObject.avatar"
         width="300"
@@ -27,8 +31,8 @@ import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import Image from "primevue/image"; //TODO style img width
 
+const isOnline = ref(true); //FIXME change this when we have onlin/offline info in user
 const props = defineProps(["isDialogVisible", "clickedUserObject"]);
-console.log(props.clickedUserObject);
 
 const emit = defineEmits(["update:isDialogVisible"]);
 
