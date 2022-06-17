@@ -40,4 +40,8 @@ const pushToProfile = () => {
     params: { id: props.clickedUserObject.id },
   });
 };
+
+const sendDM = () => {
+  //TODO add DM logic
+};
 </script>
