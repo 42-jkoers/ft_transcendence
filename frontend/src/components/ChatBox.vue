@@ -77,6 +77,7 @@ import ContextMenu from "primevue/contextmenu";
 import UserProfileI from "../types/UserProfile.interface";
 import storeUser from "@/store";
 import ChatBoxUserProfileDialogue from "./ChatBoxUserProfileDialogue.vue";
+import { UserRole } from "@/types/UserRole.Enum";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
@@ -101,12 +102,24 @@ const items = ref([
     },
   },
   {
-    separator: true,
-  },
-  {
     label: "Play pong",
     icon: "pi pi-fw pi-caret-right",
   }, //TODO add a View to play game when we have it ready
+  {
+    separator: true,
+  },
+  {
+    label: "Set admin",
+    visible: () => isOwner(0), //FIXME pass selectedRoom's info
+  },
+  {
+    label: "Ban user",
+    visible: () => isAdmin(1), //FIXME pass selectedRoom's info
+  },
+  {
+    label: "Mute user",
+    visible: () => isAdmin(1), //FIXME pass selectedRoom's info
+  },
 ]);
 
 onMounted(() => {
@@ -147,6 +160,11 @@ function onChipRightClick(user: UserProfileI) {
   clickedUser.value = user;
   menu.value.show(event);
 } //shows ContextMenu when UserChip is right clicked and reassigns the ID value
+
+const isOwner = (userRole: UserRole | undefined) =>
+  userRole === 0 ? true : false;
+const isAdmin = (userRole: UserRole | undefined) =>
+  userRole === 1 ? true : false;
 </script>
 
 <style scoped>
