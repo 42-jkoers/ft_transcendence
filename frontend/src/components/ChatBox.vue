@@ -111,14 +111,17 @@ const items = ref([
   {
     label: "Set admin",
     visible: () => isOwner(0), //FIXME pass selectedRoom's info
+    command: () => socket.emit("setUserAsAdmin"), //TODO pass user.id & room.name & add backend logic
   },
   {
     label: "Ban user",
     visible: () => isAdmin(1), //FIXME pass selectedRoom's info
+    command: () => socket.emit("banUserFromRoom"), //TODO pass user.id & room.name & add backend logic
   },
   {
     label: "Mute user",
     visible: () => isAdmin(1), //FIXME pass selectedRoom's info
+    command: () => socket.emit("muteUserInRoom"), //TODO pass user.id & room.name & add backend logic
   },
 ]);
 
