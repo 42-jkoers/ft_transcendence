@@ -3,6 +3,10 @@
     <Panel>
       {{ $route.params.roomName }}
     </Panel>
+    <ChatBoxUserProfileDialogue
+      :isDialogVisible="displayUserProfileDialog"
+      :clickedUserObject="clickedUser"
+    />
     <ContextMenu ref="menu" :model="items" />
     <div
       id="all-messages"
@@ -69,18 +73,21 @@ import { useRoute } from "vue-router";
 import moment from "moment";
 import Chip from "primevue/chip";
 import ContextMenu from "primevue/contextmenu";
-import Dialog from "primevue/dialog";
 import UserProfileI from "../types/UserProfile.interface";
 import storeUser from "@/store";
+import ChatBoxUserProfileDialogue from "./ChatBoxUserProfileDialogue.vue";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
+
 const clickedUser = ref<UserProfileI>(storeUser.state.user);
 const computedID = computed(() => {
   return clickedUser.value.id;
 }); //items ref params need a calculated property
+
+const displayUserProfileDialog = ref(false);
 
 const menu = ref();
 const items = ref([
@@ -130,9 +137,9 @@ function sendMessage() {
 }
 
 function onChipLeftClick(user: UserProfileI) {
-  console.log(user);
   clickedUser.value = user;
-  console.log(clickedUser.value);
+  displayUserProfileDialog.value = true;
+  //console.log(clickedUser.value);
 }
 
 function onChipRightClick(user: UserProfileI) {
