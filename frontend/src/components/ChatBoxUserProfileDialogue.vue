@@ -4,7 +4,16 @@
     :visible="isDialogVisible"
     closeOnEscape
     :closable="false"
+    position="right"
   >
+    <div class="field p-fluid">
+      <Image
+        :src="clickedUserObject.avatar"
+        width="250"
+        heigth="250"
+        alt="User Profile"
+      />
+    </div>
     <template #footer>
       <Button
         label="Message"
@@ -26,8 +35,10 @@
 import { ref, defineEmits, defineProps } from "vue";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
+import Image from "primevue/image"; //TODO style img width
 
 const props = defineProps(["isDialogVisible", "clickedUserObject"]);
+console.log(props.clickedUserObject);
 
 const emit = defineEmits(["update:isDialogVisible"]);
 </script>
