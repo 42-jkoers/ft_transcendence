@@ -2,14 +2,14 @@
   <Dialog
     :header="clickedUserObject.username"
     :visible="isDialogVisible"
-    position="center"
+    position="left"
     @update:visible="handleClose"
   >
     <div class="field p-fluid">
       <Image
         :src="clickedUserObject.avatar"
-        width="250"
-        heigth="250"
+        width="300"
+        height="300"
         alt="User Profile"
       />
     </div>
