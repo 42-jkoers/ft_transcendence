@@ -171,6 +171,9 @@ Tutorial:
 	- error management for friend request process
 	- add refreshh button to request and friend list
 
+******************************************
+**						Branch - 	Toast						**
+******************************************
 (Wed) 2022-06-15
 	- test friend function / team test
 	- move friend action notificatoin from button to top of the page
@@ -179,6 +182,12 @@ Tutorial:
 (Thu) 2022-06-16
 	- replace customized FriendActionMessage with Toast and Confirm Dialog
 	- set up errorManagement for FriendAction
+
+******************************************
+**	Branch - 	friend_process_improve		**
+******************************************
+(Fri) 2022-06-17
+	- 
 
 **************************
 **		Next To To				**

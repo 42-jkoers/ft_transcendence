@@ -17,6 +17,7 @@ import { useToast } from "primevue/usetoast";
 import ConfirmDialog from "primevue/confirmdialog";
 import {
   editFriendActionError,
+  EditFriendActionType,
   friendActionMessage,
 } from "@/types/editFriendAction";
 import { errorMessage } from "@/types/errorManagement";
@@ -36,14 +37,6 @@ function proceedConfirmation() {
     icon: "pi pi-exclamation-triangle",
     accept: () => {
       editFriend(props.friendId, props.action);
-    },
-    reject: () => {
-      toast.add({
-        severity: "info",
-        summary: "Cancelled",
-        detail: "You have cancelled",
-        life: 3000,
-      });
     },
   });
 }
@@ -68,12 +61,14 @@ async function editFriend(
     .then(async () => {
       emit("isActionSuccess", true);
       console.log("success");
-      toast.add({
-        severity: "success",
-        summary: "Success",
-        detail: friendActionMessage(props.action),
-        life: 3000,
-      });
+      if (props.action !== EditFriendActionType.REJECT_REQUEST) {
+        toast.add({
+          severity: "success",
+          summary: "Success",
+          detail: friendActionMessage(props.action),
+          life: 3000,
+        });
+      }
     })
     .catch(() => {
       emit("isActionSuccess", false);
