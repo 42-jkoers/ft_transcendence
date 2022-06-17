@@ -78,7 +78,6 @@ import Column from "primevue/column";
 import ContextMenu from "primevue/contextmenu";
 import ConfirmDialog from "primevue/confirmdialog";
 import { useConfirm } from "primevue/useconfirm";
-import { useToast } from "primevue/usetoast";
 import { UserRole } from "@/types/UserRole.Enum";
 
 const socket: Socket = inject("socketioInstance");
@@ -106,7 +105,7 @@ const selectedRoomName = ref("");
 
 const onRowSelect = (event) => {
   const room = event.data;
-  if (room.protected && room.userRole !== 0) {
+  if (room.protected && room.userRole === undefined) {
     displayPasswordDialog.value = true;
     selectedRoomName.value = room.name;
   } else {
@@ -151,7 +150,6 @@ const isInRoom = (userRole: UserRole | undefined) =>
   userRole === undefined ? true : false;
 
 const confirm = useConfirm();
-const toast = useToast();
 
 const confirmLeave = (room) => {
   confirm.require({
@@ -159,12 +157,6 @@ const confirmLeave = (room) => {
     header: "Leave Confirmation",
     icon: "pi pi-info-circle",
     accept: () => {
-      toast.add({
-        severity: "info",
-        summary: "Confirmed",
-        detail: "Record deleted",
-        life: 3000,
-      });
       if (route.params.roomName === room.value.name) {
         router.push({
           name: "Chat",
@@ -172,23 +164,11 @@ const confirmLeave = (room) => {
       }
       socket.emit("removeUserFromRoom", room.value.name);
     },
-    reject: () => {
-      toast.add({
-        severity: "error",
-        summary: "Rejected",
-        detail: "You have rejected",
-        life: 3000,
-      });
-    },
   });
 };
 
 const editRoomPrivacy = (room) => {
   displayEditPrivacyDialog.value = true;
-
-  console.log(
-    `Room ${room.value.name}'s visibility is ${room.value.visibility}. Is it protected with a password? ${room.value.protected}`
-  );
 };
 </script>
 <style></style>

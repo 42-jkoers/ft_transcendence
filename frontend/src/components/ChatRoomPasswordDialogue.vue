@@ -70,6 +70,7 @@ const validatePassword = () => {
   socket.on("isRoomPasswordMatched", (isMatched: boolean) => {
     if (isMatched) {
       closePasswordDialog();
+      socket.emit("addUserToRoom", props.roomName);
       router.push({
         name: "ChatBox",
         params: { roomName: props.roomName },
