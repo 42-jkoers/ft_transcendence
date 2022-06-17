@@ -25,7 +25,6 @@
     </div>
   </div>
 </template>
-//TODO align and add flex to ChatRoomsList and ChatBox
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";
