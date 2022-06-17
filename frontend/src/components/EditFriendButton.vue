@@ -1,9 +1,10 @@
 <template>
+  <ConfirmDialog></ConfirmDialog>
   <Button
     class="p-button-rounded p-button-text p-button-outlined"
     :label="props.buttonLabel"
     :icon="props.buttonIcon"
-    @click="editFriend(props.friendId, props.action)"
+    @click="proceedConfirmation"
   />
 </template>
 <script setup lang="ts">
@@ -11,6 +12,14 @@ import { defineEmits, defineProps } from "vue";
 import Button from "primevue/button";
 import axios from "axios";
 import storeUser from "@/store";
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+import ConfirmDialog from "primevue/confirmdialog";
+import {
+  editFriendActionError,
+  friendActionMessage,
+} from "@/types/editFriendAction";
+import { errorMessage } from "@/types/errorManagement";
 
 const props = defineProps({
   friendId: Number,
@@ -18,6 +27,26 @@ const props = defineProps({
   buttonIcon: String,
   action: Number,
 });
+const confirm = useConfirm();
+const toast = useToast();
+function proceedConfirmation() {
+  confirm.require({
+    message: "Are you sure you want to proceed?",
+    header: "Confirmation",
+    icon: "pi pi-exclamation-triangle",
+    accept: () => {
+      editFriend(props.friendId, props.action);
+    },
+    reject: () => {
+      toast.add({
+        severity: "info",
+        summary: "Cancelled",
+        detail: "You have cancelled",
+        life: 3000,
+      });
+    },
+  });
+}
 
 const emit = defineEmits<{
   (event: "isActionSuccess"): boolean;
@@ -38,9 +67,22 @@ async function editFriend(
     })
     .then(async () => {
       emit("isActionSuccess", true);
+      console.log("success");
+      toast.add({
+        severity: "success",
+        summary: "Success",
+        detail: friendActionMessage(props.action),
+        life: 3000,
+      });
     })
     .catch(() => {
       emit("isActionSuccess", false);
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errorMessage(editFriendActionError(props.action)),
+        life: 3000,
+      });
     });
 }
 </script>

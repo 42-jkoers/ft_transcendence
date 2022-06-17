@@ -1,11 +1,5 @@
 <template>
   <div>
-    <FriendActionMessage
-      :action="currentAction"
-      :notify="notifyFriendActionMessage"
-    />
-  </div>
-  <div>
     <DataTable :value="requests" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
@@ -42,17 +36,13 @@
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-check"
               :action="EditFriendActionType.ADD_FRIEND"
-              @isActionSuccess="
-                catchEvent($event, EditFriendActionType.ADD_FRIEND)
-              "
+              @isActionSuccess="catchEvent($event)"
             />
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-times"
               :action="EditFriendActionType.REJECT_REQUEST"
-              @isActionSuccess="
-                catchEvent($event, EditFriendActionType.REJECT_REQUEST)
-              "
+              @isActionSuccess="catchEvent($event)"
             />
           </div>
         </template>
@@ -61,7 +51,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, defineEmits } from "vue";
+import { onMounted, ref } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -69,16 +59,14 @@ import Chip from "primevue/chip";
 import Badge from "primevue/badge";
 import axios from "axios";
 import storeUser from "@/store";
-import EditFriendActionType from "@/types/EditFriendActionType";
+import { EditFriendActionType } from "@/types/editFriendAction";
 import EditFriendButton from "./EditFriendButton.vue";
-import FriendActionMessage from "./FriendActionMessage.vue";
+import { useToast } from "primevue/usetoast";
+import { ErrorType, errorMessage } from "@/types/errorManagement";
 
-const currentAction = ref<EditFriendActionType>();
-const notifyFriendActionMessage = ref<boolean>();
+const toast = useToast();
+
 const requests = ref([]);
-const emit = defineEmits<{
-  (event: "error"): boolean;
-}>();
 
 onMounted(async () => {
   await refreshFriendRequests();
@@ -96,22 +84,18 @@ async function refreshFriendRequests() {
       requests.value = response.data;
     })
     .catch(() => {
-      emit("error", true);
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errorMessage(ErrorType.GENERAL),
+        life: 3000,
+      });
     });
 }
 
-function showFriendActionMessage() {
-  notifyFriendActionMessage.value = !notifyFriendActionMessage.value;
-}
-
-function catchEvent(event, action: EditFriendActionType) {
+function catchEvent(event) {
   if (event) {
-    currentAction.value = action;
-    showFriendActionMessage();
     refreshFriendRequests();
-  } else {
-    currentAction.value = EditFriendActionType.ERROR;
-    showFriendActionMessage();
   }
 }
 </script>

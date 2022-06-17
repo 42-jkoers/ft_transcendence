@@ -6,11 +6,13 @@
     <div v-if="showMenu()">
       <HomeMenu />
     </div>
+    <div><Toast /></div>
   </div>
 </template>
 <script setup lang="ts">
 import HomeMenu from "@/components/HomeMenu.vue";
 import storeUser from "@/store";
+import Toast from "primevue/toast";
 function showMenu() {
   return (
     storeUser.state.isAuthenticated && storeUser.state.user.username !== ""

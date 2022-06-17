@@ -176,10 +176,13 @@ Tutorial:
 	- move friend action notificatoin from button to top of the page
 	- consolidate friend action message into one single component (DRY principle!)
 
+(Thu) 2022-06-16
+	- replace customized FriendActionMessage with Toast and Confirm Dialog
+	- set up errorManagement for FriendAction
+
 **************************
 **		Next To To				**
 **************************
-- improve notification of friend action
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 
