@@ -6,17 +6,15 @@
   >
     <template #header>
       <h3 icon="pi pi-times">{{ clickedUserObject.username }}</h3>
-      <p v-if="isOnline">(online)</p>
-      <p v-else>(offline)</p>
+      <p v-if="isOnline">online</p>
+      <p v-else>offline</p>
     </template>
-    <div>
-      <Image
-        :src="clickedUserObject.avatar"
-        width="300"
-        height="300"
-        alt="User Profile"
-      />
-    </div>
+    <Image
+      :src="clickedUserObject.avatar"
+      width="280"
+      height="280"
+      alt="User Profile"
+    />
     <template #footer>
       <Button label="Message" icon="pi pi-envelope" @click="sendDM" />
       <Button label="View Profile" icon="pi pi-user" @click="pushToProfile" />
