@@ -34,14 +34,14 @@
           <div>
             <EditFriendButton
               :friendId="slotProps.data.id"
-              buttonIcon="pi pi-check"
-              :action="EditFriendActionType.ADD_FRIEND"
+              buttonIcon="pi pi-times"
+              :action="EditFriendActionType.REJECT_REQUEST"
               @isActionSuccess="catchEvent($event)"
             />
             <EditFriendButton
               :friendId="slotProps.data.id"
-              buttonIcon="pi pi-times"
-              :action="EditFriendActionType.REJECT_REQUEST"
+              buttonIcon="pi pi-check"
+              :action="EditFriendActionType.ADD_FRIEND"
               @isActionSuccess="catchEvent($event)"
             />
           </div>
@@ -49,6 +49,7 @@
       </Column>
     </DataTable>
   </div>
+  <div><Button label="test" @click="test"></Button></div>
 </template>
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
@@ -71,6 +72,34 @@ const requests = ref([]);
 onMounted(async () => {
   await refreshFriendRequests();
 });
+
+// TODO: to delete later
+async function test() {
+  const postBody = {
+    userId: 1,
+    friendId: 2,
+    action: EditFriendActionType.SEND_REQUEST,
+  };
+  await axios
+    .post("http://localhost:3000/user/edit-friend", postBody, {
+      withCredentials: true,
+    })
+    .then(async () => {
+      toast.add({
+        severity: "success",
+        summary: "Success",
+        life: 3000,
+      });
+    })
+    .catch((error) => {
+      toast.add({
+        severity: "warn",
+        summary: "Note",
+        detail: error.response.data.message,
+        life: 3000,
+      });
+    });
+}
 
 async function refreshFriendRequests() {
   await axios

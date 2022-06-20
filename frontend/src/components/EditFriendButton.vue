@@ -1,5 +1,4 @@
 <template>
-  <ConfirmDialog></ConfirmDialog>
   <Button
     class="p-button-rounded p-button-text p-button-outlined"
     :label="props.buttonLabel"
@@ -14,12 +13,7 @@ import axios from "axios";
 import storeUser from "@/store";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
-import ConfirmDialog from "primevue/confirmdialog";
-import {
-  editFriendActionError,
-  friendActionMessage,
-} from "@/types/editFriendAction";
-import { errorMessage } from "@/types/errorManagement";
+import { friendActionMessage } from "@/types/editFriendAction";
 
 const props = defineProps({
   friendId: Number,
@@ -36,14 +30,6 @@ function proceedConfirmation() {
     icon: "pi pi-exclamation-triangle",
     accept: () => {
       editFriend(props.friendId, props.action);
-    },
-    reject: () => {
-      toast.add({
-        severity: "info",
-        summary: "Cancelled",
-        detail: "You have cancelled",
-        life: 3000,
-      });
     },
   });
 }
@@ -65,24 +51,23 @@ async function editFriend(
     .post("http://localhost:3000/user/edit-friend", postBody, {
       withCredentials: true,
     })
-    .then(async () => {
-      emit("isActionSuccess", true);
-      console.log("success");
+    .then(() => {
       toast.add({
         severity: "success",
         summary: "Success",
         detail: friendActionMessage(props.action),
         life: 3000,
       });
+      emit("isActionSuccess", true);
     })
-    .catch(() => {
-      emit("isActionSuccess", false);
+    .catch((error) => {
       toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: errorMessage(editFriendActionError(props.action)),
+        severity: "warn",
+        summary: "Note",
+        detail: error.response.data.message,
         life: 3000,
       });
+      emit("isActionSuccess", false);
     });
 }
 </script>

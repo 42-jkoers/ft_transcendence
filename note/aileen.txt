@@ -171,6 +171,9 @@ Tutorial:
 	- error management for friend request process
 	- add refreshh button to request and friend list
 
+******************************************
+**						Branch - 	Toast						**
+******************************************
 (Wed) 2022-06-15
 	- test friend function / team test
 	- move friend action notificatoin from button to top of the page
@@ -180,16 +183,28 @@ Tutorial:
 	- replace customized FriendActionMessage with Toast and Confirm Dialog
 	- set up errorManagement for FriendAction
 
+******************************************
+**	Branch - 	friend_process_improve		**
+******************************************
+(Fri) 2022-06-17
+	- improve user controller editFriend() methods logic
+	- debug addFriendRequest methods in backend
+
+(Mon) 2022-06-20
+	- test friends process
+	- debug addFriends (rebuild addFriend and removeFriend method in UserService)
+	- move ConfirmDialog to WebsiteTitle component to prevent dialog double display 
+
 **************************
 **		Next To To				**
 **************************
+- Test friend process
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 
 ******************************
 **			General To To				**
 ******************************
-- optimize friendRequest data structure (OneToMany?)
 - try/catch all axios exception
 - deregister user
 
