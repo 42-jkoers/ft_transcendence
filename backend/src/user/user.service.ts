@@ -137,8 +137,16 @@ export class UserService {
 		}
 		user.friends.push(friendToAdd);
 		await this.userRepository.save(user);
+
 		friendToAdd.friends = await this.getFriends(friendToAdd.id);
+		if (!friendToAdd.friends) {
+			friendToAdd.friends = [];
+		}
+		friendToAdd.friends.push(user);
 		await this.userRepository.save(friendToAdd);
+
+		// friendToAdd.friends = await this.getFriends(friendToAdd.id);
+		// await this.userRepository.save(friendToAdd);
 	}
 
 	async removeFriend(user: UserI, friendToRemove: UserI) {
@@ -154,12 +162,12 @@ export class UserService {
 	}
 
 	async getFriends(userId: number): Promise<UserI[]> {
-		const friends = await this.userRepository
+		const user = await this.userRepository
 			.createQueryBuilder('user')
 			.leftJoinAndSelect('user.friends', 'friend')
-			.where('friend.id = :userId', { userId })
-			.getMany();
-		return friends;
+			.where('user.id = :userId', { userId })
+			.getOne();
+		return user.friends;
 	}
 
 	async getReceivedFriendRequests(userId: number): Promise<UserI[]> {

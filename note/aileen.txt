@@ -189,16 +189,21 @@ Tutorial:
 (Fri) 2022-06-17
 	- improve user controller editFriend() methods logic
 	- debug addFriendRequest methods in backend
+
+(Mon) 2022-06-20
+	- test friends process
+	- debug addFriends
+
 **************************
 **		Next To To				**
 **************************
+- Test friend process
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 
 ******************************
 **			General To To				**
 ******************************
-- optimize friendRequest data structure (OneToMany?)
 - try/catch all axios exception
 - deregister user
 
