@@ -1,16 +1,5 @@
 <template>
-  <div>
-    <FriendActionMessage
-      :action="currentAction"
-      :notify="notifyFriendActionMessage"
-    />
-  </div>
-  <div v-if="isError">
-    <Message severity="error" :closable="false">
-      Oops, this user does not exist.
-    </Message>
-  </div>
-  <div v-else align="center">
+  <div v-if="isUserExist" align="center">
     <div>
       <Card style="width: 30%; margin: 5%; border-radius: 5%; border: Groove">
         <template #header>
@@ -25,9 +14,7 @@
                 buttonLabel="Unfriend"
                 buttonIcon="pi pi-user-minus"
                 :action="EditFriendActionType.REMOVE_FRIEND"
-                @isActionSuccess="
-                  catchEvent($event, EditFriendActionType.REMOVE_FRIEND)
-                "
+                @isActionSuccess="catchEvent($event)"
               />
             </div>
             <div v-else>
@@ -36,9 +23,7 @@
                 buttonLabel="Add friend"
                 buttonIcon="pi pi-user-plus"
                 :action="EditFriendActionType.SEND_REQUEST"
-                @isActionSuccess="
-                  catchEvent($event, EditFriendActionType.SEND_REQUEST)
-                "
+                @isActionSuccess="catchEvent($event)"
               />
             </div>
           </div>
@@ -72,42 +57,48 @@
 import { useRoute } from "vue-router";
 import { onMounted, ref } from "vue";
 import axios from "axios";
-import Message from "primevue/message";
 import Card from "primevue/card";
 import Button from "primevue/button";
 import UserProfileI from "@/types/UserProfile.interface";
 import storeUser from "@/store";
 import { useRouter } from "vue-router";
 import EditFriendButton from "./EditFriendButton.vue";
-import EditFriendActionType from "@/types/EditFriendActionType";
-import FriendActionMessage from "./FriendActionMessage.vue";
+import { EditFriendActionType } from "@/types/editFriendAction";
+import { useToast } from "primevue/usetoast";
+import { ErrorType, errorMessage } from "@/types/errorManagement";
 
-const currentAction = ref<EditFriendActionType>();
-const notifyFriendActionMessage = ref<boolean>();
+const toast = useToast();
 const route = useRoute();
 const id = route.params.id;
 const user = ref<UserProfileI>();
-const isError = ref<boolean>(false);
 const isSelf = ref<boolean>();
 const isFriend = ref<boolean>();
+const isUserExist = ref<boolean>(false);
 
 onMounted(async () => {
-  await findUser();
-  isSelf.value = id === String(storeUser.state.user.id);
-  if (!isSelf.value) {
-    await axios(
-      "http://localhost:3000/user/is-friend?id1=" +
-        storeUser.state.user.id +
-        "&id2=" +
-        id,
-      { withCredentials: true }
-    )
-      .then((response) => {
-        isFriend.value = response.data;
-      })
-      .catch(() => {
-        isError.value = true;
-      });
+  try {
+    await findUser();
+    if (isUserExist.value) {
+      isSelf.value = id === String(storeUser.state.user.id);
+      if (!isSelf.value) {
+        await axios(
+          "http://localhost:3000/user/is-friend?id1=" +
+            storeUser.state.user.id +
+            "&id2=" +
+            id,
+          { withCredentials: true }
+        ).then((response) => {
+          isFriend.value = response.data;
+        });
+      }
+    }
+  } catch (error) {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: errorMessage(ErrorType.GENERAL),
+      life: 3000,
+    });
   }
 });
 
@@ -119,21 +110,20 @@ async function findUser() {
     .then((response) => {
       if (response.data) {
         user.value = response.data;
+        isUserExist.value = true;
       } else {
-        isError.value = true;
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: errorMessage(ErrorType.USER_NOT_EXIST),
+          life: 3000,
+        });
       }
-    })
-    .catch(() => {
-      isError.value = true;
     });
 }
 
 function changeFriendStatus() {
   isFriend.value = false;
-}
-
-function showFriendActionMessage() {
-  notifyFriendActionMessage.value = !notifyFriendActionMessage.value;
 }
 
 const router = useRouter();
@@ -146,14 +136,9 @@ function toPrivateMessage() {
   console.log("go to private message"); //TODO: to change route to private chat
 }
 
-function catchEvent(event, action: EditFriendActionType) {
+function catchEvent(event) {
   if (event) {
-    currentAction.value = action;
-    showFriendActionMessage();
     changeFriendStatus();
-  } else {
-    currentAction.value = EditFriendActionType.ERROR;
-    showFriendActionMessage();
   }
 }
 </script>
