@@ -1,7 +1,6 @@
 <template>
   <br />
   <div v-if="isVisible">
-    <ConfirmDialog></ConfirmDialog>
     <Button
       class="p-button-rounded p-button-text p-button-outlined"
       label="Log Out"
@@ -17,7 +16,6 @@ import storeUser from "@/store";
 import router from "@/router";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
-import ConfirmDialog from "primevue/confirmdialog";
 import Button from "primevue/button";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
 

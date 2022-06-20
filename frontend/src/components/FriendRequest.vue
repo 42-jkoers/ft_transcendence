@@ -34,14 +34,14 @@
           <div>
             <EditFriendButton
               :friendId="slotProps.data.id"
-              buttonIcon="pi pi-check"
-              :action="EditFriendActionType.ADD_FRIEND"
+              buttonIcon="pi pi-times"
+              :action="EditFriendActionType.REJECT_REQUEST"
               @isActionSuccess="catchEvent($event)"
             />
             <EditFriendButton
               :friendId="slotProps.data.id"
-              buttonIcon="pi pi-times"
-              :action="EditFriendActionType.REJECT_REQUEST"
+              buttonIcon="pi pi-check"
+              :action="EditFriendActionType.ADD_FRIEND"
               @isActionSuccess="catchEvent($event)"
             />
           </div>

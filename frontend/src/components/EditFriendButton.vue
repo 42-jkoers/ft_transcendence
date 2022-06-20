@@ -1,5 +1,4 @@
 <template>
-  <ConfirmDialog></ConfirmDialog>
   <Button
     class="p-button-rounded p-button-text p-button-outlined"
     :label="props.buttonLabel"
@@ -14,11 +13,7 @@ import axios from "axios";
 import storeUser from "@/store";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
-import ConfirmDialog from "primevue/confirmdialog";
-import {
-  EditFriendActionType,
-  friendActionMessage,
-} from "@/types/editFriendAction";
+import { friendActionMessage } from "@/types/editFriendAction";
 
 const props = defineProps({
   friendId: Number,
@@ -56,25 +51,23 @@ async function editFriend(
     .post("http://localhost:3000/user/edit-friend", postBody, {
       withCredentials: true,
     })
-    .then(async () => {
+    .then(() => {
+      toast.add({
+        severity: "success",
+        summary: "Success",
+        detail: friendActionMessage(props.action),
+        life: 3000,
+      });
       emit("isActionSuccess", true);
-      if (props.action !== EditFriendActionType.REJECT_REQUEST) {
-        toast.add({
-          severity: "success",
-          summary: "Success",
-          detail: friendActionMessage(props.action),
-          life: 3000,
-        });
-      }
     })
     .catch((error) => {
-      emit("isActionSuccess", false);
       toast.add({
         severity: "warn",
         summary: "Note",
         detail: error.response.data.message,
         life: 3000,
       });
+      emit("isActionSuccess", false);
     });
 }
 </script>

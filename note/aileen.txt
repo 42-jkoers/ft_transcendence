@@ -192,7 +192,8 @@ Tutorial:
 
 (Mon) 2022-06-20
 	- test friends process
-	- debug addFriends
+	- debug addFriends (rebuild addFriend and removeFriend method in UserService)
+	- move ConfirmDialog to WebsiteTitle component to prevent dialog double display 
 
 **************************
 **		Next To To				**
