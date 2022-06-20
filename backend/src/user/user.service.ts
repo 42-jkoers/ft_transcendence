@@ -137,16 +137,6 @@ export class UserService {
 		}
 		user.friends.push(friendToAdd);
 		await this.userRepository.save(user);
-
-		friendToAdd.friends = await this.getFriends(friendToAdd.id);
-		if (!friendToAdd.friends) {
-			friendToAdd.friends = [];
-		}
-		friendToAdd.friends.push(user);
-		await this.userRepository.save(friendToAdd);
-
-		// friendToAdd.friends = await this.getFriends(friendToAdd.id);
-		// await this.userRepository.save(friendToAdd);
 	}
 
 	async removeFriend(user: UserI, friendToRemove: UserI) {
@@ -156,8 +146,6 @@ export class UserService {
 				return friend.id !== friendToRemove.id;
 			});
 			await this.userRepository.save(user);
-			friendToRemove.friends = await this.getFriends(friendToRemove.id);
-			await this.userRepository.save(friendToRemove);
 		}
 	}
 

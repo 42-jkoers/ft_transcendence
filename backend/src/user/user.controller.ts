@@ -98,6 +98,7 @@ export class UserController {
 		if (dto.action === EditFriendActionType.REMOVE_FRIEND) {
 			if (isFriend) {
 				await this.userService.removeFriend(user, friend);
+				await this.userService.removeFriend(friend, user);
 			} else {
 				throw new HttpException(
 					'User and requested user are not friends.',
@@ -145,6 +146,7 @@ export class UserController {
 						);
 						if (dto.action === EditFriendActionType.ADD_FRIEND) {
 							await this.userService.addFriend(user, friend);
+							await this.userService.addFriend(friend, user);
 						}
 					} else {
 						throw new HttpException(
