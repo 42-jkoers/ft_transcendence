@@ -91,6 +91,44 @@ const computedID = computed(() => {
 
 const displayUserProfileDialog = ref(false);
 
+onMounted(() => {
+  socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
+
+  socket.on("getMessagesForRoom", (response) => {
+    messages.value = response;
+  }); //recevies the existing messages from backend when room is first loaded
+
+  socket.on("messageAdded", (message: MessageI) => {
+    if (route.params.roomName === message.room.name)
+      messages.value.unshift(message);
+    //console.log(messages.value);
+  }); //place the new message on top of the messages arrayy
+});
+
+onUnmounted(() => {
+  socket.off("messageAdded"); //to prevent multiple event binding in every rerender
+});
+
+//binding a click event listener to a method named 'sendMessage'
+function sendMessage() {
+  if (input.value)
+    socket.emit("addMessage", {
+      text: input.value,
+      room: { name: route.params.roomName },
+    });
+  input.value = "";
+}
+
+function onChipLeftClick(user: UserProfileI) {
+  clickedUser.value = user;
+  displayUserProfileDialog.value = true;
+}
+
+function onChipRightClick(user: UserProfileI) {
+  clickedUser.value = user;
+  menu.value.show(event);
+} //shows ContextMenu when UserChip is right clicked and reassigns the ID value
+
 const menu = ref();
 const items = ref([
   {
@@ -124,45 +162,6 @@ const items = ref([
     command: () => socket.emit("muteUserInRoom"), //TODO pass user.id & room.name & add backend logic
   },
 ]);
-
-onMounted(() => {
-  socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
-
-  socket.on("getMessagesForRoom", (response) => {
-    messages.value = response;
-  }); //recevies the existing messages from backend when room is first loaded
-
-  socket.on("messageAdded", (message: MessageI) => {
-    if (route.params.roomName === message.room.name)
-      messages.value.unshift(message);
-    //console.log(messages.value);
-  }); //place the new message on top of the messages arrayy
-});
-
-onUnmounted(() => {
-  socket.off("messageAdded"); //to prevent multiple event binding in every rerender
-});
-
-//binding a click event listener to a method named 'sendMessage'
-function sendMessage() {
-  if (input.value)
-    socket.emit("addMessage", {
-      text: input.value,
-      room: { name: route.params.roomName },
-    });
-  input.value = "";
-}
-
-function onChipLeftClick(user: UserProfileI) {
-  clickedUser.value = user;
-  displayUserProfileDialog.value = true;
-  //console.log(clickedUser.value);
-}
-
-function onChipRightClick(user: UserProfileI) {
-  clickedUser.value = user;
-  menu.value.show(event);
-} //shows ContextMenu when UserChip is right clicked and reassigns the ID value
 
 const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
