@@ -63,8 +63,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			user,
 		}); // save connection to DB
 		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set //FIXME check
-		// client.join('general'); //everyone joins the general on default
-		// client.join('general protected'); //everyone joins the general protected
 	}
 
 	handleDisconnect(client: Socket) {
