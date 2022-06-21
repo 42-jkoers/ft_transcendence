@@ -47,6 +47,7 @@ export class ChatGateway
 		);
 		if (user) {
 			console.log(user);
+            // client.join(user.id.toString()); TODO implement this for private messaging
 		} else {
 			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
@@ -57,8 +58,8 @@ export class ChatGateway
 			user,
 		}); // save connection to DB
 		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set //FIXME check
-		client.join('general'); //everyone joins the general on default
-		client.join('general protected'); //everyone joins the general protected
+		// client.join('general'); //everyone joins the general on default
+		// client.join('general protected'); //everyone joins the general protected
 	}
 
 	afterInit() {
@@ -87,6 +88,7 @@ export class ChatGateway
 			selectedRoom,
 		);
 		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
+        //TODO this.server.to(selectedRoom.name).to(user.id.toString()).emit('messageAdded', createdMessage);FOR DM?
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
