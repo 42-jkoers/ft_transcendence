@@ -6,47 +6,57 @@
           <img :src="user?.avatar" style="width: 90%; margin-top: 5%" />
         </template>
         <template #title>
-          <h3>{{ user?.username }}</h3>
-          <div v-if="!isSelf">
-            <div v-if="isFriend">
-              <EditFriendButton
-                :friendId="user?.id"
-                buttonLabel="Unfriend"
-                buttonIcon="pi pi-user-minus"
-                :action="EditFriendActionType.REMOVE_FRIEND"
-                @isActionSuccess="catchEvent($event)"
+          <h3>
+            {{ user?.username }}
+          </h3>
+        </template>
+        <template #content>
+          <div v-if="isSafe">
+            <UserStatus :socketCount="user?.socketCount" />
+            <h4>(to be add) game record</h4>
+          </div>
+        </template>
+        <template #footer>
+          <div>
+            <div v-if="isSelf">
+              <Button
+                label="Edit Profile"
+                class="p-button-rounded p-button-outlined"
+                icon="pi pi-user-edit"
+                @click="toSetting"
               />
             </div>
             <div v-else>
-              <EditFriendButton
-                :friendId="user?.id"
-                buttonLabel="Add friend"
-                buttonIcon="pi pi-user-plus"
-                :action="EditFriendActionType.SEND_REQUEST"
-                @isActionSuccess="catchEvent($event)"
-              />
+              <div>
+                <Button
+                  label="Message"
+                  class="p-button-rounded p-button-outlined"
+                  icon="pi pi-envelope"
+                  @click="toPrivateMessage"
+                />
+              </div>
+              <br />
             </div>
-          </div>
-        </template>
-        <template #content>
-          <p>To add content</p>
-        </template>
-        <template #footer>
-          <div v-if="isSelf">
-            <Button
-              label="Edit Profile"
-              class="p-button-rounded p-button-outlined"
-              icon="pi pi-user-edit"
-              @click="toSetting"
-            />
-          </div>
-          <div v-else>
-            <Button
-              label="Message"
-              class="p-button-rounded p-button-outlined"
-              icon="pi pi-envelope"
-              @click="toPrivateMessage"
-            />
+            <div>
+              <div v-if="isFriend">
+                <EditFriendButton
+                  :friendId="user?.id"
+                  buttonLabel="Unfriend"
+                  buttonIcon="pi pi-user-minus"
+                  :action="EditFriendActionType.REMOVE_FRIEND"
+                  @isActionSuccess="catchEvent($event)"
+                />
+              </div>
+              <div v-if="!isSafe">
+                <EditFriendButton
+                  :friendId="user?.id"
+                  buttonLabel="Add friend"
+                  buttonIcon="pi pi-user-plus"
+                  :action="EditFriendActionType.SEND_REQUEST"
+                  @isActionSuccess="catchEvent($event)"
+                />
+              </div>
+            </div>
           </div>
         </template>
       </Card>
@@ -66,32 +76,24 @@ import EditFriendButton from "./EditFriendButton.vue";
 import { EditFriendActionType } from "@/types/editFriendAction";
 import { useToast } from "primevue/usetoast";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
-
+import UserStatus from "./UserStatus.vue";
 const toast = useToast();
 const route = useRoute();
 const id = route.params.id;
 const user = ref<UserProfileI>();
 const isSelf = ref<boolean>();
 const isFriend = ref<boolean>();
+const isSafe = ref<boolean>();
 const isUserExist = ref<boolean>(false);
 
 onMounted(async () => {
   try {
-    await findUser();
-    if (isUserExist.value) {
-      isSelf.value = id === String(storeUser.state.user.id);
-      if (!isSelf.value) {
-        await axios(
-          "http://localhost:3000/friend/is-friend?id1=" +
-            storeUser.state.user.id +
-            "&id2=" +
-            id,
-          { withCredentials: true }
-        ).then((response) => {
-          isFriend.value = response.data;
-        });
-      }
-    }
+    // TODO: to evaluate timeout
+    setTimeout(async () => {
+      await findUser();
+      await checkRelationship();
+      evaluateIsSafe();
+    }, 500); // wait till socket connection finished (to get correct socketCount)
   } catch (error) {
     toast.add({
       severity: "error",
@@ -111,6 +113,7 @@ async function findUser() {
       if (response.data) {
         user.value = response.data;
         isUserExist.value = true;
+        isSelf.value = id === String(storeUser.state.user.id);
       } else {
         toast.add({
           severity: "error",
@@ -122,8 +125,27 @@ async function findUser() {
     });
 }
 
+async function checkRelationship() {
+  if (!isSelf.value) {
+    await axios(
+      "http://localhost:3000/friend/is-friend?id1=" +
+        storeUser.state.user.id +
+        "&id2=" +
+        id,
+      { withCredentials: true }
+    ).then((response) => {
+      isFriend.value = response.data;
+    });
+  }
+}
+
+function evaluateIsSafe() {
+  isSafe.value = isSelf.value || isFriend.value;
+}
+
 function changeFriendStatus() {
   isFriend.value = false;
+  evaluateIsSafe();
 }
 
 const router = useRouter();

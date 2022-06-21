@@ -195,14 +195,20 @@ Tutorial:
 	- debug addFriends (rebuild addFriend and removeFriend method in UserService)
 	- move ConfirmDialog to WebsiteTitle component to prevent dialog double display 
 
+******************************************
+**		Branch - 	user_online_status			**
+******************************************
 (Tue) 2022-06-21
-	[Branch - user_friend_file_clean]
-	- split FriendService and FriendController from User
+	- [Branch - user_friend_file_clean] split FriendService and FriendController from User
+	- add socketCount to UserEntity
+	- increase/decrease socketCount upon socket connection/disconnection
+	- reset all socketCount upon ModuleInit
+	- add frontend tag for online status
+	- add UserProfile link to FriendView
 
 **************************
 **		Next To To				**
 **************************
-- Test friend process
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 

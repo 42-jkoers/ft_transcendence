@@ -39,10 +39,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleConnection(client: Socket) {
 		this.logger.log('Client connected');
-		const user: UserI = await this.authService.getUserFromCookie(
+		let user: UserI = await this.authService.getUserFromCookie(
 			client.handshake.headers.cookie,
 		);
 		if (user) {
+			user = await this.userService.increaseSocketCount(user.id);
 			console.log(user);
 			const roomEntities: RoomEntity[] =
 				await this.roomService.getRoomsForUser(user.id); //TODO get only room names from room service
@@ -65,8 +66,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set //FIXME check
 	}
 
-	handleDisconnect(client: Socket) {
+	async handleDisconnect(client: Socket) {
 		this.logger.log('Client disconnected');
+		if (client.data.user) {
+			await this.userService.decreaseSocketCount(client.data.user.id);
+		}
 		this.connectedUserService.deleteBySocketId(client.id);
 		client.disconnect(); //manually disconnects the socket
 	}
