@@ -204,6 +204,7 @@ Tutorial:
 	- increase/decrease socketCount upon socket connection/disconnection
 	- reset all socketCount upon ModuleInit
 	- add frontend tag for online status
+	- add UserProfile link to FriendView
 
 **************************
 **		Next To To				**
