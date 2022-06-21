@@ -90,7 +90,10 @@ import axios from "axios";
 import UploadAvatar from "@/components/UploadAvatar.vue";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
+import { ErrorType } from "@/types/errorManagement";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const confirm = useConfirm();
 const toast = useToast();
 
@@ -185,7 +188,30 @@ async function proceedConfirmation() {
 }
 
 async function deregister() {
-  console.log("deregister");
+  const postBody = {
+    id: storeUser.state.user.id,
+  };
+  await axios
+    .post("http://localhost:3000/user/deregister", postBody, {
+      withCredentials: true,
+    })
+    .then(() => {
+      toast.add({
+        severity: "info",
+        summary: "Info",
+        detail: "User is deregistered.",
+        life: 3000,
+      });
+      router.push({ name: "Home" });
+    })
+    .catch(() => {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: ErrorType.GENERAL,
+        life: 3000,
+      });
+    });
 }
 </script>
 <style scoped>

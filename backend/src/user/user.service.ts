@@ -122,4 +122,8 @@ export class UserService {
 		}
 		return await this.getUserByID(userId);
 	}
+
+	async deleteUser(userId: number) {
+		console.log('delete user');
+	}
 }
