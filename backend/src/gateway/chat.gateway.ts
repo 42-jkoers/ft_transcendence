@@ -4,7 +4,6 @@ import {
 	MessageBody,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
-	OnGatewayInit,
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
@@ -27,9 +26,7 @@ import { createRoomDto } from '../chat/room/dto';
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
 }) //allows us to make use of any WebSockets library (in our case socket.io)
-export class ChatGateway
-	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private readonly authService: AuthService,
 		private readonly roomService: RoomService,
@@ -48,6 +45,15 @@ export class ChatGateway
 		if (user) {
 			user = await this.userService.increaseSocketCount(user.id);
 			console.log(user);
+			const roomEntities: RoomEntity[] =
+				await this.roomService.getRoomsForUser(user.id); //TODO get only room names from room service
+			roomEntities.forEach((room) => {
+				client.join(room.name);
+				console.log(
+					`join on connection: ${user.username} w/${client.id} has joined room ${room.name}`,
+				);
+			}); //each new socket connection joins the room that the user is already a part of
+			// client.join(user.id.toString()); TODO implement this for private messaging
 		} else {
 			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
@@ -58,14 +64,6 @@ export class ChatGateway
 			user,
 		}); // save connection to DB
 		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set //FIXME check
-		client.join('general'); //everyone joins the general on default
-		client.join('general protected'); //everyone joins the general protected
-	}
-
-	afterInit() {
-		this.logger.log('Gateway: init');
-		this.server.emit('Hey there');
-		//TODO maybe delete all connected users and joined rooms with onInit?
 	}
 
 	async handleDisconnect(client: Socket) {
@@ -91,6 +89,7 @@ export class ChatGateway
 			selectedRoom,
 		);
 		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
+		//TODO this.server.to(selectedRoom.name).to(user.id.toString()).emit('messageAdded', createdMessage);FOR DM?
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
@@ -111,6 +110,9 @@ export class ChatGateway
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
 		client.join(response.data);
+		console.log(
+			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
+		);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
@@ -169,6 +171,9 @@ export class ChatGateway
 		);
 		await this.roomService.addVisitorToRoom(client.data.user.id, room);
 		client.join(room.name);
+		console.log(
+			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
+		);
 		await this.getPublicRoomsList(client);
 	}
 
