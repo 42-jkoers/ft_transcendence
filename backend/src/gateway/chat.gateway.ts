@@ -45,7 +45,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (user) {
 			console.log(user);
 			const roomEntities: RoomEntity[] =
-				await this.roomService.getRoomsForUser(user.id);
+				await this.roomService.getRoomsForUser(user.id); //TODO get only room names from room service
 			roomEntities.forEach((room) => {
 				client.join(room.name);
 				console.log(
