@@ -1,11 +1,5 @@
 <template>
   <div>
-    <FriendActionMessage
-      :action="currentAction"
-      :notify="notifyFriendActionMessage"
-    />
-  </div>
-  <div>
     <DataTable :value="friendList" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
@@ -44,9 +38,7 @@
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-user-minus"
               :action="EditFriendActionType.REMOVE_FRIEND"
-              @isActionSuccess="
-                catchEvent($event, EditFriendActionType.REMOVE_FRIEND)
-              "
+              @isActionSuccess="catchEvent($event)"
             />
           </div>
         </template>
@@ -55,24 +47,21 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, defineEmits } from "vue";
+import { onMounted, ref } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Chip from "primevue/chip";
 import axios from "axios";
 import storeUser from "@/store";
-import EditFriendActionType from "@/types/EditFriendActionType";
+import { EditFriendActionType } from "@/types/editFriendAction";
 import EditFriendButton from "./EditFriendButton.vue";
-import FriendActionMessage from "./FriendActionMessage.vue";
+import { useToast } from "primevue/usetoast";
+import { ErrorType, errorMessage } from "@/types/errorManagement";
+
+const toast = useToast();
 
 const friendList = ref([]);
-const currentAction = ref<EditFriendActionType>();
-const notifyFriendActionMessage = ref<boolean>();
-
-const emit = defineEmits<{
-  (event: "error"): boolean;
-}>();
 
 onMounted(async () => {
   await refreshFriendList();
@@ -81,7 +70,7 @@ onMounted(async () => {
 async function refreshFriendList() {
   await axios
     .get(
-      "http://localhost:3000/user/friend-list?id=" + storeUser.state.user.id,
+      "http://localhost:3000/friend/friend-list?id=" + storeUser.state.user.id,
       {
         withCredentials: true,
       }
@@ -90,22 +79,18 @@ async function refreshFriendList() {
       friendList.value = response.data;
     })
     .catch(() => {
-      emit("error", true);
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errorMessage(ErrorType.GENERAL),
+        life: 3000,
+      });
     });
 }
 
-function showFriendActionMessage() {
-  notifyFriendActionMessage.value = !notifyFriendActionMessage.value;
-}
-
-function catchEvent(event, action: EditFriendActionType) {
+function catchEvent(event) {
   if (event) {
-    currentAction.value = action;
-    showFriendActionMessage();
     refreshFriendList();
-  } else {
-    currentAction.value = EditFriendActionType.ERROR;
-    showFriendActionMessage();
   }
 }
 </script>

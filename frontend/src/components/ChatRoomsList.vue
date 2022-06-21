@@ -1,6 +1,5 @@
 <template>
   <div id="chatrooms-list">
-    <ConfirmDialog></ConfirmDialog>
     <ChatRoomPasswordDialogue
       :isDialogVisible="displayPasswordDialog"
       :roomName="selectedRoomName"
@@ -77,7 +76,6 @@ import ChatRoomEditPrivacyDialogue from "./ChatRoomEditPrivacyDialogue.vue";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import ContextMenu from "primevue/contextmenu";
-import ConfirmDialog from "primevue/confirmdialog";
 import { useConfirm } from "primevue/useconfirm";
 import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";

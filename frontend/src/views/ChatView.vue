@@ -25,28 +25,13 @@
     </div>
   </div>
 </template>
-//TODO align and add flex to ChatRoomsList and ChatBox
 
 <script setup lang="ts">
-import { onMounted, inject } from "vue";
 import { useRouter } from "vue-router";
-import { Socket } from "socket.io-client";
 
 import ChatRoomsList from "../components/ChatRoomsList.vue";
 import CreateRoom from "./CreateRoomView.vue";
 import PrimeVueButton from "primevue/button";
-
-const socket: Socket = inject("socketioInstance");
-
-onMounted(() => {
-  socket.on("rooms", (args: string) => {
-    args;
-  }); //to get all rooms of the user?
-
-  socket.on("messages", (args: string) => {
-    args;
-  }); //to get all messages of the user for this room?
-});
 
 const router = useRouter();
 function openCreateRoomCard() {

@@ -1,4 +1,9 @@
-import EditFriendActionType from "./EditFriendActionType";
+export enum EditFriendActionType {
+  ADD_FRIEND,
+  REMOVE_FRIEND,
+  SEND_REQUEST,
+  REJECT_REQUEST,
+}
 
 export function friendActionMessage(
   action: EditFriendActionType | undefined
@@ -12,8 +17,6 @@ export function friendActionMessage(
       return "Friend request sent successfully!";
     case EditFriendActionType.REJECT_REQUEST:
       return "Reject friend request!";
-    case EditFriendActionType.ERROR:
-      return "Something went wrong, please retry!";
     default:
       return "";
   }
