@@ -59,14 +59,23 @@
       </div>
     </div>
   </div>
-  <!-- Submit Button -->
-  <div class="field">
-    <div class="col-offset-5" align="left">
-      <Button @click="updateData" label="Save" />
-      <Message v-if="isUpdateSuccess" severity="success" :closable="false">
-        Your input has been saved successfully!
-      </Message>
+  <!-- Submit/Deregister Button -->
+  <div class="grid align-items-center">
+    <div class="col-offset-5">
+      <Button @click="updateData" label="Save" icon="pi pi-save" />
     </div>
+    <div class="col-3">
+      <Button
+        class="p-button-danger"
+        label="Deregister"
+        icon="pi pi-info-circle"
+        iconPos="left"
+        @click="proceedConfirmation"
+      />
+    </div>
+    <Message v-if="isUpdateSuccess" severity="success" :closable="false">
+      Your input has been saved successfully!
+    </Message>
   </div>
 </template>
 <script setup lang="ts">
@@ -79,6 +88,11 @@ import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
 import UploadAvatar from "@/components/UploadAvatar.vue";
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+
+const confirm = useConfirm();
+const toast = useToast();
 
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
@@ -157,6 +171,21 @@ async function updateData() {
       emit("updated", true);
     }
   }
+}
+
+async function proceedConfirmation() {
+  confirm.require({
+    message: "Are you sure you want to deregister?",
+    header: "Confirmation",
+    icon: "pi pi-exclamation-triangle",
+    accept: async () => {
+      await deregister();
+    },
+  });
+}
+
+async function deregister() {
+  console.log("deregister");
 }
 </script>
 <style scoped>
