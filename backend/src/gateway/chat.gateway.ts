@@ -42,11 +42,12 @@ export class ChatGateway
 
 	async handleConnection(client: Socket) {
 		this.logger.log('Client connected');
-		const user: UserI = await this.authService.getUserFromCookie(
+		let user: UserI = await this.authService.getUserFromCookie(
 			client.handshake.headers.cookie,
 		);
 		if (user) {
 			console.log(user);
+			user = await this.userService.increaseSocketCount(user.id);
 		} else {
 			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
@@ -67,8 +68,11 @@ export class ChatGateway
 		//TODO maybe delete all connected users and joined rooms with onInit?
 	}
 
-	handleDisconnect(client: Socket) {
+	async handleDisconnect(client: Socket) {
 		this.logger.log('Client disconnected');
+		if (client.data.user) {
+			await this.userService.decreaseSocketCount(client.data.user.id);
+		}
 		this.connectedUserService.deleteBySocketId(client.id);
 		client.disconnect(); //manually disconnects the socket
 	}

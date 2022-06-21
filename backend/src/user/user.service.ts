@@ -66,10 +66,9 @@ export class UserService {
 			intraID: '00000',
 			username: 'admin',
 			avatar: '/default_avatar.png',
+			socketCount: 0,
 		};
 		const defaultUser = this.userRepository.create(defaultUserData);
-		defaultUser.requestedFriends = [];
-		defaultUser.friends = [];
 		await this.userRepository.save(defaultUser);
 		return defaultUser;
 	}
@@ -87,5 +86,32 @@ export class UserService {
 			return undefined;
 		}
 		return await this.findByID(userData.id);
+	}
+
+	async getSocketCount(userId: number): Promise<number> {
+		const user = await this.findByID(userId);
+		return user.socketCount;
+	}
+
+	async increaseSocketCount(userId: number): Promise<UserI> {
+		const currentSocketCount = await this.getSocketCount(userId);
+		console.log('++ count before: ', currentSocketCount);
+		await this.userRepository.update(userId, {
+			socketCount: currentSocketCount + 1,
+		});
+		console.log('++ count after: ', await this.getSocketCount(userId));
+		return await this.getUserByID(userId);
+	}
+
+	async decreaseSocketCount(userId: number): Promise<UserI> {
+		const currentSocketCount = await this.getSocketCount(userId);
+		console.log('-- count before: ', currentSocketCount);
+		if (currentSocketCount > 0) {
+			await this.userRepository.update(userId, {
+				socketCount: currentSocketCount - 1,
+			});
+		}
+		console.log('-- count after: ', await this.getSocketCount(userId));
+		return await this.getUserByID(userId);
 	}
 }
