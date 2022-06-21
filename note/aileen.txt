@@ -210,7 +210,8 @@ Tutorial:
 **			Branch - 	user_deregister				**
 ******************************************
 (Tue) 2022-06-21
-	- 
+	- setup deregister process from both backend/frontend
+	- replace customized message with Toast in UpdateUserInfo component 
 
 **************************
 **		Next To To				**

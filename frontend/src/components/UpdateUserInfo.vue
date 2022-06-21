@@ -21,11 +21,6 @@
         potential space in between.
       </small>
     </div>
-    <div class="col-offset-5" align="left">
-      <Message v-if="isUserNameInvalid" severity="error" :closable="false">
-        {{ invalidUserNameMessage }}
-      </Message>
-    </div>
   </div>
   <!-- Avatar -->
   <div class="field">
@@ -73,9 +68,6 @@
         @click="proceedConfirmation"
       />
     </div>
-    <Message v-if="isUpdateSuccess" severity="success" :closable="false">
-      Your input has been saved successfully!
-    </Message>
   </div>
 </template>
 <script setup lang="ts">
@@ -90,7 +82,7 @@ import axios from "axios";
 import UploadAvatar from "@/components/UploadAvatar.vue";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
-import { ErrorType } from "@/types/errorManagement";
+import { errorMessage, ErrorType } from "@/types/errorManagement";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -100,7 +92,6 @@ const toast = useToast();
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
 const twoFactor = ref<boolean>(storeUser.state.user.twoFactor);
-const isUpdateSuccess = ref<boolean>(false);
 const isUserNameInvalid = ref<boolean>(false);
 const invalidUserNameMessage = ref<string>("");
 
@@ -137,14 +128,21 @@ function changeAvatarSource(event) {
   }
 }
 
+function warnUserNameInvalid(message: string) {
+  toast.add({
+    severity: "error",
+    summary: "Error",
+    detail: message,
+    life: 3000,
+  });
+  isUserNameInvalid.value = true;
+  setTimeout(() => (isUserNameInvalid.value = false), 3000);
+}
+
 async function updateData() {
-  let proceed = true;
   if (isUserNameValid(username.value) === false) {
-    proceed = false;
-    isUserNameInvalid.value = true;
-    setTimeout(() => (isUserNameInvalid.value = false), 2000);
-  }
-  if (proceed) {
+    warnUserNameInvalid(invalidUserNameMessage.value);
+  } else {
     // post username to update user profile
     const postBody = {
       id: storeUser.state.user.id,
@@ -152,27 +150,37 @@ async function updateData() {
       avatar: avatar.value,
       // TODO: add 2F
     };
-    const response_post = await axios.post(
-      "http://localhost:3000/user/profile/update-userprofile",
-      postBody,
-      {
+    await axios
+      .post("http://localhost:3000/user/profile/update-userprofile", postBody, {
         withCredentials: true,
-      }
-    );
-    // if username already exists, return undefined from response
-    if (!response_post.data) {
-      isUserNameInvalid.value = true;
-      invalidUserNameMessage.value = "User name already exits.";
-    } else {
-      isUpdateSuccess.value = true;
-      setTimeout(() => (isUpdateSuccess.value = false), 2000);
-      // update storeUser
-      storeUser.state.user.username = username.value;
-      storeUser.state.user.avatar = avatar.value;
-      storeUser.state.user.twoFactor = twoFactor.value;
-      // send signal to parent component
-      emit("updated", true);
-    }
+      })
+      .then((response_post) => {
+        // if username already exists, return undefined from response
+        if (!response_post.data) {
+          warnUserNameInvalid("User name already exits.");
+        } else {
+          toast.add({
+            severity: "success",
+            summary: "Success",
+            detail: "Input saved!",
+            life: 3000,
+          });
+          // update storeUser
+          storeUser.state.user.username = username.value;
+          storeUser.state.user.avatar = avatar.value;
+          storeUser.state.user.twoFactor = twoFactor.value;
+          // send signal to parent component
+          emit("updated", true);
+        }
+      })
+      .catch(() => {
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: errorMessage(ErrorType.GENERAL),
+          life: 3000,
+        });
+      });
   }
 }
 
@@ -209,7 +217,7 @@ async function deregister() {
       toast.add({
         severity: "error",
         summary: "Error",
-        detail: ErrorType.GENERAL,
+        detail: errorMessage(ErrorType.GENERAL),
         life: 3000,
       });
     });

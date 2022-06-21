@@ -28,12 +28,7 @@ export class UserController {
 
 	@Post('profile/update-userprofile')
 	async updateUserProfile(@Body() userDto: UpdateUserProfileDto) {
-		if (!(await this.userService.updateUserProfile(userDto))) {
-			return undefined;
-		} else {
-			const user: UserI = await this.userService.findByID(userDto.id);
-			return user;
-		}
+		return await this.userService.updateUserProfile(userDto);
 	}
 
 	@Post('avatar')
