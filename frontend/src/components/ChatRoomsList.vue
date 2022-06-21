@@ -138,6 +138,7 @@ const menuItems = ref([
     label: "Leave chat",
     // icon: "pi pi-exclamation-circle",
     visible: () => !isInRoom(selectedRoom.value.userRole),
+    disabled: () => selectedRoom.value.name === "general",
     command: () => confirmLeave(selectedRoom),
   },
   {
@@ -149,7 +150,7 @@ const menuItems = ref([
 ]);
 
 const onRowContextMenu = (event) => {
-  if (selectedRoom.value.name != "general") cm.value.show(event.originalEvent);
+  cm.value.show(event.originalEvent);
 };
 const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
