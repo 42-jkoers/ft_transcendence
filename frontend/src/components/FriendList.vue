@@ -70,7 +70,7 @@ onMounted(async () => {
 async function refreshFriendList() {
   await axios
     .get(
-      "http://localhost:3000/user/friend-list?id=" + storeUser.state.user.id,
+      "http://localhost:3000/friend/friend-list?id=" + storeUser.state.user.id,
       {
         withCredentials: true,
       }

@@ -48,7 +48,7 @@ async function editFriend(
     action: action,
   };
   await axios
-    .post("http://localhost:3000/user/edit-friend", postBody, {
+    .post("http://localhost:3000/friend/edit-friend", postBody, {
       withCredentials: true,
     })
     .then(() => {

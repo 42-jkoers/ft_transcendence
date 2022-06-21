@@ -1,4 +1,4 @@
-import { EditFriendActionType } from '../enum/edit.friend.enum';
+import { EditFriendActionType } from '../edit.friend.enum';
 
 export class FriendDto {
 	userId: number;
