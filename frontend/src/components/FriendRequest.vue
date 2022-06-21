@@ -81,7 +81,7 @@ async function test() {
     action: EditFriendActionType.SEND_REQUEST,
   };
   await axios
-    .post("http://localhost:3000/user/edit-friend", postBody, {
+    .post("http://localhost:3000/friend/edit-friend", postBody, {
       withCredentials: true,
     })
     .then(async () => {
@@ -104,7 +104,8 @@ async function test() {
 async function refreshFriendRequests() {
   await axios
     .get(
-      "http://localhost:3000/user/friend-request?id=" + storeUser.state.user.id,
+      "http://localhost:3000/friend/friend-request?id=" +
+        storeUser.state.user.id,
       {
         withCredentials: true,
       }

@@ -195,6 +195,10 @@ Tutorial:
 	- debug addFriends (rebuild addFriend and removeFriend method in UserService)
 	- move ConfirmDialog to WebsiteTitle component to prevent dialog double display 
 
+(Tue) 2022-06-21
+	[Branch - user_friend_file_clean]
+	- split FriendService and FriendController from User
+
 **************************
 **		Next To To				**
 **************************

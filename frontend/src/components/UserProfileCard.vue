@@ -82,7 +82,7 @@ onMounted(async () => {
       isSelf.value = id === String(storeUser.state.user.id);
       if (!isSelf.value) {
         await axios(
-          "http://localhost:3000/user/is-friend?id1=" +
+          "http://localhost:3000/friend/is-friend?id1=" +
             storeUser.state.user.id +
             "&id2=" +
             id,
