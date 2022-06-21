@@ -69,6 +69,7 @@ import { ref, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Socket } from "socket.io-client";
 import RoomVisibility from "@/types/RoomVisibility";
+import Room from "@/types/Room";
 import ChatRoomPasswordDialogue from "./ChatRoomPasswordDialogue.vue";
 import ChatRoomEditPrivacyDialogue from "./ChatRoomEditPrivacyDialogue.vue";
 
@@ -77,6 +78,7 @@ import Column from "primevue/column";
 import ContextMenu from "primevue/contextmenu";
 import { useConfirm } from "primevue/useconfirm";
 import { UserRole } from "@/types/UserRole.Enum";
+import { useStore } from "vuex";
 
 const socket: Socket = inject("socketioInstance");
 
@@ -87,10 +89,15 @@ setTimeout(() => {
   socket.emit("getPublicRoomsList");
 }, 90); // FIXME: find a better solution?
 
+const store = useStore();
+const updateRoomsList = (roomsList: Room[]) =>
+  store.commit("updateRoomsList", roomsList);
+
 socket.on("postPublicRoomsList", (response) => {
   // socket.on("getUserRoomsList", (response) => {
-  console.log("rooms from server", response);
+  // console.log("rooms from server", response);
   rooms.value = response;
+  updateRoomsList(response);
 });
 
 const router = useRouter();
@@ -129,6 +136,7 @@ const menuItems = ref([
     label: "Leave chat",
     // icon: "pi pi-exclamation-circle",
     visible: () => !isInRoom(selectedRoom.value.userRole),
+    disabled: () => selectedRoom.value.name === "general",
     command: () => confirmLeave(selectedRoom),
   },
   {
@@ -140,7 +148,7 @@ const menuItems = ref([
 ]);
 
 const onRowContextMenu = (event) => {
-  if (selectedRoom.value.name != "general") cm.value.show(event.originalEvent);
+  cm.value.show(event.originalEvent);
 };
 const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
@@ -155,12 +163,16 @@ const confirmLeave = (room) => {
     header: "Leave Confirmation",
     icon: "pi pi-info-circle",
     accept: () => {
-      if (route.params.roomName === room.value.name) {
+      socket.emit("removeUserFromRoom", room.value.name);
+      if (
+        route.params.roomName === room.value.name &&
+        (room.value.visibility === RoomVisibility.PRIVATE ||
+          room.value.protected === true)
+      ) {
         router.push({
           name: "Chat",
         });
       }
-      socket.emit("removeUserFromRoom", room.value.name);
     },
   });
 };

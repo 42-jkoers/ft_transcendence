@@ -41,6 +41,7 @@
     </div>
     <div id="input-field" class="card col-12">
       <div
+        v-if="currentRoom && currentRoom.userRole !== undefined"
         class="flex justify-content-center align-items-strech flex-wrap card-container"
       >
         <InputText
@@ -58,6 +59,13 @@
           class="p-button-primary w-1"
         />
       </div>
+      <PrimeVueButton
+        v-else
+        @click="addUserToRoom"
+        label="Join chat"
+        icon="pi pi-plus"
+        class="p-button-outlined p-button-info mt-6"
+      />
     </div>
   </div>
 </template>
@@ -74,6 +82,7 @@ import { useRoute } from "vue-router";
 import moment from "moment";
 import Chip from "primevue/chip";
 import ContextMenu from "primevue/contextmenu";
+import { useStore } from "vuex";
 import UserProfileI from "../types/UserProfile.interface";
 import storeUser from "@/store";
 import ChatBoxUserProfileDialogue from "./ChatBoxUserProfileDialogue.vue";
@@ -91,6 +100,11 @@ const computedID = computed(() => {
 
 const displayUserProfileDialog = ref(false);
 
+const store = useStore();
+const currentRoom = computed(() =>
+  store.state.roomsInfo.find((room) => room.name === route.params.roomName)
+);
+
 onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
 
@@ -101,7 +115,6 @@ onMounted(() => {
   socket.on("messageAdded", (message: MessageI) => {
     if (route.params.roomName === message.room.name)
       messages.value.unshift(message);
-    //console.log(messages.value);
   }); //place the new message on top of the messages arrayy
 });
 
@@ -118,6 +131,10 @@ function sendMessage() {
     });
   input.value = "";
 }
+
+const addUserToRoom = () => {
+  socket.emit("addUserToRoom", route.params.roomName);
+};
 
 function onChipLeftClick(user: UserProfileI) {
   clickedUser.value = user;

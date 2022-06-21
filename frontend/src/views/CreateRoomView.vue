@@ -158,7 +158,10 @@ function saveNewRoom() {
     password: passwordValue.value,
   };
   // setting an empty password value to null:
-  if (newRoom.password === "") {
+  if (
+    newRoom.password === "" ||
+    newRoom.visibility === RoomVisibilityType.PRIVATE
+  ) {
     newRoom.password = null;
   }
   console.log("newRoom data sent from the client: ", newRoom);
