@@ -203,12 +203,11 @@ Tutorial:
 	- add socketCount to UserEntity
 	- increase/decrease socketCount upon socket connection/disconnection
 	- reset all socketCount upon ModuleInit
-	
+	- add frontend tag for online status
 
 **************************
 **		Next To To				**
 **************************
-- Test friend process
 - key change event - force render
 	https://michaelnthiessen.com/force-re-render/
 

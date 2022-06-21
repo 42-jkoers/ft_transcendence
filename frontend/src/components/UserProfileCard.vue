@@ -6,47 +6,55 @@
           <img :src="user?.avatar" style="width: 90%; margin-top: 5%" />
         </template>
         <template #title>
-          <h3>{{ user?.username }}</h3>
-          <div v-if="!isSelf">
-            <div v-if="isFriend">
-              <EditFriendButton
-                :friendId="user?.id"
-                buttonLabel="Unfriend"
-                buttonIcon="pi pi-user-minus"
-                :action="EditFriendActionType.REMOVE_FRIEND"
-                @isActionSuccess="catchEvent($event)"
-              />
-            </div>
-            <div v-else>
-              <EditFriendButton
-                :friendId="user?.id"
-                buttonLabel="Add friend"
-                buttonIcon="pi pi-user-plus"
-                :action="EditFriendActionType.SEND_REQUEST"
-                @isActionSuccess="catchEvent($event)"
-              />
-            </div>
-          </div>
+          <h3>
+            {{ user?.username }}
+          </h3>
+          <UserStatus :socketCount="user?.socketCount" />
         </template>
         <template #content>
           <p>To add content</p>
         </template>
         <template #footer>
-          <div v-if="isSelf">
-            <Button
-              label="Edit Profile"
-              class="p-button-rounded p-button-outlined"
-              icon="pi pi-user-edit"
-              @click="toSetting"
-            />
-          </div>
-          <div v-else>
-            <Button
-              label="Message"
-              class="p-button-rounded p-button-outlined"
-              icon="pi pi-envelope"
-              @click="toPrivateMessage"
-            />
+          <div>
+            <div v-if="isSelf">
+              <Button
+                label="Edit Profile"
+                class="p-button-rounded p-button-outlined"
+                icon="pi pi-user-edit"
+                @click="toSetting"
+              />
+            </div>
+            <div v-else>
+              <div>
+                <Button
+                  label="Message"
+                  class="p-button-rounded p-button-outlined"
+                  icon="pi pi-envelope"
+                  @click="toPrivateMessage"
+                />
+              </div>
+              <br />
+            </div>
+            <div>
+              <div v-if="isFriend">
+                <EditFriendButton
+                  :friendId="user?.id"
+                  buttonLabel="Unfriend"
+                  buttonIcon="pi pi-user-minus"
+                  :action="EditFriendActionType.REMOVE_FRIEND"
+                  @isActionSuccess="catchEvent($event)"
+                />
+              </div>
+              <div v-else>
+                <EditFriendButton
+                  :friendId="user?.id"
+                  buttonLabel="Add friend"
+                  buttonIcon="pi pi-user-plus"
+                  :action="EditFriendActionType.SEND_REQUEST"
+                  @isActionSuccess="catchEvent($event)"
+                />
+              </div>
+            </div>
           </div>
         </template>
       </Card>
@@ -66,7 +74,7 @@ import EditFriendButton from "./EditFriendButton.vue";
 import { EditFriendActionType } from "@/types/editFriendAction";
 import { useToast } from "primevue/usetoast";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
-
+import UserStatus from "./UserStatus.vue";
 const toast = useToast();
 const route = useRoute();
 const id = route.params.id;
@@ -77,7 +85,10 @@ const isUserExist = ref<boolean>(false);
 
 onMounted(async () => {
   try {
-    await findUser();
+    // TODO: to evaluate timeout
+    setTimeout(async () => {
+      await findUser();
+    }, 500); // wait till socket connection finished (to get correct socketCount)
     if (isUserExist.value) {
       isSelf.value = id === String(storeUser.state.user.id);
       if (!isSelf.value) {
