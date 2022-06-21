@@ -93,25 +93,33 @@ export class UserService {
 		return user.socketCount;
 	}
 
+	async resetAllSocketCount() {
+		const userIdList = await this.userRepository
+			.createQueryBuilder('user')
+			.select(['user.id'])
+			.getMany();
+		for (let i = 0; i < userIdList.length; ++i) {
+			await this.userRepository.update(userIdList[i], {
+				socketCount: 0,
+			});
+		}
+	}
+
 	async increaseSocketCount(userId: number): Promise<UserI> {
 		const currentSocketCount = await this.getSocketCount(userId);
-		console.log('++ count before: ', currentSocketCount);
 		await this.userRepository.update(userId, {
 			socketCount: currentSocketCount + 1,
 		});
-		console.log('++ count after: ', await this.getSocketCount(userId));
 		return await this.getUserByID(userId);
 	}
 
 	async decreaseSocketCount(userId: number): Promise<UserI> {
 		const currentSocketCount = await this.getSocketCount(userId);
-		console.log('-- count before: ', currentSocketCount);
 		if (currentSocketCount > 0) {
 			await this.userRepository.update(userId, {
 				socketCount: currentSocketCount - 1,
 			});
 		}
-		console.log('-- count after: ', await this.getSocketCount(userId));
 		return await this.getUserByID(userId);
 	}
 }
