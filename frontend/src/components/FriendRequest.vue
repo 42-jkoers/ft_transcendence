@@ -21,11 +21,20 @@
           />
         </template>
       </Column>
-      <Column header="Friend Requests" headerStyle="width: 55%">
+      <Column header="Friend Requests" headerStyle="width: 50%">
         <template #body="slotProps">
           <Chip
             :label="slotProps.data.username"
             :image="slotProps.data.avatar"
+          />
+        </template>
+      </Column>
+      <Column header="Profile" headerStyle="width: 10%">
+        <template #body="slotProps">
+          <Button
+            icon="pi pi-user"
+            class="p-button-rounded p-button-text p-button-outlined"
+            @click="viewProfile(slotProps.data.id)"
           />
         </template>
       </Column>
@@ -49,7 +58,6 @@
       </Column>
     </DataTable>
   </div>
-  <div><Button label="test" @click="test"></Button></div>
 </template>
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
@@ -64,42 +72,15 @@ import { EditFriendActionType } from "@/types/editFriendAction";
 import EditFriendButton from "./EditFriendButton.vue";
 import { useToast } from "primevue/usetoast";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const toast = useToast();
-
 const requests = ref([]);
 
 onMounted(async () => {
   await refreshFriendRequests();
 });
-
-// TODO: to delete later
-async function test() {
-  const postBody = {
-    userId: 1,
-    friendId: 2,
-    action: EditFriendActionType.SEND_REQUEST,
-  };
-  await axios
-    .post("http://localhost:3000/friend/edit-friend", postBody, {
-      withCredentials: true,
-    })
-    .then(async () => {
-      toast.add({
-        severity: "success",
-        summary: "Success",
-        life: 3000,
-      });
-    })
-    .catch((error) => {
-      toast.add({
-        severity: "warn",
-        summary: "Note",
-        detail: error.response.data.message,
-        life: 3000,
-      });
-    });
-}
 
 async function refreshFriendRequests() {
   await axios
@@ -127,5 +108,12 @@ function catchEvent(event) {
   if (event) {
     refreshFriendRequests();
   }
+}
+
+function viewProfile(userId: number) {
+  router.push({
+    name: "UserProfileCard",
+    params: { id: userId },
+  });
 }
 </script>
