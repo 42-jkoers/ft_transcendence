@@ -9,10 +9,12 @@
           <h3>
             {{ user?.username }}
           </h3>
-          <UserStatus :socketCount="user?.socketCount" />
         </template>
         <template #content>
-          <p>To add content</p>
+          <div v-if="isSafe">
+            <UserStatus :socketCount="user?.socketCount" />
+            <h4>(to be add) game record</h4>
+          </div>
         </template>
         <template #footer>
           <div>
@@ -45,7 +47,7 @@
                   @isActionSuccess="catchEvent($event)"
                 />
               </div>
-              <div v-else>
+              <div v-if="!isSafe">
                 <EditFriendButton
                   :friendId="user?.id"
                   buttonLabel="Add friend"
@@ -81,6 +83,7 @@ const id = route.params.id;
 const user = ref<UserProfileI>();
 const isSelf = ref<boolean>();
 const isFriend = ref<boolean>();
+const isSafe = ref<boolean>();
 const isUserExist = ref<boolean>(false);
 
 onMounted(async () => {
@@ -88,21 +91,9 @@ onMounted(async () => {
     // TODO: to evaluate timeout
     setTimeout(async () => {
       await findUser();
+      await checkRelationship();
+      evaluateIsSafe();
     }, 500); // wait till socket connection finished (to get correct socketCount)
-    if (isUserExist.value) {
-      isSelf.value = id === String(storeUser.state.user.id);
-      if (!isSelf.value) {
-        await axios(
-          "http://localhost:3000/friend/is-friend?id1=" +
-            storeUser.state.user.id +
-            "&id2=" +
-            id,
-          { withCredentials: true }
-        ).then((response) => {
-          isFriend.value = response.data;
-        });
-      }
-    }
   } catch (error) {
     toast.add({
       severity: "error",
@@ -122,6 +113,7 @@ async function findUser() {
       if (response.data) {
         user.value = response.data;
         isUserExist.value = true;
+        isSelf.value = id === String(storeUser.state.user.id);
       } else {
         toast.add({
           severity: "error",
@@ -133,8 +125,27 @@ async function findUser() {
     });
 }
 
+async function checkRelationship() {
+  if (!isSelf.value) {
+    await axios(
+      "http://localhost:3000/friend/is-friend?id1=" +
+        storeUser.state.user.id +
+        "&id2=" +
+        id,
+      { withCredentials: true }
+    ).then((response) => {
+      isFriend.value = response.data;
+    });
+  }
+}
+
+function evaluateIsSafe() {
+  isSafe.value = isSelf.value || isFriend.value;
+}
+
 function changeFriendStatus() {
   isFriend.value = false;
+  evaluateIsSafe();
 }
 
 const router = useRouter();
