@@ -3,6 +3,11 @@
     <Panel>
       {{ $route.params.roomName }}
     </Panel>
+    <ChatBoxUserProfileDialogue
+      :isDialogVisible="displayUserProfileDialog"
+      :clickedUserObject="clickedUser"
+      @update:isDialogVisible="displayUserProfileDialog = $event"
+    />
     <ContextMenu ref="menu" :model="items" />
     <div
       id="all-messages"
@@ -20,7 +25,8 @@
                 class="user"
                 :label="m.user.username"
                 :image="m.user.avatar"
-                @contextmenu="onChipRightClick(m.user.id)"
+                @contextmenu="onChipRightClick(m.user)"
+                @click="onChipLeftClick(m.user)"
               />
               <Chip class="time" :label="moment(m.created_at).format('LT')" />
             </div>
@@ -68,34 +74,22 @@ import { useRoute } from "vue-router";
 import moment from "moment";
 import Chip from "primevue/chip";
 import ContextMenu from "primevue/contextmenu";
+import UserProfileI from "../types/UserProfile.interface";
+import storeUser from "@/store";
+import ChatBoxUserProfileDialogue from "./ChatBoxUserProfileDialogue.vue";
+import { UserRole } from "@/types/UserRole.Enum";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
-const clickedUserID = ref<number>(1);
+
+const clickedUser = ref<UserProfileI>(storeUser.state.user);
 const computedID = computed(() => {
-  return clickedUserID.value;
+  return clickedUser.value.id;
 }); //items ref params need a calculated property
 
-const menu = ref();
-const items = ref([
-  {
-    label: "View profile",
-    icon: "pi pi-fw pi-user",
-    to: {
-      name: "UserProfileCard",
-      params: { id: computedID },
-    },
-  },
-  {
-    separator: true,
-  },
-  {
-    label: "Play pong",
-    icon: "pi pi-fw pi-caret-right",
-  }, //TODO add a View to play game when we have it ready
-]);
+const displayUserProfileDialog = ref(false);
 
 onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
@@ -125,10 +119,54 @@ function sendMessage() {
   input.value = "";
 }
 
-function onChipRightClick(userID: number) {
-  clickedUserID.value = userID;
+function onChipLeftClick(user: UserProfileI) {
+  clickedUser.value = user;
+  displayUserProfileDialog.value = true;
+}
+
+function onChipRightClick(user: UserProfileI) {
+  clickedUser.value = user;
   menu.value.show(event);
 } //shows ContextMenu when UserChip is right clicked and reassigns the ID value
+
+const menu = ref();
+const items = ref([
+  {
+    label: "View profile",
+    icon: "pi pi-fw pi-user",
+    to: {
+      name: "UserProfileCard",
+      params: { id: computedID },
+    },
+  },
+  {
+    label: "Play pong",
+    icon: "pi pi-fw pi-caret-right",
+  }, //TODO add a View to play game when we have it ready
+  {
+    separator: true,
+  },
+  {
+    label: "Set admin",
+    visible: () => isOwner(0), //FIXME pass selectedRoom's info
+    command: () => socket.emit("setUserAsAdmin"), //TODO pass user.id & room.name & add backend logic
+  },
+  {
+    label: "Ban user",
+    visible: () => isAdmin(1), //FIXME pass selectedRoom's info
+    command: () => socket.emit("banUserFromRoom"), //TODO pass user.id & room.name & add backend logic
+  },
+  {
+    label: "Mute user",
+    visible: () => isAdmin(1), //FIXME pass selectedRoom's info
+    command: () => socket.emit("muteUserInRoom"), //TODO pass user.id & room.name & add backend logic
+  },
+]);
+
+const isOwner = (userRole: UserRole | undefined) =>
+  userRole === 0 ? true : false;
+const isAdmin = (userRole: UserRole | undefined) =>
+  userRole === 1 ? true : false;
 </script>
 
 <style scoped>
