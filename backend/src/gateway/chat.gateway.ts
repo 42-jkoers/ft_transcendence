@@ -44,6 +44,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		if (user) {
 			console.log(user);
+			const roomEntities: RoomEntity[] =
+				await this.roomService.getRoomsForUser(user.id);
+			roomEntities.forEach((room) => {
+				client.join(room.name);
+				console.log(
+					`join on connection: ${user.username} w/${client.id} has joined room ${room.name}`,
+				);
+			}); //each new socket connection joins the room that the user is already a part of
 			// client.join(user.id.toString()); TODO implement this for private messaging
 		} else {
 			console.log('user not authorized.\n'); //FIXME throw an exception
