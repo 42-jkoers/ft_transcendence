@@ -1,4 +1,6 @@
 import router from "@/router";
+import RoomVisibility from "@/types/RoomVisibility";
+import Room from "@/types/Room";
 import axios from "axios";
 import { createStore } from "vuex";
 
@@ -11,6 +13,7 @@ const storeUser = createStore({
       avatar: "",
       twoFactor: false,
     },
+    roomsInfo: [],
   },
   getters: {
     isAuthenticated(state) {
@@ -35,6 +38,9 @@ const storeUser = createStore({
     },
     unsetAuthenticated(state) {
       state.isAuthenticated = false;
+    },
+    updateRoomsList(state, updatedRoomsList) {
+      state.roomsInfo = updatedRoomsList;
     },
   },
   actions: {
