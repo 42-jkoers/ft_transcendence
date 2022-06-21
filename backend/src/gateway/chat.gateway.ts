@@ -108,6 +108,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
 		client.join(response.data);
+		console.log(
+			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
+		);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
@@ -166,6 +169,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		await this.roomService.addVisitorToRoom(client.data.user.id, room);
 		client.join(room.name);
+		console.log(
+			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
+		);
 		await this.getPublicRoomsList(client);
 	}
 
