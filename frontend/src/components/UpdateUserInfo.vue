@@ -202,6 +202,7 @@ async function deregister() {
         detail: "User is deregistered.",
         life: 3000,
       });
+      storeUser.dispatch("logout");
       router.push({ name: "Home" });
     })
     .catch(() => {
