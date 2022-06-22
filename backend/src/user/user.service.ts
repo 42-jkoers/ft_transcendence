@@ -122,4 +122,12 @@ export class UserService {
 		}
 		return await this.getUserByID(userId);
 	}
+
+	async getNonMemberUsers(roomName: string): Promise<UserI[]> {
+		const userList = await this.userRepository
+			.createQueryBuilder('user')
+			.getMany();
+		console.log(userList);
+		return userList;
+	}
 }
