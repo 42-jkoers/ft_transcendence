@@ -1,5 +1,4 @@
 import {
-	IsArray,
 	IsBoolean,
 	IsEnum,
 	IsNotEmpty,
@@ -32,11 +31,6 @@ export class createRoomDto {
 
 	@IsBoolean()
 	isDirectMessage: boolean;
-
-	// conditional validation:
-	@ValidateIf((obj) => obj.isDirectMessage === true)
-	@IsArray()
-	userIdToAddToRoom: number[];
 
 	@IsEnum(RoomVisibilityType)
 	visibility: RoomVisibilityType;
