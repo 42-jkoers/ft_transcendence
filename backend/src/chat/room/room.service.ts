@@ -1,12 +1,15 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getRepository, getConnection } from 'typeorm';
+import { plainToClass } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
 import { RoomEntity } from './entities/room.entity';
 import { RoomVisibilityType } from './enums/room.visibility.enum';
 import { User } from 'src/user/user.entity';
 import { UserService } from '../../user/user.service';
-import { createRoomDto } from './dto';
+import { createRoomDto, RoomForUserDto } from './dto';
+import { directMessageDto } from './dto';
 import { UserToRoomEntity } from './entities/user.to.room.entity';
 import { UserRole } from './enums/user.role.enum';
 
@@ -33,6 +36,30 @@ export class RoomService {
 		return await this.roomEntityRepository.findOne({
 			where: { name: roomName },
 		});
+	}
+
+	async createPrivateChatRoom(
+		dMRoom: directMessageDto,
+		userIdToAdd: number,
+	): Promise<RoomForUserDto | undefined> {
+		const id: string = uuid();
+		const user = await this.userService.findByID(dMRoom.userIds[0]);
+		const userName = user.username;
+		const room: createRoomDto = {
+			name: `${id}_${userName}`,
+			isDirectMessage: true,
+			visibility: RoomVisibilityType.PRIVATE,
+			password: null,
+		};
+		const newRoom: RoomEntity = await this.createAndSaveNewRoom(
+			room,
+			userIdToAdd,
+		);
+		await this.addVisitorToRoom(dMRoom.userIds[0], newRoom);
+		const response = plainToClass(RoomForUserDto, newRoom);
+		// response.userRole = newRoom.userToRooms[0]?.role; // getting role from userToRooms array
+		// response.protected = room.password ? true : false; // we don't pass the password back to user
+		return response;
 	}
 
 	// emit

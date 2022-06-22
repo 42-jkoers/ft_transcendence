@@ -23,8 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits, defineProps } from "vue";
+import { ref, defineEmits, defineProps, inject } from "vue";
 import { useRouter } from "vue-router";
+import { Socket } from "socket.io-client";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import Image from "primevue/image"; //TODO style img width
@@ -42,8 +43,14 @@ const pushToProfile = () => {
   });
 };
 
+const socket: Socket = inject("socketioInstance");
+
 const sendDM = () => {
-  //TODO add DM logic
+  const dMRequest = {
+    isDirectMessage: true,
+    userIds: [props.clickedUserObject.id],
+  };
+  socket.emit("createPrivateChatRoom", dMRequest);
 };
 
 const handleClose = () => {

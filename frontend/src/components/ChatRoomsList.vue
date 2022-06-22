@@ -99,6 +99,9 @@ socket.on("postPublicRoomsList", (response) => {
   rooms.value = response;
   updateRoomsList(response);
 });
+socket.on("postPrivateChatRoom", (dMRoom) => {
+  console.log("Direct Message Room: ", dMRoom);
+});
 
 const router = useRouter();
 const route = useRoute();
@@ -130,7 +133,7 @@ const menuItems = ref([
     visible: () =>
       selectedRoom.value.visibility === RoomVisibility.PUBLIC &&
       isOwner(selectedRoom.value.userRole),
-    command: () => editRoomPrivacy(selectedRoom),
+    command: () => editRoomPrivacy(),
   },
   {
     label: "Leave chat",
@@ -177,7 +180,7 @@ const confirmLeave = (room) => {
   });
 };
 
-const editRoomPrivacy = (room) => {
+const editRoomPrivacy = () => {
   displayEditPrivacyDialog.value = true;
 };
 </script>

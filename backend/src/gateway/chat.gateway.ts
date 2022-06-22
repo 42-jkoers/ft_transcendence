@@ -22,6 +22,7 @@ import { plainToClass } from 'class-transformer';
 import { RoomForUserDto } from 'src/chat/room/dto';
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
+import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -113,6 +114,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log(
 			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
 		);
+	}
+
+	@UsePipes(new ValidationPipe({ transform: true }))
+	@SubscribeMessage('createPrivateChatRoom')
+	async handleCreatePrivateChatRoom(
+		@MessageBody() dMRoom: directMessageDto,
+		@ConnectedSocket() client: Socket,
+	) {
+		console.log('dMRoom: \n', dMRoom);
+
+		const response = await this.roomService.createPrivateChatRoom(
+			dMRoom,
+			client.data.user.id,
+		);
+		client.emit('postPrivateChatRoom', response);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
