@@ -206,4 +206,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		client.emit('isRoomPasswordMatched', isMatched);
 	}
+
+	@SubscribeMessage('getNonMemberUsers')
+	async getNonMemberUsers(client: Socket, roomName: string) {
+		const response: UserI[] = await this.userService.getNonMemberUsers(
+			roomName,
+		);
+		client.emit('getNonMemberUsers', response);
+	}
 }
