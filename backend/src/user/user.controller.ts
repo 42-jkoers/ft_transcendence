@@ -8,15 +8,18 @@ import {
 	UploadedFile,
 	Query,
 	ParseIntPipe,
+	Req,
+	HttpException,
+	HttpStatus,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from '../auth/oauth/oauth.guard';
 import { UserI } from './user.interface';
 import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { Express } from 'express';
+import { Express, Request } from 'express';
 import { UploadFileHelper } from './util/uploadfile.helper';
-import { UpdateUserProfileDto } from './dto';
+import { DeleteUserDto, UpdateUserProfileDto } from './dto';
 
 @UseGuards(AuthenticatedGuard)
 @Controller('user')
@@ -25,12 +28,7 @@ export class UserController {
 
 	@Post('profile/update-userprofile')
 	async updateUserProfile(@Body() userDto: UpdateUserProfileDto) {
-		if (!(await this.userService.updateUserProfile(userDto))) {
-			return undefined;
-		} else {
-			const user: UserI = await this.userService.findByID(userDto.id);
-			return user;
-		}
+		return await this.userService.updateUserProfile(userDto);
 	}
 
 	@Post('avatar')
@@ -50,5 +48,18 @@ export class UserController {
 	async findUser(@Query('id', ParseIntPipe) id: number) {
 		const user: UserI = await this.userService.findByID(id);
 		return user;
+	}
+
+	@Post('deregister')
+	async deregisterUser(@Req() req: Request, @Body() userDto: DeleteUserDto) {
+		const user: UserI = req.user;
+		if (user.id === userDto.id) {
+			await this.userService.deleteUser(userDto.id);
+		} else {
+			throw new HttpException(
+				'User is unauthorized.',
+				HttpStatus.UNAUTHORIZED,
+			);
+		}
 	}
 }
