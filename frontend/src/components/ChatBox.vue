@@ -1,7 +1,11 @@
 <template>
   <div>
-    <Panel>
-      {{ $route.params.roomName }}
+    <Panel :header="$route.params.roomName">
+      <template #icons>
+        <button class="p-panel-header-icon p-link mr-2" @click="onAddUserClick">
+          <span class="pi pi-users"></span>
+        </button>
+      </template>
     </Panel>
     <ChatBoxUserProfileDialogue
       :isDialogVisible="displayUserProfileDialog"
