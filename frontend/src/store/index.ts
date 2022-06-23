@@ -1,6 +1,4 @@
 import router from "@/router";
-import RoomVisibility from "@/types/RoomVisibility";
-import Room from "@/types/Room";
 import axios from "axios";
 import { createStore } from "vuex";
 
