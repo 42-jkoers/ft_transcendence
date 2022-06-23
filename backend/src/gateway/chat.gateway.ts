@@ -122,12 +122,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() dMRoom: directMessageDto,
 		@ConnectedSocket() client: Socket,
 	) {
-		console.log('dMRoom: \n', dMRoom);
-
 		const response = await this.roomService.createPrivateChatRoom(
 			dMRoom,
 			client.data.user.id,
 		);
+		await this.getPublicRoomsList(client);
 		client.emit('postPrivateChatRoom', response);
 	}
 
@@ -138,12 +137,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.roomService.getAllPublicRoomsWithUserRole(
 				client.data.user.id,
 			);
-		const response = publicRooms.map((room) => {
-			const listedRoom = plainToClass(RoomForUserDto, room); //
-			listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
-			listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
-			return listedRoom;
-		});
+		const response = await Promise.all(
+			publicRooms.map(async (room) => {
+				const listedRoom = plainToClass(RoomForUserDto, room);
+				if (room.isDirectMessage) {
+					const secondParticipant =
+						await this.roomService.getNonCurrentUserInDMRoom(
+							client.data.user.id,
+							room.id,
+						);
+					listedRoom.displayName = secondParticipant
+						? secondParticipant.username
+						: room.name;
+					console.log('displayName', listedRoom.displayName);
+				} else {
+					listedRoom.displayName = room.name;
+				}
+				listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
+				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
+				return listedRoom;
+			}),
+		);
 		client.emit('postPublicRoomsList', response);
 	}
 

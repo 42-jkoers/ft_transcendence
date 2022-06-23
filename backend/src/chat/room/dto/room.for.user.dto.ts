@@ -8,7 +8,16 @@ export class RoomForUserDto {
 	readonly name: string;
 
 	@Expose()
+	displayName: string;
+
+	@Expose()
 	readonly visibility: RoomVisibilityType;
+
+	@Expose()
+	isDirectMessage: boolean;
+
+	@Expose()
+	participants: (string | number)[][];
 
 	@Expose()
 	protected: boolean;
