@@ -14,6 +14,7 @@ import { MessageService } from './message/message.service';
 import { MessageEntity } from './message/message.entity';
 import { UserModule } from 'src/user/user.module';
 import { GameService } from 'src/game/game.service';
+import { GameEntity } from 'src/game/game.entity';
 
 @Module({
 	providers: [
@@ -34,6 +35,7 @@ import { GameService } from 'src/game/game.service';
 			UserToRoomEntity,
 			ConnectedUserEntity,
 			MessageEntity,
+			GameEntity,
 		]),
 	],
 	exports: [RoomService],

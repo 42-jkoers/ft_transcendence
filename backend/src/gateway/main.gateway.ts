@@ -24,6 +24,7 @@ import { RoomForUserDto } from 'src/chat/room/dto';
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
 import { GameService } from '../game/game.service';
+import { CreateGameDto } from 'src/game/game.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -169,8 +170,14 @@ export class MainGateway
 		client.emit('isRoomPasswordMatched', isMatched);
 	}
 
+	@UseFilters(new WsExceptionFilter())
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('gameStarted')
-	async gameStarted() {
-		this.gameService.startGame();
+	async gameStarted(
+		@MessageBody() game: CreateGameDto,
+		@ConnectedSocket() client: Socket,
+	) {
+		const id = client.data.user.id;
+		await this.gameService.createGame(game, id);
 	}
 }
