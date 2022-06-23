@@ -68,12 +68,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async handleDisconnect(client: Socket) {
-		this.logger.log('Client disconnected');
-		if (client.data.user) {
-			await this.userService.decreaseSocketCount(client.data.user.id);
+		const userId = client.data?.user?.id;
+		if (userId) {
+			const user = await this.userService.findByID(userId);
+			if (user) {
+				await this.userService.decreaseSocketCount(client.data.user.id);
+			}
 		}
 		this.connectedUserService.deleteBySocketId(client.id);
 		client.disconnect(); //manually disconnects the socket
+		this.logger.log('Client disconnected');
 	}
 
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages

@@ -206,6 +206,13 @@ Tutorial:
 	- add frontend tag for online status
 	- add UserProfile link to FriendView
 
+******************************************
+**			Branch - 	user_deregister				**
+******************************************
+(Tue) 2022-06-21
+	- setup deregister process from both backend/frontend
+	- replace customized message with Toast in UpdateUserInfo component 
+
 **************************
 **		Next To To				**
 **************************
