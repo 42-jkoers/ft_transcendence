@@ -19,6 +19,9 @@ export class RoomEntity {
 	})
 	visibility: RoomVisibilityType;
 
+	@Column()
+	isDirectMessage: boolean;
+
 	@Column({ nullable: true })
 	@Exclude()
 	password: string;
