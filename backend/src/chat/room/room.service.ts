@@ -10,7 +10,6 @@ import { User } from 'src/user/user.entity';
 import { UserService } from '../../user/user.service';
 import { createRoomDto, RoomForUserDto } from './dto';
 import { directMessageDto } from './dto';
-import { DMForUserDto } from './dto';
 import { UserToRoomEntity } from './entities/user.to.room.entity';
 import { UserRole } from './enums/user.role.enum';
 
@@ -42,7 +41,7 @@ export class RoomService {
 	async createPrivateChatRoom(
 		dMRoom: directMessageDto,
 		userIdToAdd: number,
-	): Promise<DMForUserDto | undefined> {
+	): Promise<RoomForUserDto | undefined> {
 		const id: string = uuid();
 		const room: createRoomDto = {
 			name: `${id}`,
@@ -55,12 +54,12 @@ export class RoomService {
 			userIdToAdd,
 		);
 		await this.addVisitorToRoom(dMRoom.userIds[0], newRoom);
-		const response = plainToClass(DMForUserDto, newRoom);
-		const firstUser = await this.userService.findByID(userIdToAdd);
-		const firstParticipant = [firstUser.id, firstUser.username];
+		const response = plainToClass(RoomForUserDto, newRoom);
+		// const firstUser = await this.userService.findByID(userIdToAdd);
+		// const firstParticipant = [firstUser.id, firstUser.username];
 		const secondUser = await this.userService.findByID(dMRoom.userIds[0]);
-		const secondParticipant = [secondUser.id, secondUser.username];
-		response.participants = [firstParticipant, secondParticipant];
+		response.secondParticipant = [secondUser.id, secondUser.username];
+		// response.secondParticipant = [firstParticipant, secondParticipant];
 		// response.userRole = newRoom.userToRooms[0]?.role; // getting role from userToRooms array
 		// response.protected = room.password ? true : false; // we don't pass the password back to user
 		return response;
