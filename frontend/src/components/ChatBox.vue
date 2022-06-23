@@ -1,7 +1,7 @@
 <template>
   <div>
-    <Panel>
-      {{ $route.params.roomName }}
+    <Panel v-if="currentRoom">
+      {{ currentRoom.displayName }}
     </Panel>
     <ChatBoxUserProfileDialogue
       :isDialogVisible="displayUserProfileDialog"
