@@ -214,6 +214,36 @@ export class RoomService {
 		return userRooms;
 	}
 
+	async transformDBDataToDtoForClient(
+		rooms: RoomEntity[],
+		currentUserId: number,
+	) {
+		const roomsForClient = await Promise.all(
+			rooms.map(async (room) => {
+				const listedRoom = plainToClass(RoomForUserDto, room);
+				if (room.isDirectMessage) {
+					const secondParticipant =
+						await this.getNonCurrentUserInDMRoom(
+							currentUserId,
+							room.id,
+						);
+					listedRoom.secondParticipant = secondParticipant
+						? [secondParticipant.id, secondParticipant.username]
+						: [];
+					listedRoom.displayName = secondParticipant
+						? secondParticipant.username
+						: room.name;
+				} else {
+					listedRoom.displayName = room.name;
+				}
+				listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
+				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
+				return listedRoom;
+			}),
+		);
+		return roomsForClient;
+	}
+
 	async getRoomsForUser(userId: number): Promise<RoomEntity[]> {
 		//build SQL query to get rooms
 		// leftJoin will be referencing the property 'users' defined in the RoomEntity.

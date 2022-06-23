@@ -141,32 +141,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.roomService.getAllPublicRoomsWithUserRole(
 				client.data.user.id,
 			);
-		const response = await Promise.all(
-			publicRooms.map(async (room) => {
-				const listedRoom = plainToClass(RoomForUserDto, room);
-				if (room.isDirectMessage) {
-					const secondParticipant =
-						await this.roomService.getNonCurrentUserInDMRoom(
-							client.data.user.id,
-							room.id,
-						);
-					listedRoom.secondParticipant = secondParticipant
-						? [secondParticipant.id, secondParticipant.username]
-						: [];
-					listedRoom.displayName = secondParticipant
-						? secondParticipant.username
-						: room.name;
-					console.log(
-						'listedRoom.secondParticipant',
-						listedRoom.secondParticipant,
-					);
-				} else {
-					listedRoom.displayName = room.name;
-				}
-				listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
-				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
-				return listedRoom;
-			}),
+		const response = await this.roomService.transformDBDataToDtoForClient(
+			publicRooms,
+			client.data.user.id,
 		);
 		client.emit('postPublicRoomsList', response);
 	}
