@@ -23,12 +23,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits, defineProps, inject } from "vue";
+import { ref, defineEmits, defineProps, inject, computed } from "vue";
 import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import Image from "primevue/image"; //TODO style img width
+import { useStore } from "vuex";
 
 const isOnline = ref(true); //FIXME change this when we have onlin/offline info in user
 const props = defineProps(["isDialogVisible", "clickedUserObject"]);
@@ -44,13 +45,28 @@ const pushToProfile = () => {
 };
 
 const socket: Socket = inject("socketioInstance");
+const store = useStore();
 
 const sendDM = () => {
-  const dMRequest = {
-    isDirectMessage: true,
-    userIds: [props.clickedUserObject.id],
-  };
-  socket.emit("createPrivateChatRoom", dMRequest);
+  const dMRoom = computed(() =>
+    store.state.roomsInfo.find(
+      (room) =>
+        room.isDirectMessage &&
+        room.secondParticipant[0] === props.clickedUserObject.id
+    )
+  );
+  if (dMRoom.value) {
+    router.push({
+      name: "ChatBox",
+      params: { roomName: dMRoom.value.name },
+    });
+  } else {
+    const dMRequest = {
+      isDirectMessage: true,
+      userIds: [props.clickedUserObject.id],
+    };
+    socket.emit("createPrivateChatRoom", dMRequest);
+  }
 };
 
 const handleClose = () => {
