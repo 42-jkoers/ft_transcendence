@@ -137,7 +137,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('getPublicRoomsList')
 	async getPublicRoomsList(client: Socket) {
 		const publicRooms: RoomEntity[] =
-			// await this.roomService.getAllPublicRoomsWithUserRole();
 			await this.roomService.getAllPublicRoomsWithUserRole(
 				client.data.user.id,
 			);
@@ -150,10 +149,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 							client.data.user.id,
 							room.id,
 						);
+					listedRoom.secondParticipant = secondParticipant
+						? [secondParticipant.id, secondParticipant.username]
+						: [];
 					listedRoom.displayName = secondParticipant
 						? secondParticipant.username
 						: room.name;
-					console.log('displayName', listedRoom.displayName);
+					console.log(
+						'listedRoom.secondParticipant',
+						listedRoom.secondParticipant,
+					);
 				} else {
 					listedRoom.displayName = room.name;
 				}

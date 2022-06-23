@@ -17,7 +17,7 @@ export class RoomForUserDto {
 	isDirectMessage: boolean;
 
 	@Expose()
-	participants: (string | number)[][];
+	secondParticipant: (number | string)[];
 
 	@Expose()
 	protected: boolean;
