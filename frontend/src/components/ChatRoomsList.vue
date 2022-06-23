@@ -34,7 +34,15 @@
               style="font-size: 0.8rem"
             ></i>
             <i
-              v-else-if="slotProps.data.visibility === RoomVisibility.PRIVATE"
+              v-else-if="slotProps.data.isDirectMessage"
+              class="pi pi-user"
+              style="font-size: 0.8rem"
+            ></i>
+            <i
+              v-else-if="
+                slotProps.data.visibility === RoomVisibility.PRIVATE &&
+                !slotProps.data.isDirectMessage
+              "
               class="pi pi-lock"
               style="font-size: 0.8rem"
             ></i>
@@ -43,7 +51,7 @@
         </template>
       </Column>
       <Column
-        field="name"
+        field="displayName"
         bodyStyle="padding:0"
         header="Chat Rooms"
         headerStyle="padding-left:0"
@@ -53,7 +61,7 @@
           <div>
             <i
               v-if="slotProps.data.userRole !== undefined"
-              class="pi pi-user"
+              class="pi pi-check-circle"
               style="font-size: 0.8rem"
             ></i>
           </div>
@@ -81,9 +89,10 @@ import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";
 
 const socket: Socket = inject("socketioInstance");
+const router = useRouter();
+const route = useRoute();
 
 const rooms = ref();
-
 setTimeout(() => {
   // socket.emit("getUserRoomsList");
   socket.emit("getPublicRoomsList");
@@ -95,16 +104,18 @@ const updateRoomsList = (roomsList: Room[]) =>
 
 socket.on("postPublicRoomsList", (response) => {
   // socket.on("getUserRoomsList", (response) => {
-  // console.log("rooms from server", response);
+  console.log("rooms from server", response);
   rooms.value = response;
   updateRoomsList(response);
 });
+
 socket.on("postPrivateChatRoom", (dMRoom) => {
   console.log("Direct Message Room: ", dMRoom);
+  router.push({
+    name: "ChatBox",
+    params: { roomName: dMRoom.name },
+  });
 });
-
-const router = useRouter();
-const route = useRoute();
 
 const displayPasswordDialog = ref(false);
 const displayEditPrivacyDialog = ref(false);
