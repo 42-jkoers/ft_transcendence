@@ -23,6 +23,7 @@ import { RoomForUserDto } from 'src/chat/room/dto';
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
+import { UserRole } from 'src/chat/room/enums/user.role.enum';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -208,7 +209,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const room: RoomEntity = await this.roomService.findRoomByName(
 			roomName,
 		);
-		await this.roomService.addVisitorToRoom(client.data.user.id, room);
+		await this.roomService.addUserToRoom(
+			client.data.user.id,
+			room,
+			UserRole.VISITOR,
+		);
 		client.join(room.name);
 		console.log(
 			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,

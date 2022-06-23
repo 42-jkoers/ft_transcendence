@@ -53,15 +53,10 @@ export class RoomService {
 			room,
 			userIdToAdd,
 		);
-		await this.addVisitorToRoom(dMRoom.userIds[0], newRoom);
+		await this.addUserToRoom(dMRoom.userIds[0], newRoom, UserRole.OWNER);
 		const response = plainToClass(RoomForUserDto, newRoom);
-		// const firstUser = await this.userService.findByID(userIdToAdd);
-		// const firstParticipant = [firstUser.id, firstUser.username];
 		const secondUser = await this.userService.findByID(dMRoom.userIds[0]);
 		response.secondParticipant = [secondUser.id, secondUser.username];
-		// response.secondParticipant = [firstParticipant, secondParticipant];
-		// response.userRole = newRoom.userToRooms[0]?.role; // getting role from userToRooms array
-		// response.protected = room.password ? true : false; // we don't pass the password back to user
 		return response;
 	}
 
@@ -156,12 +151,12 @@ export class RoomService {
 		);
 	}
 
-	async addVisitorToRoom(userToAddId: number, room: RoomEntity) {
-		await this.createManyToManyRelationship(
-			room,
-			userToAddId,
-			UserRole.VISITOR,
-		);
+	async addUserToRoom(
+		userToAddId: number,
+		room: RoomEntity,
+		userRole: UserRole,
+	) {
+		await this.createManyToManyRelationship(room, userToAddId, userRole);
 		await this.roomEntityRepository.save(room);
 	}
 
