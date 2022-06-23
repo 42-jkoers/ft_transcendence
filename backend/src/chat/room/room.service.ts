@@ -182,11 +182,10 @@ export class RoomService {
 
 		const secondParticipant = await getRepository(User)
 			.createQueryBuilder('user')
-			.leftJoin('user.userToRooms', 'userToRooms')
+			.innerJoin('user.userToRooms', 'userToRooms')
 			.where('userToRooms.roomId = :dMRoomId', { dMRoomId })
 			.andWhere({ id: Not(currentUserId) })
 			.getOne();
-		console.log('secondParticipant', secondParticipant);
 		return secondParticipant;
 	}
 
