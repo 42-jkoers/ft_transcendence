@@ -16,7 +16,12 @@
       alt="User Profile"
     />
     <template #footer>
-      <Button label="Message" icon="pi pi-envelope" @click="sendDM" />
+      <Button
+        v-if="store.state.user.id !== props.clickedUserObject.id"
+        label="Message"
+        icon="pi pi-envelope"
+        @click="sendDM"
+      />
       <Button label="View Profile" icon="pi pi-user" @click="pushToProfile" />
     </template>
   </Dialog>
