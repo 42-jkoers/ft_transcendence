@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { ref, defineEmits, defineProps, inject, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
@@ -46,6 +46,7 @@ const pushToProfile = () => {
 
 const socket: Socket = inject("socketioInstance");
 const store = useStore();
+const route = useRoute();
 
 const sendDM = () => {
   const dMRoom = computed(() =>
@@ -56,6 +57,9 @@ const sendDM = () => {
     )
   );
   if (dMRoom.value) {
+    if (route.params.roomName === dMRoom.value.name) {
+      handleClose();
+    }
     router.push({
       name: "ChatBox",
       params: { roomName: dMRoom.value.name },
