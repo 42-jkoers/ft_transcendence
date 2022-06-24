@@ -41,8 +41,8 @@ socket.on("getNonMemberUsers", (response) => {
 const onRow = (event) => {
   const user = event.data;
   console.log(`room ${route.params.roomName} user ${user.username} added?`);
-  socket.emit("userBeingAddedToRoom", {
-    userName: user.username,
+  socket.emit("userAddsAnotherUserToRoom", {
+    userId: user.id,
     roomName: route.params.roomName,
   });
 };
