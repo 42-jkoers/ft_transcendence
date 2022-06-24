@@ -3,7 +3,7 @@
     class="p-button-rounded p-button-text p-button-outlined"
     :label="props.buttonLabel"
     :icon="props.buttonIcon"
-    @click="editFriend(props.friendId, props.action)"
+    @click="proceedConfirmation"
   />
 </template>
 <script setup lang="ts">
@@ -11,6 +11,9 @@ import { defineEmits, defineProps } from "vue";
 import Button from "primevue/button";
 import axios from "axios";
 import storeUser from "@/store";
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+import { friendActionMessage } from "@/types/editFriendAction";
 
 const props = defineProps({
   friendId: Number,
@@ -18,6 +21,18 @@ const props = defineProps({
   buttonIcon: String,
   action: Number,
 });
+const confirm = useConfirm();
+const toast = useToast();
+function proceedConfirmation() {
+  confirm.require({
+    message: "Are you sure you want to proceed?",
+    header: "Confirmation",
+    icon: "pi pi-exclamation-triangle",
+    accept: () => {
+      editFriend(props.friendId, props.action);
+    },
+  });
+}
 
 const emit = defineEmits<{
   (event: "isActionSuccess"): boolean;
@@ -33,13 +48,25 @@ async function editFriend(
     action: action,
   };
   await axios
-    .post("http://localhost:3000/user/edit-friend", postBody, {
+    .post("http://localhost:3000/friend/edit-friend", postBody, {
       withCredentials: true,
     })
-    .then(async () => {
+    .then(() => {
+      toast.add({
+        severity: "success",
+        summary: "Success",
+        detail: friendActionMessage(props.action),
+        life: 3000,
+      });
       emit("isActionSuccess", true);
     })
-    .catch(() => {
+    .catch((error) => {
+      toast.add({
+        severity: "warn",
+        summary: "Note",
+        detail: error.response.data.message,
+        life: 3000,
+      });
       emit("isActionSuccess", false);
     });
 }

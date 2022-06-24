@@ -4,7 +4,6 @@ import {
 	MessageBody,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
-	OnGatewayInit,
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
@@ -29,9 +28,8 @@ import { CreateGameDto } from 'src/game/game.dto';
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
 }) //allows us to make use of any WebSockets library (in our case socket.io)
-export class MainGateway
-	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+
+export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private readonly authService: AuthService,
 		private readonly roomService: RoomService,
@@ -45,11 +43,21 @@ export class MainGateway
 
 	async handleConnection(client: Socket) {
 		this.logger.log('Client connected');
-		const user: UserI = await this.authService.getUserFromCookie(
+		let user: UserI = await this.authService.getUserFromCookie(
 			client.handshake.headers.cookie,
 		);
 		if (user) {
+			user = await this.userService.increaseSocketCount(user.id);
 			console.log(user);
+			const roomEntities: RoomEntity[] =
+				await this.roomService.getRoomsForUser(user.id); //TODO get only room names from room service
+			roomEntities.forEach((room) => {
+				client.join(room.name);
+				console.log(
+					`join on connection: ${user.username} w/${client.id} has joined room ${room.name}`,
+				);
+			}); //each new socket connection joins the room that the user is already a part of
+			// client.join(user.id.toString()); TODO implement this for private messaging
 		} else {
 			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
@@ -60,20 +68,19 @@ export class MainGateway
 			user,
 		}); // save connection to DB
 		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set //FIXME check
-		client.join('general'); //everyone joins the general on default
-		client.join('general protected'); //everyone joins the general protected
 	}
 
-	afterInit() {
-		this.logger.log('Gateway: init');
-		this.server.emit('Hey there');
-		//TODO maybe delete all connected users and joined rooms with onInit?
-	}
-
-	handleDisconnect(client: Socket) {
-		this.logger.log('Client disconnected');
+	async handleDisconnect(client: Socket) {
+		const userId = client.data?.user?.id;
+		if (userId) {
+			const user = await this.userService.findByID(userId);
+			if (user) {
+				await this.userService.decreaseSocketCount(client.data.user.id);
+			}
+		}
 		this.connectedUserService.deleteBySocketId(client.id);
 		client.disconnect(); //manually disconnects the socket
+		this.logger.log('Client disconnected');
 	}
 
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages
@@ -90,6 +97,7 @@ export class MainGateway
 			selectedRoom,
 		);
 		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
+		//TODO this.server.to(selectedRoom.name).to(user.id.toString()).emit('messageAdded', createdMessage);FOR DM?
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
@@ -110,6 +118,9 @@ export class MainGateway
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
 		client.join(response.data);
+		console.log(
+			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
+		);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
@@ -130,17 +141,32 @@ export class MainGateway
 
 	@SubscribeMessage('getUserRoomsList')
 	async getUserRoomsList(client: Socket) {
-		const roomEntities: RoomEntity[] =
-			await this.roomService.getRoomsForUser(client.data.user.id);
-		// we don't need all information from the RoomEntity returned to the user, we'll have to serialize it
-		// by converting roomentity type to dto with several excluded and transformed properties
-		const response: RoomForUserDto[] = roomEntities.map((room) => {
-			const listedRoom = plainToClass(RoomForUserDto, room); //
-			listedRoom.userRole = room.userToRooms[0].role; // getting role from userToRooms array
-			listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
-			return listedRoom;
-		});
-		client.emit('getUserRoomsList', response);
+		if (client.data.user) {
+			const roomEntities: RoomEntity[] =
+				await this.roomService.getRoomsForUser(client.data.user.id);
+
+			// we don't need all information from the RoomEntity returned to the user, we'll have to serialize it
+			// by converting roomentity type to dto with several excluded and transformed properties
+			const response: RoomForUserDto[] = roomEntities.map((room) => {
+				const listedRoom = plainToClass(RoomForUserDto, room); //
+				listedRoom.userRole = room.userToRooms[0].role; // getting role from userToRooms array
+				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
+				return listedRoom;
+			});
+			client.emit('getUserRoomsList', response);
+		}
+	}
+
+	@SubscribeMessage('updateRoomPassword')
+	async updateRoomPassword(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() roomToUpdate: { name: string; password: string },
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			roomToUpdate.name,
+		);
+		await this.roomService.updateRoomPassword(room, roomToUpdate.password);
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('addUserToRoom')
@@ -153,6 +179,25 @@ export class MainGateway
 		);
 		await this.roomService.addVisitorToRoom(client.data.user.id, room);
 		client.join(room.name);
+		console.log(
+			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
+		);
+		await this.getPublicRoomsList(client);
+	}
+
+	@SubscribeMessage('removeUserFromRoom')
+	async removeUserFromRoom(
+		@MessageBody() roomName: string,
+		@ConnectedSocket() client: Socket,
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			roomName,
+		);
+		await this.roomService.deleteUserRoomRelationship(
+			client.data.user.id,
+			room,
+		);
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')

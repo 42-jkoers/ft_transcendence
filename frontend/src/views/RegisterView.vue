@@ -1,6 +1,6 @@
 <template>
   <div align="center">
-    <div class="col-4">
+    <div class="col-5">
       <Message severity="info" :closable="false">
         Welcome new user, please register.
       </Message>

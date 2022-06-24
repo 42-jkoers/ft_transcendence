@@ -1,11 +1,5 @@
 <template>
   <div>
-    <FriendActionMessage
-      :action="currentAction"
-      :notify="notifyFriendActionMessage"
-    />
-  </div>
-  <div>
     <DataTable :value="requests" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
@@ -27,11 +21,20 @@
           />
         </template>
       </Column>
-      <Column header="Friend Requests" headerStyle="width: 55%">
+      <Column header="Friend Requests" headerStyle="width: 50%">
         <template #body="slotProps">
           <Chip
             :label="slotProps.data.username"
             :image="slotProps.data.avatar"
+          />
+        </template>
+      </Column>
+      <Column header="Profile" headerStyle="width: 10%">
+        <template #body="slotProps">
+          <Button
+            icon="pi pi-user"
+            class="p-button-rounded p-button-text p-button-outlined"
+            @click="viewProfile(slotProps.data.id)"
           />
         </template>
       </Column>
@@ -40,19 +43,15 @@
           <div>
             <EditFriendButton
               :friendId="slotProps.data.id"
-              buttonIcon="pi pi-check"
-              :action="EditFriendActionType.ADD_FRIEND"
-              @isActionSuccess="
-                catchEvent($event, EditFriendActionType.ADD_FRIEND)
-              "
+              buttonIcon="pi pi-times"
+              :action="EditFriendActionType.REJECT_REQUEST"
+              @isActionSuccess="catchEvent($event)"
             />
             <EditFriendButton
               :friendId="slotProps.data.id"
-              buttonIcon="pi pi-times"
-              :action="EditFriendActionType.REJECT_REQUEST"
-              @isActionSuccess="
-                catchEvent($event, EditFriendActionType.REJECT_REQUEST)
-              "
+              buttonIcon="pi pi-check"
+              :action="EditFriendActionType.ADD_FRIEND"
+              @isActionSuccess="catchEvent($event)"
             />
           </div>
         </template>
@@ -61,7 +60,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, defineEmits } from "vue";
+import { onMounted, ref } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -69,16 +68,15 @@ import Chip from "primevue/chip";
 import Badge from "primevue/badge";
 import axios from "axios";
 import storeUser from "@/store";
-import EditFriendActionType from "@/types/EditFriendActionType";
+import { EditFriendActionType } from "@/types/editFriendAction";
 import EditFriendButton from "./EditFriendButton.vue";
-import FriendActionMessage from "./FriendActionMessage.vue";
+import { useToast } from "primevue/usetoast";
+import { ErrorType, errorMessage } from "@/types/errorManagement";
+import { useRouter } from "vue-router";
 
-const currentAction = ref<EditFriendActionType>();
-const notifyFriendActionMessage = ref<boolean>();
+const router = useRouter();
+const toast = useToast();
 const requests = ref([]);
-const emit = defineEmits<{
-  (event: "error"): boolean;
-}>();
 
 onMounted(async () => {
   await refreshFriendRequests();
@@ -87,7 +85,8 @@ onMounted(async () => {
 async function refreshFriendRequests() {
   await axios
     .get(
-      "http://localhost:3000/user/friend-request?id=" + storeUser.state.user.id,
+      "http://localhost:3000/friend/friend-request?id=" +
+        storeUser.state.user.id,
       {
         withCredentials: true,
       }
@@ -96,22 +95,25 @@ async function refreshFriendRequests() {
       requests.value = response.data;
     })
     .catch(() => {
-      emit("error", true);
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errorMessage(ErrorType.GENERAL),
+        life: 3000,
+      });
     });
 }
 
-function showFriendActionMessage() {
-  notifyFriendActionMessage.value = !notifyFriendActionMessage.value;
+function catchEvent(event) {
+  if (event) {
+    refreshFriendRequests();
+  }
 }
 
-function catchEvent(event, action: EditFriendActionType) {
-  if (event) {
-    currentAction.value = action;
-    showFriendActionMessage();
-    refreshFriendRequests();
-  } else {
-    currentAction.value = EditFriendActionType.ERROR;
-    showFriendActionMessage();
-  }
+function viewProfile(userId: number) {
+  router.push({
+    name: "UserProfileCard",
+    params: { id: userId },
+  });
 }
 </script>
