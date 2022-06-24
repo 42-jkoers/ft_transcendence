@@ -109,6 +109,12 @@ socket.on("postPublicRoomsList", (response) => {
   updateRoomsList(response);
 });
 
+socket.on("room deleted", () => {
+  router.push({
+    name: "Chat",
+  });
+});
+
 socket.on("postPrivateChatRoom", (dMRoom) => {
   console.log("Direct Message Room: ", dMRoom);
   router.push({
