@@ -4,11 +4,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as session from 'express-session';
 import * as passport from 'passport';
-import * as redis from 'redis';
-import * as connectRedis from 'connect-redis';
+
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+	const sessionRepository = getRepository(TypeORMSession);
 
 	// general setting
 	const configService = app.get(ConfigService);
@@ -25,12 +25,6 @@ async function bootstrap() {
 		exposedHeaders: ['set-cookie'],
 	});
 
-	// login sessions
-	const RedisStore = connectRedis(session);
-	const redisClient = redis.createClient({
-		url: configService.get('REDIS_URI'),
-	});
-	redisClient.on('connect', () => console.log('Connected to Redis'));
 	app.use(
 		session({
 			cookie: {
@@ -39,7 +33,7 @@ async function bootstrap() {
 			secret: configService.get('SESSION_SECRET'),
 			resave: false,
 			saveUninitialized: false,
-			store: new RedisStore({ client: redisClient }),
+			// store: new RedisStore({ client: redisClient }),
 		}),
 	);
 	app.use(passport.initialize());

@@ -22,7 +22,7 @@ CYAN='\033[0;36m'
 WHITE='\033[0;37m'
 
 #COMMAND
-STOP_CONTAINERS="docker stop ft_transcendence_postgres ft_transcendence_pgadmin ft_transcendence_redis"
+STOP_CONTAINERS="docker stop ft_transcendence_postgres ft_transcendence_pgadmin"
 
 # Build upload directory for avatar upload
 [ ! -d ./upload/ ] && mkdir ./upload/
