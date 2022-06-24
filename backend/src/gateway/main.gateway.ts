@@ -245,6 +245,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.data.user.id,
 			room,
 		);
+		const userLeftInRoom = await this.roomService.getOneUserLeftInRoom(
+			room,
+		);
+		if (!userLeftInRoom) {
+			await this.roomService.deleteRoom(room);
+			client.emit('room deleted');
+		}
 		await this.getPublicRoomsList(client);
 	}
 
