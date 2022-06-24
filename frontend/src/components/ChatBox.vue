@@ -124,11 +124,15 @@ onUnmounted(() => {
 
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
-  if (input.value)
+  if (input.value) {
     socket.emit("addMessage", {
       text: input.value,
       room: { name: route.params.roomName },
+      secondUserId: currentRoom.value.secondParticipant
+        ? currentRoom.value.secondParticipant[0]
+        : undefined,
     });
+  }
   input.value = "";
 }
 
