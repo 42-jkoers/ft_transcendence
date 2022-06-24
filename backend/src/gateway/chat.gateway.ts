@@ -49,9 +49,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				await this.roomService.getRoomsForUser(user.id); //TODO get only room names from room service
 			roomEntities.forEach((room) => {
 				client.join(room.name);
-				console.log(
-					`join on connection: ${user.username} w/${client.id} has joined room ${room.name}`,
-				);
 			}); //each new socket connection joins the room that the user is already a part of
 			client.join(user.id.toString()); //all clients join a unique room called by their ids. this is needed to fetch all sockets of that user
 		} else {
@@ -110,13 +107,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
 		client.join(response.data);
-		console.log(
-			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
-		);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
-	async getPublicRoomsList(client: Socket) {
+	async getPublicRoomsList(client) {
 		const publicRooms: RoomEntity[] =
 			// await this.roomService.getAllPublicRoomsWithUserRole();
 			await this.roomService.getAllPublicRoomsWithUserRole(
@@ -224,7 +218,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		const user: UserI = await this.userService.findByID(info.userId);
 		await this.roomService.addVisitorToRoom(user.id, room);
-		// client.join(room.name); //FIXME how to join client sockets. client socket is different than the user being added
-		// await this.getPublicRoomsList(client); //FIXME how to refresh this in added users page?
+		const sockets = await this.server.in(user.id.toString()).fetchSockets(); //fetches all connected sockets for this specific user
+		for (const socket of sockets) {
+			socket.join(room.name); //joins each socket of the added user to this room
+			console.log(`${user.username} has been added to ${room.name}`);
+			await this.getPublicRoomsList(socket); //to refresh rooms in added users page
+		}
 	}
 }
