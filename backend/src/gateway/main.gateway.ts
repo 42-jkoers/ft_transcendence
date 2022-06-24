@@ -22,17 +22,21 @@ import { plainToClass } from 'class-transformer';
 import { RoomForUserDto } from 'src/chat/room/dto';
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
+import { GameService } from '../game/game.service';
+import { CreateGameDto } from 'src/game/game.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
 }) //allows us to make use of any WebSockets library (in our case socket.io)
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+
+export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private readonly authService: AuthService,
 		private readonly roomService: RoomService,
 		private readonly connectedUserService: ConnectedUserService,
 		private readonly messageService: MessageService,
 		private readonly userService: UserService,
+		private readonly gameService: GameService,
 	) {}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -209,5 +213,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			room.password,
 		);
 		client.emit('isRoomPasswordMatched', isMatched);
+	}
+
+	@UseFilters(new WsExceptionFilter())
+	@UsePipes(new ValidationPipe({ transform: true }))
+	@SubscribeMessage('createGame')
+	async createGame(
+		@MessageBody() game: CreateGameDto,
+		@ConnectedSocket() client: Socket,
+	) {
+		await this.gameService.createGame(game, client.data.user);
 	}
 }

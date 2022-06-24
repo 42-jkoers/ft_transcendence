@@ -12,6 +12,7 @@ import ChatBox from "@/components/ChatBox.vue";
 import UserProfileCard from "@/components/UserProfileCard.vue";
 import storeUser from "@/store";
 import FriendsView from "@/views/FriendsView.vue";
+import GameView from "@/views/GameView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -82,6 +83,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/coming-soon",
     name: "ComingSoon",
     component: ComingSoonView,
+  },
+  {
+    path: "/game",
+    name: "Game",
+    component: GameView,
   },
 ];
 
