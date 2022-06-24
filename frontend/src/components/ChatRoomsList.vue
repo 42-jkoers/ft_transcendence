@@ -150,7 +150,9 @@ const menuItems = ref([
     label: "Leave chat",
     // icon: "pi pi-exclamation-circle",
     visible: () => !isInRoom(selectedRoom.value.userRole),
-    disabled: () => selectedRoom.value.name === "general",
+    disabled: () =>
+      selectedRoom.value.name === "general" ||
+      selectedRoom.value.isDirectMessage,
     command: () => confirmLeave(selectedRoom),
   },
   {
