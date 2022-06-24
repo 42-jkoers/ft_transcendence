@@ -124,23 +124,13 @@ export class UserService {
 	}
 
 	async getNonMemberUsers(roomName: string): Promise<UserI[]> {
-		//TODO do same query with roomName?
-		const room = await this.roomService.findRoomByName(roomName);
-		const roomId = room.id;
-		console.log(`${roomName}'s id is ${roomId}`);
 		const userList = await this.userRepository
 			.createQueryBuilder('user')
-			.leftJoinAndSelect(
-				'user.userToRooms',
-				'userToRooms',
-				'userToRooms.roomId = :roomId', //atm this get member users
-				{ roomId },
-			)
+			.leftJoinAndSelect('user.userToRooms', 'userToRooms')
+			.leftJoinAndSelect('userToRooms.room', 'room')
+			.where('room.name != :roomName', { roomName })
 			.getMany();
-		console.log('user service\n', userList);
-		return userList;
-		// .leftJoinAndSelect('userToRooms.room', 'room')
-		// .where('room.id = :roomId', { roomId })
-		// .where('room.name = :roomName', { roomName })
+		// console.log('user service\n', userList);
+		return userList; //FIXME atm this returns all the registered users
 	}
 }
