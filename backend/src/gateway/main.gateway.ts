@@ -222,7 +222,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() game: CreateGameDto,
 		@ConnectedSocket() client: Socket,
 	) {
-		console.log('aaaaaaa')
 		const id = client.data.user.id;
 		await this.gameService.createGame(game, id);
 	}
