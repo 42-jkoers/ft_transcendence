@@ -214,4 +214,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		client.emit('getNonMemberUsers', response);
 	}
+
+	@SubscribeMessage('userAddsAnotherUserToRoom')
+	async userAddsAnotherUserToRoom(
+		@MessageBody() info: { userId: number; roomName: string },
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			info.roomName,
+		);
+		const user: UserI = await this.userService.findByID(info.userId);
+		await this.roomService.addVisitorToRoom(user.id, room);
+		// client.join(room.name); //FIXME how to join client sockets. client socket is different than the user being added
+		// await this.getPublicRoomsList(client); //FIXME how to refresh this in added users page?
+	}
 }
