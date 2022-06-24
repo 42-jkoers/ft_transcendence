@@ -177,9 +177,6 @@ export class RoomService {
 		currentUserId: number,
 		dMRoomId: number,
 	): Promise<User> {
-		console.log('currentUserId, ', currentUserId);
-		console.log('dMRoomId, ', dMRoomId);
-
 		const secondParticipant = await getRepository(User)
 			.createQueryBuilder('user')
 			.innerJoin('user.userToRooms', 'userToRooms')
