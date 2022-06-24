@@ -32,7 +32,7 @@ const props = defineProps(["isDialogVisible"]);
 const emit = defineEmits(["update:isDialogVisible"]);
 const userList = ref();
 
-socket.emit("getNonMemberUsers", "general");
+socket.emit("getNonMemberUsers", route.params.roomName);
 
 socket.on("getNonMemberUsers", (response) => {
   userList.value = response;
