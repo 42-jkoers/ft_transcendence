@@ -4,6 +4,7 @@ import { GameEntity } from './game.entity';
 import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateGameDto } from './game.dto';
+import User from 'src/user/user.entity';
 
 Injectable();
 export class GameService {
@@ -16,11 +17,11 @@ export class GameService {
 
 	async createGame(
 		payload: CreateGameDto,
-		creatorUID: number,
+		creator: User,
 	): Promise<GameEntity | null> {
 		const newGame: GameEntity = this.gameEntityRepository.create(payload);
 		newGame.name = payload.name;
-		newGame.players = [await this.userService.getUserByID(creatorUID)];
+		newGame.players = [creator];
 		console.log('created game', newGame);
 		await this.gameEntityRepository.save(newGame);
 		return newGame;
