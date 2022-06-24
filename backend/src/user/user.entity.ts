@@ -8,10 +8,10 @@ import {
 	JoinColumn,
 	JoinTable,
 	ManyToMany,
-	ManyToOne,
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
+import { GameEntity } from 'src/game/game.entity';
 
 @Entity()
 export class User {
@@ -50,6 +50,10 @@ export class User {
 
 	@OneToMany(() => MessageEntity, (message) => message.user)
 	messages: MessageEntity[];
+
+	@ManyToMany(() => GameEntity, (game) => game.players)
+	@JoinTable() // the user is the owner of the game
+	games: GameEntity[];
 }
 
 export default User;
