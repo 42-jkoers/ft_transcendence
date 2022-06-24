@@ -8,7 +8,7 @@
       @keyup.enter="createGame"
     />
     <div class="input-group-append">
-      <button class="send-button" @click="createGame">Create room</button>
+      <button class="send-button" @click="createGame">Create game</button>
     </div>
   </form>
 </template>
@@ -25,6 +25,6 @@ onMounted(() => {
 });
 function createGame() {
   console.log("createGame");
-  socket.emit("gameStarted", { name: `game at ${new Date().toISOString()}` });
+  socket.emit("createGame", { name: `game at ${new Date().toISOString()}` });
 }
 </script>

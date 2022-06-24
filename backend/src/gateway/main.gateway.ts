@@ -172,11 +172,12 @@ export class MainGateway
 
 	@UseFilters(new WsExceptionFilter())
 	@UsePipes(new ValidationPipe({ transform: true }))
-	@SubscribeMessage('gameStarted')
-	async gameStarted(
+	@SubscribeMessage('createGame')
+	async createGame(
 		@MessageBody() game: CreateGameDto,
 		@ConnectedSocket() client: Socket,
 	) {
+		console.log('aaaaaaa')
 		const id = client.data.user.id;
 		await this.gameService.createGame(game, id);
 	}
