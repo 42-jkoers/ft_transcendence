@@ -53,7 +53,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					`join on connection: ${user.username} w/${client.id} has joined room ${room.name}`,
 				);
 			}); //each new socket connection joins the room that the user is already a part of
-			// client.join(user.id.toString()); TODO implement this for private messaging
+			client.join(user.id.toString()); //all clients join a unique room called by their ids. this is needed to fetch all sockets of that user
 		} else {
 			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
