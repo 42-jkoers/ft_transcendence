@@ -24,6 +24,7 @@ import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
+import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -55,7 +56,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					`join on connection: ${user.username} w/${client.id} has joined room ${room.name}`,
 				);
 			}); //each new socket connection joins the room that the user is already a part of
-			// client.join(user.id.toString()); TODO implement this for private messaging
+			client.join(user.id.toString());
 		} else {
 			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
@@ -82,20 +83,50 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages
-	async handleMessage(client: Socket, message: MessageI) {
+	async handleMessage(client: Socket, addMessageDto: AddMessageDto) {
 		const selectedRoom: RoomEntity = await this.roomService.findRoomByName(
-			message.room.name,
+			addMessageDto.room.name,
 		);
 		const user: UserI = await this.userService.findByID(
 			client.data.user.id,
 		);
+		const message: MessageI = {
+			text: addMessageDto.text,
+			user: undefined,
+			room: undefined,
+			created_at: undefined,
+			updated_at: undefined,
+		};
 		const createdMessage: MessageI = await this.messageService.create(
 			message,
 			user,
 			selectedRoom,
 		);
+		if (selectedRoom.isDirectMessage) {
+			const secondUserId = addMessageDto.secondUserId;
+			const publicRooms: RoomEntity[] =
+				await this.roomService.getAllPublicRoomsWithUserRole(
+					secondUserId,
+				);
+			const response =
+				await this.roomService.transformDBDataToDtoForClient(
+					publicRooms,
+					secondUserId,
+				);
+			const connectedUsers = await this.connectedUserService.findByUserId(
+				secondUserId,
+			);
+			// every socket of the second user in the DM room is joining
+			for (const conntectedUser of connectedUsers) {
+				this.server.sockets.sockets
+					.get(conntectedUser.socketID)
+					.join(selectedRoom.name);
+			}
+			this.server
+				.to(secondUserId.toString())
+				.emit('postPublicRoomsList', response);
+		}
 		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
-		//TODO this.server.to(selectedRoom.name).to(user.id.toString()).emit('messageAdded', createdMessage);FOR DM?
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
@@ -133,6 +164,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		await this.getPublicRoomsList(client);
 		client.emit('postPrivateChatRoom', response);
+		client.join(response.name);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
