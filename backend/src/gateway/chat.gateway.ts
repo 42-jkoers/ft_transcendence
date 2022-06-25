@@ -201,12 +201,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.emit('isRoomPasswordMatched', isMatched);
 	}
 
-	@SubscribeMessage('getNonMemberUsers')
-	async getNonMemberUsers(client: Socket, roomName: string) {
-		const response: UserI[] = await this.userService.getNonMemberUsers(
-			roomName,
+	@SubscribeMessage('getOneRoomWithUserToRoomRelations')
+	async getOneRoomWithUserToRoomRelations(client: Socket, roomName: string) {
+		const room: RoomEntity =
+			await this.roomService.getSpecificRoomWithUserToRoomRelations(
+				roomName,
+			);
+		client.emit('getOneRoomWithUserToRoomRelations', room);
+	}
+
+	@SubscribeMessage('getAllRegisteredUsersExceptYourselfAndAdmin')
+	async getAllRegisteredUsersExceptYourselfAndAdmin(client: Socket) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
 		);
-		client.emit('getNonMemberUsers', response);
+		const response: UserI[] =
+			await this.userService.getAllRegisteredUsersExceptYourselfAndAdmin(
+				user.username,
+			);
+		client.emit('getAllRegisteredUsersExceptYourselfAndAdmin', response);
 	}
 
 	@SubscribeMessage('userAddsAnotherUserToRoom')
