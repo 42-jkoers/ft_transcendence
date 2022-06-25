@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto, UpdateUserProfileDto } from './dto';
 import { UserI } from './user.interface';
@@ -123,14 +123,14 @@ export class UserService {
 		return await this.getUserByID(userId);
 	}
 
-	async getNonMemberUsers(roomName: string): Promise<UserI[]> {
+	async getAllRegisteredUsersExceptYourselfAndAdmin(
+		userName: string,
+	): Promise<UserI[]> {
 		const userList = await this.userRepository
 			.createQueryBuilder('user')
-			.leftJoinAndSelect('user.userToRooms', 'userToRooms')
-			.leftJoinAndSelect('userToRooms.room', 'room')
-			.where('room.name != :roomName', { roomName })
+			.where({ username: Not(userName) })
+			.andWhere({ username: Not('admin') })
 			.getMany();
-		// console.log('user service\n', userList);
-		return userList; //FIXME atm this returns all the registered users
+		return userList;
 	}
 }
