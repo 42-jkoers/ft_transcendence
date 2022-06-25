@@ -33,7 +33,7 @@ const props = defineProps(["isDialogVisible"]);
 const emit = defineEmits(["update:isDialogVisible"]);
 const toast = useToast();
 const userList = ref();
-const roomWithUserRole = ref();
+const roomWithUserRelations = ref();
 
 socket.emit(
   "getAllRegisteredUsersExceptYourselfAndAdmin",
@@ -45,7 +45,7 @@ socket.on("getAllRegisteredUsersExceptYourselfAndAdmin", (response) => {
 
 socket.emit("getOneRoomWithUserToRoomRelations", route.params.roomName);
 socket.on("getOneRoomWithUserToRoomRelations", (response) => {
-  roomWithUserRole.value = response;
+  roomWithUserRelations.value = response;
 });
 
 const onRow = (event) => {
@@ -63,11 +63,12 @@ const onRow = (event) => {
       userId: user.id,
       roomName: route.params.roomName,
     });
+    socket.emit("getOneRoomWithUserToRoomRelations", route.params.roomName);
   }
 };
 
 const checkIfUserIsInRoom = (userName: string) => {
-  for (var userToRoom of roomWithUserRole.value.userToRooms)
+  for (var userToRoom of roomWithUserRelations.value.userToRooms)
     if (userToRoom.user.username === userName) return true;
 };
 
