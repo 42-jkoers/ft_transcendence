@@ -13,7 +13,16 @@
       dataKey="id"
       @rowClick="onRow"
     >
-      <Column field="username" header="Users"> </Column>
+      <Column field="username" header="Users"></Column>
+      <Column field="isUser">
+        <template #body="slotProps">
+          <div>
+            <p v-if="checkIfUserIsInRoom(slotProps.data.username)">
+              already in room
+            </p>
+          </div>
+        </template>
+      </Column>
     </DataTable>
   </Dialog>
 </template>
