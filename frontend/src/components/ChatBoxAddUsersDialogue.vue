@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits, defineProps, inject, computed } from "vue";
+import { ref, defineEmits, defineProps, inject } from "vue";
 import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
 import Dialog from "primevue/dialog";
