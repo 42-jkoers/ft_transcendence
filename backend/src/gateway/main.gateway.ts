@@ -116,15 +116,20 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					publicRooms,
 					secondUserId,
 				);
-			const connectedUsers = await this.connectedUserService.findByUserId(
-				secondUserId,
-			);
-			// every socket of the second user in the DM room is joining
-			for (const conntectedUser of connectedUsers) {
-				this.server.sockets.sockets
-					.get(conntectedUser.socketID)
-					.join(selectedRoom.name);
-			}
+
+			//getting all sockets in a selected room and joining them to the room
+			this.server
+				.in(selectedRoom.name)
+				.allSockets()
+				.then((sockets) => {
+					// console.log('\n WHICH SOCKETS:\n', sockets);
+					for (const socket in sockets) {
+						this.server.sockets.sockets
+							.get(socket)
+							.join(selectedRoom.name);
+					}
+				});
+
 			this.server
 				.to(secondUserId.toString())
 				.emit('postPublicRoomsList', response);
@@ -140,7 +145,9 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@UseFilters(new WsExceptionFilter())
-	@UsePipes(new ValidationPipe({ transform: true }))
+	//ValidationPipe provides a convenient approach to enforce validation rules for all incoming client payloads,
+	// where the specific rules are declared with simple annotations in local class/DTO declarations in each module.
+	@UsePipes(new ValidationPipe({ transform: true })) // transform can automatically transform JS object payloads to be objects typed according to their DTO classes.
 	@SubscribeMessage('createRoom')
 	async handleCreateRoom(
 		@MessageBody() room: createRoomDto,
