@@ -1,7 +1,10 @@
 <template>
   <div>
     <Panel v-if="currentRoom" :header="currentRoom.displayName">
-      <template #icons>
+      <template
+        v-if="currentRoom && currentRoom.isDirectMessage === false"
+        #icons
+      >
         <PrimeVueButton
           label="Add User"
           icon="pi pi-users"
