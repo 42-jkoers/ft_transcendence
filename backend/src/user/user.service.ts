@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
+import { Repository, getConnection, Not } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto, UpdateUserProfileDto } from './dto';
 import { UserI } from './user.interface';
 import { RoomService } from '../chat/room/room.service';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
+import { UserToRoomEntity } from 'src/chat/room/entities/user.to.room.entity';
+import ConnectedUserEntity from 'src/chat/connected-user/connected-user.entity';
+import { MessageEntity } from 'src/chat/message/message.entity';
 
 @Injectable()
 export class UserService {
@@ -121,6 +124,33 @@ export class UserService {
 			});
 		}
 		return await this.getUserByID(userId);
+	}
+
+	async deleteUser(userId: number) {
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(ConnectedUserEntity)
+			.where('userId = :userId', { userId })
+			.execute();
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(MessageEntity)
+			.where('userId = :userId', { userId })
+			.execute();
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(UserToRoomEntity)
+			.where('userId = :userId', { userId })
+			.execute();
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(User)
+			.where('id = :userId', { userId })
+			.execute();
 	}
 
 	async getAllRegisteredUsersExceptYourselfAndAdmin(

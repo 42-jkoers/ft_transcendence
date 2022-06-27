@@ -19,7 +19,7 @@ const MenuItems = ref([
   {
     label: "Game",
     icon: "pi pi-fw pi-discord",
-    to: { name: "ComingSoon" },
+    to: { name: "Game" },
   },
   {
     label: "Profile",
