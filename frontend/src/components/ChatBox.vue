@@ -182,13 +182,16 @@ const items = ref([
   {
     label: "Play pong",
     icon: "pi pi-fw pi-caret-right",
+    visible: () => store.state.user.id !== computedID.value,
   }, //TODO add a View to play game when we have it ready
   {
     separator: true,
   },
   {
     label: "Set admin",
-    visible: () => isOwner(currentRoom.value.userRole),
+    visible: () =>
+      isOwner(currentRoom.value.userRole) &&
+      store.state.user.id !== computedID.value,
     command: () =>
       socket.emit("setNewUserRole", {
         newRole: UserRole.ADMIN,
@@ -199,15 +202,17 @@ const items = ref([
   {
     label: "Ban user",
     visible: () =>
-      isOwner(currentRoom.value.userRole) ||
+      (store.state.user.id !== computedID.value &&
+        isOwner(currentRoom.value.userRole)) ||
       isAdmin(currentRoom.value.userRole),
     command: () => socket.emit("banUserFromRoom"), //TODO pass user.id & room.name & add backend logic
   },
   {
     label: "Mute user",
     visible: () =>
-      isOwner(currentRoom.value.userRole) ||
-      isAdmin(currentRoom.value.userRole),
+      store.state.user.id !== computedID.value &&
+      (isOwner(currentRoom.value.userRole) ||
+        isAdmin(currentRoom.value.userRole)),
     command: () => socket.emit("muteUserInRoom"), //TODO pass user.id & room.name & add backend logic
   },
 ]);
