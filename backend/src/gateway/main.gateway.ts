@@ -18,8 +18,7 @@ import { MessageService } from '../chat/message/message.service';
 import { WsExceptionFilter } from '../exceptions/WsExceptionFilter';
 import { UseFilters } from '@nestjs/common';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
-import { plainToClass } from 'class-transformer';
-import { RoomForUserDto } from 'src/chat/room/dto';
+
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
@@ -135,61 +134,35 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			dMRoom,
 			client.data.user.id,
 		);
-		await this.getPublicRoomsList(client);
 		client.emit('postPrivateChatRoom', createdDMRoom);
 
+		// fetching sockets of both users inside the private room
 		const secondUserId = dMRoom.userIds[0];
-		const publicRooms: RoomEntity[] =
-			await this.roomService.getAllPublicRoomsWithUserRole(secondUserId);
-		const roomsList = await this.roomService.transformDBDataToDtoForClient(
-			publicRooms,
-			secondUserId,
-		);
-
 		const sockets = await this.server
 			.in(client.data.user.id.toString())
 			.in(secondUserId.toString())
 			.fetchSockets();
-
 		for (const socket of sockets) {
 			socket.join(createdDMRoom.name);
 		}
 
+		const roomsList = await this.roomService.getPublicRoomsList(
+			secondUserId,
+		);
 		this.server
 			.to(secondUserId.toString())
-			.to(client.data.user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
 	async getPublicRoomsList(client) {
-		const publicRooms: RoomEntity[] =
-			await this.roomService.getAllPublicRoomsWithUserRole(
-				client.data.user.id,
-			);
-		const response = await this.roomService.transformDBDataToDtoForClient(
-			publicRooms,
+		const roomsList = await this.roomService.getPublicRoomsList(
 			client.data.user.id,
 		);
-		client.emit('postPublicRoomsList', response);
-	}
-
-	@SubscribeMessage('getUserRoomsList')
-	async getUserRoomsList(client: Socket) {
-		if (client.data.user) {
-			const roomEntities: RoomEntity[] =
-				await this.roomService.getRoomsForUser(client.data.user.id);
-
-			// we don't need all information from the RoomEntity returned to the user, we'll have to serialize it
-			// by converting roomentity type to dto with several excluded and transformed properties
-			const response: RoomForUserDto[] = roomEntities.map((room) => {
-				const listedRoom = plainToClass(RoomForUserDto, room); //
-				listedRoom.userRole = room.userToRooms[0].role; // getting role from userToRooms array
-				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
-				return listedRoom;
-			});
-			client.emit('getUserRoomsList', response);
-		}
+		this.server
+			.to(client.data.user.id.toString())
+			.emit('postPublicRoomsList', roomsList);
 	}
 
 	@SubscribeMessage('updateRoomPassword')
