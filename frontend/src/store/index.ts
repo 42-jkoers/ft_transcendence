@@ -53,11 +53,7 @@ const storeUser = createStore({
             commit("updateId", response.data.id);
             commit("updateUserAvatar", response.data.avatar);
             // commit("updateTwoFactor", response.data.avatar); //TODO: 2F
-            if (!response.data.username) {
-              router.push({ name: "Register" });
-            } else {
-              commit("updateUserName", response.data.username);
-            }
+            commit("updateUserName", response.data.username);
           })
           .catch(() => {
             console.log("user is not unauthorized");
