@@ -13,6 +13,7 @@ import UserProfileCard from "@/components/UserProfileCard.vue";
 import storeUser from "@/store";
 import FriendsView from "@/views/FriendsView.vue";
 import GameView from "@/views/GameView.vue";
+import PlayView from "@/views/PlayView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -88,6 +89,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/game",
     name: "Game",
     component: GameView,
+  },
+  {
+    path: "/play/:id",
+    name: "Play",
+    component: PlayView,
   },
 ];
 

@@ -11,7 +11,7 @@ import {
 @Entity()
 export class GameEntity {
 	@PrimaryGeneratedColumn()
-	id: number;
+	id: string;
 
 	@Column()
 	name: string;

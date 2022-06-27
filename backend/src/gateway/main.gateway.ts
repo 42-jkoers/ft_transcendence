@@ -28,7 +28,6 @@ import { CreateGameDto } from 'src/game/game.dto';
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
 }) //allows us to make use of any WebSockets library (in our case socket.io)
-
 export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private readonly authService: AuthService,
@@ -223,5 +222,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 	) {
 		await this.gameService.createGame(game, client.data.user);
+	}
+
+	@SubscribeMessage('getGame')
+	async getGame(client: Socket, id: string) {
+		const game = await this.gameService.findByID(id);
+		client.emit('getGame', game);
 	}
 }

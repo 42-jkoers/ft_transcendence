@@ -35,4 +35,10 @@ export class GameService {
 			.getMany();
 		return games;
 	}
+
+	async findByID(id: string): Promise<GameEntity | undefined> {
+		return await this.gameEntityRepository.findOne({
+			where: { id },
+		});
+	}
 }
