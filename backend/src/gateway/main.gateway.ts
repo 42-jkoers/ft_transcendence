@@ -105,30 +105,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			user,
 			selectedRoom,
 		);
-		if (selectedRoom.isDirectMessage) {
-			const secondUserId = addMessageDto.secondUserId;
-			const publicRooms: RoomEntity[] =
-				await this.roomService.getAllPublicRoomsWithUserRole(
-					secondUserId,
-				);
-			const response =
-				await this.roomService.transformDBDataToDtoForClient(
-					publicRooms,
-					secondUserId,
-				);
-			const connectedUsers = await this.connectedUserService.findByUserId(
-				secondUserId,
-			);
-			// every socket of the second user in the DM room is joining
-			for (const conntectedUser of connectedUsers) {
-				this.server.sockets.sockets
-					.get(conntectedUser.socketID)
-					.join(selectedRoom.name);
-			}
-			this.server
-				.to(secondUserId.toString())
-				.emit('postPublicRoomsList', response);
-		}
 		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
 	}
 
@@ -161,13 +137,35 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() dMRoom: directMessageDto,
 		@ConnectedSocket() client: Socket,
 	) {
-		const response = await this.roomService.createPrivateChatRoom(
+		const createdDMRoom = await this.roomService.createPrivateChatRoom(
 			dMRoom,
 			client.data.user.id,
 		);
 		await this.getPublicRoomsList(client);
-		client.emit('postPrivateChatRoom', response);
-		client.join(response.name);
+		client.emit('postPrivateChatRoom', createdDMRoom);
+
+		const secondUserId = dMRoom.userIds[0];
+		const publicRooms: RoomEntity[] =
+			await this.roomService.getAllPublicRoomsWithUserRole(secondUserId);
+		const roomsList = await this.roomService.transformDBDataToDtoForClient(
+			publicRooms,
+			secondUserId,
+		);
+
+		const sockets = await this.server
+			.in(client.data.user.id.toString())
+			.in(secondUserId.toString())
+			.fetchSockets();
+
+		for (const socket of sockets) {
+			console.log('\nsocket: ', socket);
+			socket.join(createdDMRoom.name);
+		}
+
+		this.server
+			.to(secondUserId.toString())
+			.to(client.data.user.id.toString())
+			.emit('postPublicRoomsList', roomsList);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
