@@ -35,6 +35,18 @@ export class RoomService {
 		});
 	}
 
+	async getSpecificRoomWithUserToRoomRelations(
+		roomName: string,
+	): Promise<RoomEntity> {
+		const specificRoom = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			.where('room.name = :roomName', { roomName })
+			.leftJoinAndSelect('room.userToRooms', 'userToRooms')
+			.leftJoinAndSelect('userToRooms.user', 'user')
+			.getOne();
+		return specificRoom;
+	}
+
 	// emit
 	async createRoom(
 		roomPayload: createRoomDto,

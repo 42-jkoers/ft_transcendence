@@ -1,8 +1,18 @@
 <template>
   <div>
-    <Panel>
-      {{ $route.params.roomName }}
+    <Panel :header="$route.params.roomName">
+      <template #icons>
+        <PrimeVueButton
+          label="Add User"
+          icon="pi pi-users"
+          @click="onAddUserClick"
+        />
+      </template>
     </Panel>
+    <ChatBoxAddUsersDialogue
+      :isDialogVisible="displayAddUsersDialogue"
+      @update:isDialogVisible="displayAddUsersDialogue = $event"
+    />
     <ChatBoxUserProfileDialogue
       :isDialogVisible="displayUserProfileDialog"
       :clickedUserObject="clickedUser"
@@ -87,6 +97,7 @@ import UserProfileI from "../types/UserProfile.interface";
 import storeUser from "@/store";
 import ChatBoxUserProfileDialogue from "./ChatBoxUserProfileDialogue.vue";
 import { UserRole } from "@/types/UserRole.Enum";
+import ChatBoxAddUsersDialogue from "./ChatBoxAddUsersDialogue.vue";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
@@ -99,6 +110,7 @@ const computedID = computed(() => {
 }); //items ref params need a calculated property
 
 const displayUserProfileDialog = ref(false);
+const displayAddUsersDialogue = ref(false);
 
 const store = useStore();
 const currentRoom = computed(() =>
@@ -135,6 +147,10 @@ function sendMessage() {
 const addUserToRoom = () => {
   socket.emit("addUserToRoom", route.params.roomName);
 };
+
+function onAddUserClick() {
+  displayAddUsersDialogue.value = true;
+}
 
 function onChipLeftClick(user: UserProfileI) {
   clickedUser.value = user;

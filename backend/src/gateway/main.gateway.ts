@@ -28,7 +28,6 @@ import { CreateGameDto } from 'src/game/game.dto';
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
 }) //allows us to make use of any WebSockets library (in our case socket.io)
-
 export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private readonly authService: AuthService,
@@ -53,11 +52,8 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				await this.roomService.getRoomsForUser(user.id); //TODO get only room names from room service
 			roomEntities.forEach((room) => {
 				client.join(room.name);
-				console.log(
-					`join on connection: ${user.username} w/${client.id} has joined room ${room.name}`,
-				);
 			}); //each new socket connection joins the room that the user is already a part of
-			// client.join(user.id.toString()); TODO implement this for private messaging
+			client.join(user.id.toString()); //all clients join a unique room called by their ids. this is needed to fetch all sockets of that user
 		} else {
 			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
@@ -118,13 +114,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
 		client.join(response.data);
-		console.log(
-			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
-		);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
-	async getPublicRoomsList(client: Socket) {
+	async getPublicRoomsList(client) {
 		const publicRooms: RoomEntity[] =
 			// await this.roomService.getAllPublicRoomsWithUserRole();
 			await this.roomService.getAllPublicRoomsWithUserRole(
@@ -213,6 +206,44 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			room.password,
 		);
 		client.emit('isRoomPasswordMatched', isMatched);
+	}
+
+	@SubscribeMessage('getOneRoomWithUserToRoomRelations')
+	async getOneRoomWithUserToRoomRelations(client: Socket, roomName: string) {
+		const room: RoomEntity =
+			await this.roomService.getSpecificRoomWithUserToRoomRelations(
+				roomName,
+			);
+		client.emit('getOneRoomWithUserToRoomRelations', room);
+	}
+
+	@SubscribeMessage('getAllRegisteredUsersExceptYourselfAndAdmin')
+	async getAllRegisteredUsersExceptYourselfAndAdmin(client: Socket) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		const response: UserI[] =
+			await this.userService.getAllRegisteredUsersExceptYourselfAndAdmin(
+				user.username,
+			);
+		client.emit('getAllRegisteredUsersExceptYourselfAndAdmin', response);
+	}
+
+	@SubscribeMessage('userAddsAnotherUserToRoom')
+	async userAddsAnotherUserToRoom(
+		@MessageBody() info: { userId: number; roomName: string },
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			info.roomName,
+		);
+		const user: UserI = await this.userService.findByID(info.userId);
+		await this.roomService.addVisitorToRoom(user.id, room);
+		const sockets = await this.server.in(user.id.toString()).fetchSockets(); //fetches all connected sockets for this specific user
+		for (const socket of sockets) {
+			socket.join(room.name); //joins each socket of the added user to this room
+			console.log(`${user.username} has been added to ${room.name}`);
+			await this.getPublicRoomsList(socket); //to refresh rooms in added users page
+		}
 	}
 
 	@UseFilters(new WsExceptionFilter())

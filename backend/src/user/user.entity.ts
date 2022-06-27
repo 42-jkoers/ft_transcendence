@@ -43,7 +43,7 @@ export class User {
 	@OneToMany(() => ConnectedUserEntity, (connection) => connection.user)
 	connections: ConnectedUserEntity[];
 
-	@OneToMany(() => UserToRoomEntity, (userToRoom) => userToRoom.room, {
+	@OneToMany(() => UserToRoomEntity, (userToRoom) => userToRoom.user, {
 		cascade: true,
 	})
 	public userToRooms!: UserToRoomEntity[];
