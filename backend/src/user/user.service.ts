@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, getConnection } from 'typeorm';
+import { Repository, getConnection, Not } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto, UpdateUserProfileDto } from './dto';
 import { UserI } from './user.interface';
@@ -157,5 +157,16 @@ export class UserService {
 			.from(User)
 			.where('id = :userId', { userId })
 			.execute();
+	}
+
+	async getAllRegisteredUsersExceptYourselfAndAdmin(
+		userName: string,
+	): Promise<UserI[]> {
+		const userList = await this.userRepository
+			.createQueryBuilder('user')
+			.where({ username: Not(userName) })
+			.andWhere({ username: Not('admin') })
+			.getMany();
+		return userList;
 	}
 }
