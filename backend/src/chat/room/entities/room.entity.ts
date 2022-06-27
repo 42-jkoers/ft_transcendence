@@ -3,6 +3,7 @@ import { RoomVisibilityType } from '../enums/room.visibility.enum';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserToRoomEntity } from './user.to.room.entity';
 import { Exclude } from 'class-transformer';
+import { MuteEntity } from './mute.entity';
 
 @Entity()
 export class RoomEntity {
@@ -33,4 +34,7 @@ export class RoomEntity {
 
 	@OneToMany(() => MessageEntity, (message) => message.room)
 	messages: MessageEntity[];
+
+	@OneToMany(() => MuteEntity, (mutes) => mutes.room)
+	mutes: MuteEntity[];
 }
