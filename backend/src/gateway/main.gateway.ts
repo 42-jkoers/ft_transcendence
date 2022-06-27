@@ -26,6 +26,7 @@ import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
 import { GameService } from '../game/game.service';
 import { CreateGameDto } from 'src/game/game.dto';
+import { SetRoomRoleDto } from 'src/chat/room/dto/set.room.role.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -145,7 +146,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		for (const socket of sockets) {
 			socket.join(createdDMRoom.name);
 		}
-
+		// both users in the room will have their roomlists updated:
 		const roomsList = await this.roomService.getPublicRoomsList(
 			secondUserId,
 		);
@@ -163,6 +164,35 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server
 			.to(client.data.user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
+	}
+
+	@SubscribeMessage('setNewUserRole')
+	async handleSetNewUserRole(socket: Socket, setRoleDto: SetRoomRoleDto) {
+		console.log('inside backend');
+
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			setRoleDto.roomName,
+		);
+		if (!room) return;
+		if (
+			await this.roomService.IsUserEligibleToSetRole(
+				socket.data.user.id,
+				room.id,
+				setRoleDto.newRole,
+			)
+		) {
+			await this.roomService.setUserRole(
+				setRoleDto.userToGetNewRoleId,
+				room.id,
+				setRoleDto.newRole,
+			);
+			const roomsList = await this.roomService.getPublicRoomsList(
+				setRoleDto.userToGetNewRoleId,
+			);
+			this.server
+				.to(setRoleDto.userToGetNewRoleId.toString())
+				.emit('postPublicRoomsList', roomsList);
+		}
 	}
 
 	@SubscribeMessage('updateRoomPassword')

@@ -189,7 +189,12 @@ const items = ref([
   {
     label: "Set admin",
     visible: () => isOwner(currentRoom.value.userRole),
-    command: () => socket.emit("setUserAsAdmin"), //TODO pass user.id & room.name & add backend logic
+    command: () =>
+      socket.emit("setNewUserRole", {
+        newRole: UserRole.ADMIN,
+        userToGetNewRoleId: computedID.value,
+        roomName: currentRoom.value.name,
+      }),
   },
   {
     label: "Ban user",
@@ -208,7 +213,7 @@ const items = ref([
 ]);
 
 const isOwner = (userRole: UserRole | undefined) =>
-  userRole === 0 ? true : false;
+  userRole === UserRole.OWNER ? true : false;
 const isAdmin = (userRole: UserRole | undefined) =>
   userRole === 1 ? true : false;
 </script>
