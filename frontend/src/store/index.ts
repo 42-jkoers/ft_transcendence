@@ -9,7 +9,7 @@ const storeUser = createStore({
       id: 0,
       username: "",
       avatar: "",
-      twoFactor: false,
+      twoFactorEnabled: false,
     },
   },
   getters: {
@@ -28,7 +28,7 @@ const storeUser = createStore({
       state.user.avatar = avatar;
     },
     updateTwoFactor(state, update) {
-      state.user.twoFactor = update;
+      state.user.twoFactorEnabled = update;
     },
     setAuthenticated(state) {
       state.isAuthenticated = true;
@@ -44,21 +44,45 @@ const storeUser = createStore({
           .get("http://localhost:3000/auth/status", {
             withCredentials: true,
           })
-          .then((response) => {
+          .then(async (response) => {
+            // console.log("before 2F");
+            // await axios
+            //   .get("http://localhost:8080/2fAuthenticate", {
+            //     withCredentials: true,
+            //   })
+            //   // await axios.get("http://localhost:8080/2fAuthenticate")
+            //   .then(() => {
+            //     console.log("after 2F");
             commit("setAuthenticated");
             commit("updateId", response.data.id);
             commit("updateUserAvatar", response.data.avatar);
-            // commit("updateTwoFactor", response.data.avatar); //TODO: 2F
+            commit("updateTwoFactor", response.data.isTwoFactorAuthEnabled);
             if (!response.data.username) {
               router.push({ name: "Register" });
             } else {
               commit("updateUserName", response.data.username);
             }
           })
+          // ;
+          // }
+          // )
           .catch(() => {
             console.log("user is not unauthorized");
           });
       }
+    },
+    //action to enable 2f when the value was updated from disable to enable
+    //otherwise just call the commit("updateTwoFactor", response.data.isTwoFactorAuthEnabled) if from enable to disable
+    async enable2F({ commit }) {
+      await axios
+        .get("http://localhost:3000/two-factor-auth/generate")
+        .then(() => {
+          //TODO do I really need response here? onlything I am doing is to update the two factor enable to true in the DB
+          commit("updateTwoFactor", true);
+        })
+        .catch(() => {
+          console.log("error on commit the two factor enable");
+        });
     },
     logout({ commit }) {
       commit("unsetAuthenticated");

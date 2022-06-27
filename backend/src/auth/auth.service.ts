@@ -8,12 +8,14 @@ import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import * as session from 'express-session';
 import { UserI } from '../user/user.interface';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly userService: UserService,
 		private readonly configService: ConfigService,
+		private readonly httpService: HttpService,
 	) {}
 
 	/*
@@ -23,9 +25,21 @@ export class AuthService {
 	async validateUser(userDto: ValidateUserDto): Promise<UserI> {
 		const user = await this.userService.findByIntraID(userDto.intraID);
 		if (user) {
+			// 	if (user.isTwoFactorAuthEnabled === true) {
+			// 		console.log('>> before get');
+			// 		const data = this.httpService.get(
+			// 			'http://localhost:8080/2fAuthenticate',
+			// 			{
+			// 				withCredentials: true,
+			// 			},
+			// 		);
+			// 	}
+			// 	console.log('>> after get');
 			return user;
 		}
+		// else {
 		return await this.registerUser(userDto.intraID);
+		// }
 	}
 
 	private async registerUser(intraID: string): Promise<UserI> {

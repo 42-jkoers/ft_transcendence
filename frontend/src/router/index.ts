@@ -13,6 +13,7 @@ import ChatBox from "@/components/ChatBox.vue";
 import UserProfileCard from "@/components/UserProfileCard.vue";
 import storeUser from "@/store";
 import FriendsView from "@/views/FriendsView.vue";
+import EnableTwoFactorView from "@/views/EnableTwoFactorView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -84,11 +85,15 @@ const routes: Array<RouteRecordRaw> = [
     name: "ComingSoon",
     component: ComingSoonView,
   },
-  //TODO
   {
-    path: "/temp",
-    name: "temp",
+    path: "/2fAuthenticate",
+    name: "2fAuthenticate",
     component: TwoFactorAuthView,
+  },
+  {
+    path: "/enableTwoFactor",
+    name: "enableTwoFactor",
+    component: EnableTwoFactorView,
   },
 ];
 
@@ -121,7 +126,7 @@ router.beforeEach(async (to) => {
   if (
     to.name !== "Register" &&
     to.name !== "UnAuthorized" &&
-    to.name !== "temp"
+    to.name !== "2fAuthenticate" //TODO remove the temp
   ) {
     await checkLogInState();
     if (to.name !== "Home" && storeUser.state.isAuthenticated === false) {

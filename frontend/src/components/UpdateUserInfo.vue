@@ -79,10 +79,11 @@ import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
 import UploadAvatar from "@/components/UploadAvatar.vue";
+import router from "@/router";
 
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
-const twoFactor = ref<boolean>(storeUser.state.user.twoFactor);
+const twoFactor = ref<boolean>(storeUser.state.user.twoFactorEnabled);
 const isUpdateSuccess = ref<boolean>(false);
 const isUserNameInvalid = ref<boolean>(false);
 const invalidUserNameMessage = ref<string>("");
@@ -134,6 +135,7 @@ async function updateData() {
       username: username.value,
       avatar: avatar.value,
       // TODO: add 2F
+      isTwoFactorAuthEnabled: twoFactor.value,
     };
     const response_post = await axios.post(
       "http://localhost:3000/user/profile/update-userprofile",
@@ -142,6 +144,7 @@ async function updateData() {
         withCredentials: true,
       }
     );
+
     // if username already exists, return undefined from response
     if (!response_post.data) {
       isUserNameInvalid.value = true;
@@ -152,8 +155,13 @@ async function updateData() {
       // update storeUser
       storeUser.state.user.username = username.value;
       storeUser.state.user.avatar = avatar.value;
-      storeUser.state.user.twoFactor = twoFactor.value;
       // send signal to parent component
+      //if the 2f is enabled, the user is routed to the generate qrcode page
+      if (!storeUser.state.user.twoFactorEnabled && twoFactor.value === true) {
+        router.push({ name: "enableTwoFactor" });
+      }
+      //update after check the value of the change on the 2fEnable
+      storeUser.state.user.twoFactorEnabled = twoFactor.value;
       emit("updated", true);
     }
   }
