@@ -44,10 +44,13 @@ const toast = useToast();
 const userList = ref();
 const roomWithUserRelations = ref();
 
-socket.emit(
-  "getAllRegisteredUsersExceptYourselfAndAdmin",
-  route.params.roomName
-);
+setTimeout(() => {
+  socket.emit(
+    "getAllRegisteredUsersExceptYourselfAndAdmin",
+    route.params.roomName
+  );
+}, 90);
+
 socket.on("getAllRegisteredUsersExceptYourselfAndAdmin", (response) => {
   userList.value = response;
 });
