@@ -150,7 +150,6 @@ const addUserToRoom = () => {
 
 function onAddUserClick() {
   displayAddUsersDialogue.value = true;
-  console.log(displayAddUsersDialogue.value);
 }
 
 function onChipLeftClick(user: UserProfileI) {
