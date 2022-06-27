@@ -152,7 +152,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			.fetchSockets();
 
 		for (const socket of sockets) {
-			console.log('\nsocket: ', socket);
 			socket.join(createdDMRoom.name);
 		}
 
