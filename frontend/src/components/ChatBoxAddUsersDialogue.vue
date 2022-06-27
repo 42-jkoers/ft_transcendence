@@ -85,6 +85,10 @@ const checkIfUserIsInRoom = (userName: string) => {
 };
 
 const handleClose = () => {
+  socket.emit(
+    "getAllRegisteredUsersExceptYourselfAndAdmin",
+    route.params.roomName
+  );
   emit("update:isDialogVisible", false);
 };
 </script>
