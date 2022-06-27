@@ -1,12 +1,15 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, getRepository, getConnection } from 'typeorm';
+import { Repository, getRepository, getConnection, Not } from 'typeorm';
+import { plainToClass } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
 import { RoomEntity } from './entities/room.entity';
 import { RoomVisibilityType } from './enums/room.visibility.enum';
 import { User } from 'src/user/user.entity';
 import { UserService } from '../../user/user.service';
-import { createRoomDto } from './dto';
+import { createRoomDto, RoomForUserDto } from './dto';
+import { directMessageDto } from './dto';
 import { UserToRoomEntity } from './entities/user.to.room.entity';
 import { UserRole } from './enums/user.role.enum';
 
@@ -35,6 +38,28 @@ export class RoomService {
 		});
 	}
 
+	async createPrivateChatRoom(
+		dMRoom: directMessageDto,
+		userIdToAdd: number,
+	): Promise<RoomForUserDto | undefined> {
+		const id: string = uuid();
+		const room: createRoomDto = {
+			name: `${id}`,
+			isDirectMessage: true,
+			visibility: RoomVisibilityType.PRIVATE,
+			password: null,
+		};
+		const newRoom: RoomEntity = await this.createAndSaveNewRoom(
+			room,
+			userIdToAdd,
+		);
+		await this.addUserToRoom(dMRoom.userIds[0], newRoom, UserRole.OWNER);
+		const response = plainToClass(RoomForUserDto, newRoom);
+		const secondUser = await this.userService.findByID(dMRoom.userIds[0]);
+		response.secondParticipant = [secondUser.id, secondUser.username];
+		return response;
+	}
+
 	async getSpecificRoomWithUserToRoomRelations(
 		roomName: string,
 	): Promise<RoomEntity> {
@@ -56,6 +81,7 @@ export class RoomService {
 			roomPayload,
 			userIdToAdd,
 		);
+		console.log('owner id in create room:', userIdToAdd);
 		return { status: newRoom ? 'OK' : 'ERROR', data: `${newRoom.name}` };
 	}
 
@@ -66,6 +92,7 @@ export class RoomService {
 		const newRoom = this.roomEntityRepository.create(roomPayload);
 		newRoom.name = roomPayload.name;
 		newRoom.visibility = roomPayload.visibility;
+		newRoom.isDirectMessage = roomPayload.isDirectMessage;
 		newRoom.password = await this.setRoomPassword(roomPayload.password);
 		try {
 			await this.roomEntityRepository.save(newRoom); // Saves a given entity in the database if the new room name doesn't exist.
@@ -136,12 +163,12 @@ export class RoomService {
 		);
 	}
 
-	async addVisitorToRoom(userToAddId: number, room: RoomEntity) {
-		await this.createManyToManyRelationship(
-			room,
-			userToAddId,
-			UserRole.VISITOR,
-		);
+	async addUserToRoom(
+		userToAddId: number,
+		room: RoomEntity,
+		userRole: UserRole,
+	) {
+		await this.createManyToManyRelationship(room, userToAddId, userRole);
 		await this.roomEntityRepository.save(room);
 	}
 
@@ -156,6 +183,29 @@ export class RoomService {
 			})
 			.execute();
 		await this.roomEntityRepository.save(room);
+	}
+
+	async getNonCurrentUserInDMRoom(
+		currentUserId: number,
+		dMRoomId: number,
+	): Promise<User> {
+		const secondParticipant = await getRepository(User)
+			.createQueryBuilder('user')
+			.innerJoin('user.userToRooms', 'userToRooms')
+			.where('userToRooms.roomId = :dMRoomId', { dMRoomId })
+			.andWhere({ id: Not(currentUserId) })
+			.getOne();
+		return secondParticipant;
+	}
+
+	async getPublicRoomsList(userId: number) {
+		const publicRooms: RoomEntity[] =
+			await this.getAllPublicRoomsWithUserRole(userId);
+		const response = await this.transformDBDataToDtoForClient(
+			publicRooms,
+			userId,
+		);
+		return response;
 	}
 
 	async getAllPublicRoomsWithUserRole(userId: number): Promise<RoomEntity[]> {
@@ -181,6 +231,36 @@ export class RoomService {
 			.addOrderBy('room.name')
 			.getMany();
 		return userRooms;
+	}
+
+	async transformDBDataToDtoForClient(
+		rooms: RoomEntity[],
+		currentUserId: number,
+	) {
+		const roomsForClient = await Promise.all(
+			rooms.map(async (room) => {
+				const listedRoom = plainToClass(RoomForUserDto, room);
+				if (room.isDirectMessage) {
+					const secondParticipant =
+						await this.getNonCurrentUserInDMRoom(
+							currentUserId,
+							room.id,
+						);
+					listedRoom.secondParticipant = secondParticipant
+						? [secondParticipant.id, secondParticipant.username]
+						: [];
+					listedRoom.displayName = secondParticipant
+						? secondParticipant.username
+						: room.name;
+				} else {
+					listedRoom.displayName = room.name;
+				}
+				listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
+				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
+				return listedRoom;
+			}),
+		);
+		return roomsForClient;
 	}
 
 	async getRoomsForUser(userId: number): Promise<RoomEntity[]> {

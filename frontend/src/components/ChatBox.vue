@@ -1,7 +1,10 @@
 <template>
   <div>
-    <Panel :header="$route.params.roomName">
-      <template #icons>
+    <Panel v-if="currentRoom" :header="currentRoom.displayName">
+      <template
+        v-if="currentRoom && currentRoom.isDirectMessage === false"
+        #icons
+      >
         <PrimeVueButton
           label="Add User"
           icon="pi pi-users"
@@ -136,11 +139,15 @@ onUnmounted(() => {
 
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
-  if (input.value)
+  if (input.value) {
     socket.emit("addMessage", {
       text: input.value,
       room: { name: route.params.roomName },
+      secondUserId: currentRoom.value.secondParticipant
+        ? currentRoom.value.secondParticipant[0]
+        : undefined,
     });
+  }
   input.value = "";
 }
 

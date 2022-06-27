@@ -9,6 +9,7 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { UserToRoomEntity } from 'src/chat/room/entities/user.to.room.entity';
 import ConnectedUserEntity from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
+import { UserRole } from 'src/chat/room/enums/user.role.enum';
 
 @Injectable()
 export class UserService {
@@ -51,14 +52,19 @@ export class UserService {
 		newUser.requestedFriends = [];
 		newUser.friends = [];
 		const createdUser: UserI = await this.userRepository.save(newUser);
-		await this.roomService.addVisitorToRoom(createdUser.id, defaultRoom);
+		await this.roomService.addUserToRoom(
+			createdUser.id,
+			defaultRoom,
+			UserRole.VISITOR,
+		);
 
 		//FIXME: temp for testing protected rooms:
 		const protectedWithPassword: RoomEntity =
 			await this.roomService.findRoomById(2);
-		await this.roomService.addVisitorToRoom(
+		await this.roomService.addUserToRoom(
 			createdUser.id,
 			protectedWithPassword,
+			UserRole.VISITOR,
 		);
 
 		return createdUser;
