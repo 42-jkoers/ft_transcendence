@@ -14,6 +14,8 @@ import { MessageEntity } from './message/message.entity';
 import { UserModule } from 'src/user/user.module';
 import { GameService } from 'src/game/game.service';
 import { GameEntity } from 'src/game/game.entity';
+import { MuteService } from './room/mute.service';
+import { MuteEntity } from './room/entities/mute.entity';
 
 @Module({
 	providers: [
@@ -22,6 +24,7 @@ import { GameEntity } from 'src/game/game.entity';
 		ConnectedUserService,
 		MessageService,
 		GameService,
+		MuteService,
 	],
 	imports: [
 		forwardRef(() => AuthModule),
@@ -34,6 +37,7 @@ import { GameEntity } from 'src/game/game.entity';
 			ConnectedUserEntity,
 			MessageEntity,
 			GameEntity,
+			MuteEntity,
 		]),
 	],
 	exports: [RoomService],
