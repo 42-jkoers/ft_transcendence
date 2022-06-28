@@ -3,7 +3,7 @@
     <div class="col-6">
       <WatchGame />
     </div>
-    <div>
+    <div style="margin: 0 auto">
       <JoinGame />
     </div>
   </div>

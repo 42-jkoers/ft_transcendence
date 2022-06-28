@@ -218,6 +218,7 @@ Tutorial:
 ******************************************
 (Tue) 2022-06-28
 	- setup GameView with WatchGame and JoinGame
+	- GameService add getGameList
 
 **************************
 **		Next To To				**
