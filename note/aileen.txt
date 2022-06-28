@@ -213,6 +213,12 @@ Tutorial:
 	- setup deregister process from both backend/frontend
 	- replace customized message with Toast in UpdateUserInfo component 
 
+******************************************
+**				Branch - 	watch_game					**
+******************************************
+(Tue) 2022-06-28
+	- setup GameView with WatchGame and JoinGame
+
 **************************
 **		Next To To				**
 **************************
