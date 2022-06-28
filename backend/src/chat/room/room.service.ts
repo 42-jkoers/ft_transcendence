@@ -330,4 +330,14 @@ export class RoomService {
 		await this.roomEntityRepository.save(room);
 		console.log(room);
 	}
+
+	async isUserMutedInRoom(userId: number, roomName: string) {
+		const isUserInMutesArray = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			.leftJoinAndSelect('room.mutes', 'mutes')
+			.where('mutes.userId = :userId', { userId })
+			.andWhere('room.name = :roomName', { roomName })
+			.getCount();
+		return isUserInMutesArray;
+	}
 }
