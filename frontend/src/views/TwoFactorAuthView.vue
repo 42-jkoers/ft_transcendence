@@ -45,7 +45,7 @@ async function submitCode() {
       // validate2F.value = true;
       console.log("success");
 
-      // router.push({ name: "UserHome" });
+      router.push({ name: "UserHome" });
     })
     .catch((error) => {
       validate2F.value = false;
