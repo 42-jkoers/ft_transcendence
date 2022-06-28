@@ -87,20 +87,21 @@
 import { ref, inject, onMounted, onUnmounted, computed } from "vue";
 import { Socket } from "socket.io-client";
 import MessageI from "../types/Message.interface";
-import Card from "primevue/card";
-import InputText from "primevue/inputtext";
-import PrimeVueButton from "primevue/button";
-import Panel from "primevue/panel";
 import { useRoute } from "vue-router";
 import moment from "moment";
-import Chip from "primevue/chip";
-import ContextMenu from "primevue/contextmenu";
 import { useStore } from "vuex";
 import UserProfileI from "../types/UserProfile.interface";
 import storeUser from "@/store";
 import ChatBoxUserProfileDialogue from "./ChatBoxUserProfileDialogue.vue";
 import { UserRole } from "@/types/UserRole.Enum";
 import ChatBoxAddUsersDialogue from "./ChatBoxAddUsersDialogue.vue";
+import Card from "primevue/card";
+import InputText from "primevue/inputtext";
+import PrimeVueButton from "primevue/button";
+import Panel from "primevue/panel";
+import Chip from "primevue/chip";
+import ContextMenu from "primevue/contextmenu";
+import { useToast } from "primevue/usetoast";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
@@ -150,6 +151,50 @@ function sendMessage() {
   }
   input.value = "";
 }
+
+const toast = useToast();
+const ShowSuccessfulRoleChangeMessage = (
+  newUserRole: UserRole,
+  username: string
+) => {
+  const userRoleMessage = {
+    [UserRole.OWNER]: "is the chat room owner now",
+    [UserRole.ADMIN]: "is the chat room administrator now",
+    [UserRole.VISITOR]: "is set as a chat room visitor",
+    [UserRole.BLOCKED]: "is blocked from chat",
+  };
+
+  toast.add({
+    severity: "success",
+    summary: "Success",
+    detail: `${username} ${userRoleMessage[newUserRole]}`,
+    life: 2000,
+  });
+};
+const ShowRoleChangeFailMessage = (newUserRole: UserRole, username: string) => {
+  const userRoleMessage = {
+    [UserRole.OWNER]: "set as the room owner",
+    [UserRole.ADMIN]: "set as the room administrator",
+    [UserRole.VISITOR]: "set as the room visitor",
+    [UserRole.BLOCKED]: "blocked from chat",
+  };
+
+  toast.add({
+    severity: "error",
+    summary: "Error",
+    detail: `${username} has left the room and cannot be ${userRoleMessage[newUserRole]}`,
+    life: 2000,
+  });
+};
+
+socket.on("setUserRoleFail", (newUserRole: UserRole, username: string) => {
+  ShowRoleChangeFailMessage(newUserRole, username);
+  console.log(`${username} is not in this chat room any more`);
+});
+
+socket.on("userRoleChanged", (newUserRole: UserRole, username: string) => {
+  ShowSuccessfulRoleChangeMessage(newUserRole, username);
+});
 
 const addUserToRoom = () => {
   socket.emit("addUserToRoom", route.params.roomName);
