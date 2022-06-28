@@ -26,6 +26,7 @@ import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
 import { GameService } from '../game/game.service';
 import { CreateGameDto } from 'src/game/game.dto';
+import { MuteUserDto } from 'src/chat/room/dto/mute.user.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -210,6 +211,18 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			room,
 		);
 		await this.getPublicRoomsList(client);
+	}
+
+	@SubscribeMessage('muteUserInRoom')
+	async muteUserInRoom(
+		@MessageBody() muteUser: MuteUserDto,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
