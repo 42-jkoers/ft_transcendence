@@ -72,7 +72,6 @@
 </template>
 <script setup lang="ts">
 import InputText from "primevue/inputtext";
-import Message from "primevue/message";
 import Button from "primevue/button";
 import Avatar from "primevue/avatar";
 import InputSwitch from "primevue/inputswitch";
