@@ -9,4 +9,5 @@ export interface UserI {
 	requestedFriends?: UserI[];
 	friends?: UserI[];
 	isTwoFactorAuthEnabled?: boolean;
+	socketCount?: number;
 }

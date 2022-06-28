@@ -11,6 +11,7 @@ const storeUser = createStore({
       avatar: "",
       twoFactorEnabled: false,
     },
+    roomsInfo: [],
   },
   getters: {
     isAuthenticated(state) {
@@ -36,6 +37,9 @@ const storeUser = createStore({
     unsetAuthenticated(state) {
       state.isAuthenticated = false;
     },
+    updateRoomsList(state, updatedRoomsList) {
+      state.roomsInfo = updatedRoomsList;
+    },
   },
   actions: {
     async login({ commit }) {
@@ -57,11 +61,7 @@ const storeUser = createStore({
             commit("updateId", response.data.id);
             commit("updateUserAvatar", response.data.avatar);
             commit("updateTwoFactor", response.data.isTwoFactorAuthEnabled);
-            if (!response.data.username) {
-              router.push({ name: "Register" });
-            } else {
-              commit("updateUserName", response.data.username);
-            }
+            commit("updateUserName", response.data.username);
           })
           // ;
           // }

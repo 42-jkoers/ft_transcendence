@@ -1,46 +1,66 @@
 <template>
   <br />
-  <div class="col-4 col-offset-4">
-    <ConfirmButton
-      @confirm="confirmLogOut($event)"
-      :buttonLabel="buttonLabel"
-      successMessage="You've successfully logged out."
+  <div v-if="isVisible">
+    <Button
+      class="p-button-rounded p-button-text p-button-outlined"
+      label="Log Out"
+      icon="pi pi-power-off"
+      @click="confirmLogOut"
     />
-    <div v-if="showRedirectMessage">
-      <Message severity="info" :closable="false">
-        Redirecting back to home..
-      </Message>
-    </div>
-    <div v-if="showFailtMessage">
-      <Message severity="error" :closable="false">
-        Something went wrong, please try again...
-      </Message>
-    </div>
   </div>
 </template>
 <script setup lang="ts">
-import ConfirmButton from "@/components/ConfirmButton.vue";
-import Message from "primevue/message";
 import { ref } from "vue";
 import axios from "axios";
 import storeUser from "@/store";
 import router from "@/router";
-const showRedirectMessage = ref<boolean>(false);
-const showFailtMessage = ref<boolean>(false);
-const buttonLabel = ref("Log Out");
-async function confirmLogOut(e) {
-  if (e) {
-    try {
-      await axios.get("http://localhost:3000/auth/logout", {
-        withCredentials: true,
-      });
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+import Button from "primevue/button";
+import { ErrorType, errorMessage } from "@/types/errorManagement";
+
+const confirm = useConfirm();
+const toast = useToast();
+const isVisible = ref<boolean>(true);
+
+async function confirmLogOut() {
+  confirm.require({
+    message: "Are you sure you want to log out?",
+    header: "Confirmation",
+    icon: "pi pi-exclamation-triangle",
+    accept: () => {
+      logOut();
+    },
+  });
+}
+async function logOut() {
+  await axios
+    .get("http://localhost:3000/auth/logout", {
+      withCredentials: true,
+    })
+    .then(() => {
       storeUser.dispatch("logout");
-      showRedirectMessage.value = true;
-      setTimeout(() => router.push({ name: "Home" }), 2000);
-    } catch (error) {
-      showFailtMessage.value = true;
-    }
-  }
+      isVisible.value = false;
+      redirectToHome();
+    })
+    .catch(() => {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errorMessage(ErrorType.GENERAL),
+        life: 3000,
+      });
+    });
+}
+
+function redirectToHome() {
+  toast.add({
+    severity: "info",
+    summary: "Success",
+    detail: "Log out successfully. Redirecting to home...",
+    life: 3000,
+  });
+  setTimeout(() => router.push({ name: "Home" }), 1000);
 }
 </script>
 <style scoped></style>

@@ -8,10 +8,10 @@ import {
 	JoinColumn,
 	JoinTable,
 	ManyToMany,
-	ManyToOne,
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
+import { GameEntity } from 'src/game/game.entity';
 
 @Entity()
 export class User {
@@ -27,6 +27,9 @@ export class User {
 	@Column()
 	public avatar: string;
 
+	@Column()
+	public socketCount: number;
+
 	@ManyToMany(() => User)
 	@JoinTable({ joinColumn: { name: 'sender_id' } })
 	requestedFriends: User[];
@@ -40,7 +43,7 @@ export class User {
 	@OneToMany(() => ConnectedUserEntity, (connection) => connection.user)
 	connections: ConnectedUserEntity[];
 
-	@OneToMany(() => UserToRoomEntity, (userToRoom) => userToRoom.room, {
+	@OneToMany(() => UserToRoomEntity, (userToRoom) => userToRoom.user, {
 		cascade: true,
 	})
 	public userToRooms!: UserToRoomEntity[];
@@ -53,6 +56,9 @@ export class User {
 
 	@Column({nullable: true})
 	public twoFactorAuthSecret?: string;
+	@ManyToMany(() => GameEntity, (game) => game.players)
+	@JoinTable() // the user is the owner of the game
+	games: GameEntity[];
 }
 
 export default User;

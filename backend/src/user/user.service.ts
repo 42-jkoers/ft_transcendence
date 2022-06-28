@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, getConnection, Not } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto, UpdateUserProfileDto } from './dto';
 import { UserI } from './user.interface';
 import { RoomService } from '../chat/room/room.service';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
+import { UserToRoomEntity } from 'src/chat/room/entities/user.to.room.entity';
+import ConnectedUserEntity from 'src/chat/connected-user/connected-user.entity';
+import { MessageEntity } from 'src/chat/message/message.entity';
+import { UserRole } from 'src/chat/room/enums/user.role.enum';
 
 @Injectable()
 export class UserService {
@@ -48,14 +52,19 @@ export class UserService {
 		newUser.requestedFriends = [];
 		newUser.friends = [];
 		const createdUser: UserI = await this.userRepository.save(newUser);
-		await this.roomService.addVisitorToRoom(createdUser.id, defaultRoom);
+		await this.roomService.addUserToRoom(
+			createdUser.id,
+			defaultRoom,
+			UserRole.VISITOR,
+		);
 
 		//FIXME: temp for testing protected rooms:
 		const protectedWithPassword: RoomEntity =
 			await this.roomService.findRoomById(2);
-		await this.roomService.addVisitorToRoom(
+		await this.roomService.addUserToRoom(
 			createdUser.id,
 			protectedWithPassword,
+			UserRole.VISITOR,
 		);
 
 		return createdUser;
@@ -66,10 +75,9 @@ export class UserService {
 			intraID: '00000',
 			username: 'admin',
 			avatar: '/default_avatar.png',
+			socketCount: 0,
 		};
 		const defaultUser = this.userRepository.create(defaultUserData);
-		defaultUser.requestedFriends = [];
-		defaultUser.friends = [];
 		await this.userRepository.save(defaultUser);
 		return defaultUser;
 	}
@@ -90,106 +98,77 @@ export class UserService {
 		return await this.findByID(userData.id);
 	}
 
-	async isFriends(id1: number, id2: number): Promise<boolean> {
-		const friend = await this.userRepository
+	async getSocketCount(userId: number): Promise<number> {
+		const user = await this.findByID(userId);
+		return user.socketCount;
+	}
+
+	async resetAllSocketCount() {
+		const userIdList = await this.userRepository
 			.createQueryBuilder('user')
-			.leftJoinAndSelect('user.friends', 'friend')
-			.where('friend.id = :id1', { id1 })
-			.andWhere('user.id = :id2', { id2 })
-			.getOne();
-		return !(friend === undefined);
-	}
-
-	async isUserRequested(userId: number, senderId: number): Promise<boolean> {
-		const request = await this.userRepository
-			.createQueryBuilder('user')
-			.leftJoinAndSelect('user.requestedFriends', 'requested')
-			.where('requested.id = :userId', { userId })
-			.andWhere('user.id = :senderId', { senderId })
-			.getOne();
-		return !(request === undefined);
-	}
-
-	async addFriendRequest(userId: number, requestedId: number) {
-		let user: UserI = await this.findByID(userId);
-		// prevent duplicate User in the array
-		const requestedFriends = await this.getFriendRequests(userId);
-		if (requestedFriends) {
-			user.requestedFriends = requestedFriends.filter((request) => {
-				return request.id !== requestedId;
-			});
-		}
-		// push new user
-		if (!user.requestedFriends) {
-			user.requestedFriends = [];
-		}
-		const requested: UserI = await this.findByID(requestedId);
-		user.requestedFriends.push(requested);
-		// save
-		await this.userRepository.save(user);
-	}
-
-	async removeFriendRequest(userId: number, user2Id: number) {
-		let user: UserI = await this.findByID(userId);
-		const requestedFriends = await this.getFriendRequests(userId);
-		if (requestedFriends) {
-			user.requestedFriends = requestedFriends.filter((request) => {
-				return request.id !== user2Id;
-			});
-			await this.userRepository.save(user);
-		}
-
-		let user2: UserI = await this.findByID(user2Id);
-		const requestedFriends2 = await this.getFriendRequests(user2Id);
-		if (requestedFriends2) {
-			user2.requestedFriends = requestedFriends.filter((request) => {
-				return request.id !== user2Id;
-			});
-			await this.userRepository.save(user2);
-		}
-	}
-
-	async addFriend(user: UserI, friendToAdd: UserI) {
-		const friends = await this.getFriends(user.id);
-		if (friends) {
-			user.friends = friends.filter((friend) => {
-				return friend.id !== friendToAdd.id;
-			});
-		} // prevent duplicate User in the array
-		user.friends.push(friendToAdd);
-		await this.userRepository.save(user);
-		friendToAdd.friends = await this.getFriends(friendToAdd.id);
-		await this.userRepository.save(friendToAdd);
-	}
-
-	async removeFriend(user: UserI, friendToRemove: UserI) {
-		const friends = await this.getFriends(user.id);
-		if (friends) {
-			user.friends = friends.filter((friend) => {
-				return friend.id !== friendToRemove.id;
-			});
-			await this.userRepository.save(user);
-			friendToRemove.friends = await this.getFriends(friendToRemove.id);
-			await this.userRepository.save(friendToRemove);
-		}
-	}
-
-	async getFriends(userId: number): Promise<UserI[]> {
-		const friends = await this.userRepository
-			.createQueryBuilder('user')
-			.leftJoinAndSelect('user.friends', 'friend')
-			.where('friend.id = :userId', { userId })
+			.select(['user.id'])
 			.getMany();
-		return friends;
+		for (let i = 0; i < userIdList.length; ++i) {
+			await this.userRepository.update(userIdList[i], {
+				socketCount: 0,
+			});
+		}
 	}
 
-	async getFriendRequests(userId: number): Promise<UserI[]> {
-		const friendRequests = await this.userRepository
+	async increaseSocketCount(userId: number): Promise<UserI> {
+		const currentSocketCount = await this.getSocketCount(userId);
+		await this.userRepository.update(userId, {
+			socketCount: currentSocketCount + 1,
+		});
+		return await this.getUserByID(userId);
+	}
+
+	async decreaseSocketCount(userId: number): Promise<UserI> {
+		const currentSocketCount = await this.getSocketCount(userId);
+		if (currentSocketCount > 0) {
+			await this.userRepository.update(userId, {
+				socketCount: currentSocketCount - 1,
+			});
+		}
+		return await this.getUserByID(userId);
+	}
+
+	async deleteUser(userId: number) {
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(ConnectedUserEntity)
+			.where('userId = :userId', { userId })
+			.execute();
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(MessageEntity)
+			.where('userId = :userId', { userId })
+			.execute();
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(UserToRoomEntity)
+			.where('userId = :userId', { userId })
+			.execute();
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(User)
+			.where('id = :userId', { userId })
+			.execute();
+	}
+
+	async getAllRegisteredUsersExceptYourselfAndAdmin(
+		userName: string,
+	): Promise<UserI[]> {
+		const userList = await this.userRepository
 			.createQueryBuilder('user')
-			.leftJoinAndSelect('user.requestedFriends', 'requested')
-			.where('requested.id = :userId', { userId })
+			.where({ username: Not(userName) })
+			.andWhere({ username: Not('admin') })
 			.getMany();
-		return friendRequests;
+		return userList;
 	}
 
 	// async setTwoFactorAuthenticationSecret(secret: string, username: string) {

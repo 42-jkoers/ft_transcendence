@@ -1,6 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { ChatGateway } from '../gateway/chat.gateway';
-import { ChannelModule } from './channel/channel.module';
+import { MainGateway } from '../gateway/main.gateway';
 import { MessageModule } from './message/message.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomEntity } from './room/entities/room.entity';
@@ -13,11 +12,18 @@ import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.enti
 import { MessageService } from './message/message.service';
 import { MessageEntity } from './message/message.entity';
 import { UserModule } from 'src/user/user.module';
+import { GameService } from 'src/game/game.service';
+import { GameEntity } from 'src/game/game.entity';
 
 @Module({
-	providers: [ChatGateway, RoomService, ConnectedUserService, MessageService],
+	providers: [
+		MainGateway,
+		RoomService,
+		ConnectedUserService,
+		MessageService,
+		GameService,
+	],
 	imports: [
-		ChannelModule,
 		forwardRef(() => AuthModule),
 		forwardRef(() => UserModule),
 		MessageModule,
@@ -27,6 +33,7 @@ import { UserModule } from 'src/user/user.module';
 			UserToRoomEntity,
 			ConnectedUserEntity,
 			MessageEntity,
+			GameEntity,
 		]),
 	],
 	exports: [RoomService],

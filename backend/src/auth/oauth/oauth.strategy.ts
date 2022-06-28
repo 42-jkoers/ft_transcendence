@@ -29,7 +29,8 @@ export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
 			})
 			.toPromise();
 		const intraID = data.data.id;
-		const validateUserDto = { intraID };
+		const username = data.data.login;
+		const validateUserDto = { intraID, username };
 		return await this.authService.validateUser(validateUserDto);
 	}
 }

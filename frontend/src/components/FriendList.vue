@@ -1,9 +1,4 @@
 <template>
-  <div v-if="showFailMessage">
-    <Message severity="error" :closable="false">
-      Something went wrong, please retry!
-    </Message>
-  </div>
   <div>
     <DataTable :value="friendList" responsiveLayout="scroll">
       <template #header>
@@ -20,7 +15,7 @@
           />
         </template>
       </Column>
-      <Column header="Friends" headerStyle="width: 45%">
+      <Column header="Friends" headerStyle="width: 50%">
         <template #body="slotProps">
           <Chip
             :label="slotProps.data.username"
@@ -28,22 +23,23 @@
           />
         </template>
       </Column>
-      <Column header="Action" headerStyle="width: 50%">
+      <Column header="Profile" headerStyle="width: 10%">
+        <template #body="slotProps">
+          <Button
+            icon="pi pi-user"
+            class="p-button-rounded p-button-text p-button-outlined"
+            @click="viewProfile(slotProps.data.id)"
+          />
+        </template>
+      </Column>
+      <Column header="Action" headerStyle="width: 40%">
         <template #body="slotProps">
           <div class="flex align-items-center flex-column sm:flex-row">
-            <Button
-              icon="pi pi-envelope"
-              class="p-button-rounded p-button-outlined"
-            />
-            <Button
-              icon="pi pi-discord"
-              class="p-button-rounded p-button-outlined"
-            />
             <EditFriendButton
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-user-minus"
               :action="EditFriendActionType.REMOVE_FRIEND"
-              @processed="refreshFriendList"
+              @isActionSuccess="catchEvent($event)"
             />
           </div>
         </template>
@@ -55,16 +51,20 @@
 import { onMounted, ref } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
-import Message from "primevue/message";
 import Column from "primevue/column";
 import Chip from "primevue/chip";
 import axios from "axios";
 import storeUser from "@/store";
-import EditFriendActionType from "@/types/EditFriendActionType";
+import { EditFriendActionType } from "@/types/editFriendAction";
 import EditFriendButton from "./EditFriendButton.vue";
+import { useToast } from "primevue/usetoast";
+import { ErrorType, errorMessage } from "@/types/errorManagement";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
+const toast = useToast();
 const friendList = ref([]);
-const showFailMessage = ref<boolean>(false);
+
 onMounted(async () => {
   await refreshFriendList();
 });
@@ -72,7 +72,7 @@ onMounted(async () => {
 async function refreshFriendList() {
   await axios
     .get(
-      "http://localhost:3000/user/friend-list?id=" + storeUser.state.user.id,
+      "http://localhost:3000/friend/friend-list?id=" + storeUser.state.user.id,
       {
         withCredentials: true,
       }
@@ -81,12 +81,25 @@ async function refreshFriendList() {
       friendList.value = response.data;
     })
     .catch(() => {
-      displayErrorMessage();
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errorMessage(ErrorType.GENERAL),
+        life: 3000,
+      });
     });
 }
 
-function displayErrorMessage() {
-  showFailMessage.value = true;
-  setTimeout(() => (showFailMessage.value = false), 2000);
+function catchEvent(event) {
+  if (event) {
+    refreshFriendList();
+  }
+}
+
+function viewProfile(userId: number) {
+  router.push({
+    name: "UserProfileCard",
+    params: { id: userId },
+  });
 }
 </script>

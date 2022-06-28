@@ -3,29 +3,17 @@
     class="p-button-rounded p-button-text p-button-outlined"
     :label="props.buttonLabel"
     :icon="props.buttonIcon"
-    @click="editFriend(props.friendId, props.action)"
+    @click="proceedConfirmation"
   />
-  <div v-if="showSuccessMessage">
-    <Message severity="success" :closable="false">
-      {{ successMessage }}
-    </Message>
-  </div>
-  <div v-if="showFailMessage">
-    <Message severity="error" :closable="false">
-      Something went wrong, please retry!
-    </Message>
-  </div>
 </template>
 <script setup lang="ts">
-import { defineEmits, ref, defineProps } from "vue";
+import { defineEmits, defineProps } from "vue";
 import Button from "primevue/button";
-import Message from "primevue/message";
 import axios from "axios";
 import storeUser from "@/store";
-
-const showSuccessMessage = ref<boolean>(false);
-const showFailMessage = ref<boolean>(false);
-const successMessage = ref<string>();
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+import { friendActionMessage } from "@/types/editFriendAction";
 
 const props = defineProps({
   friendId: Number,
@@ -33,21 +21,22 @@ const props = defineProps({
   buttonIcon: String,
   action: Number,
 });
+const confirm = useConfirm();
+const toast = useToast();
+function proceedConfirmation() {
+  confirm.require({
+    message: "Are you sure you want to proceed?",
+    header: "Confirmation",
+    icon: "pi pi-exclamation-triangle",
+    accept: () => {
+      editFriend(props.friendId, props.action);
+    },
+  });
+}
 
 const emit = defineEmits<{
-  (event: "processed"): boolean;
+  (event: "isActionSuccess"): boolean;
 }>();
-
-function displaySuccessMessage(message: string) {
-  successMessage.value = message;
-  showSuccessMessage.value = true;
-  setTimeout(() => (showSuccessMessage.value = false), 2000);
-}
-
-function displayErrorMessage() {
-  showFailMessage.value = true;
-  setTimeout(() => (showFailMessage.value = false), 2000);
-}
 
 async function editFriend(
   friendId: number | undefined,
@@ -59,17 +48,26 @@ async function editFriend(
     action: action,
   };
   await axios
-    .post("http://localhost:3000/user/edit-friend", postBody, {
+    .post("http://localhost:3000/friend/edit-friend", postBody, {
       withCredentials: true,
     })
-    .then(async () => {
-      displaySuccessMessage("Action processed.");
-      setTimeout(() => {
-        emit("processed", true);
-      }, 2000);
+    .then(() => {
+      toast.add({
+        severity: "success",
+        summary: "Success",
+        detail: friendActionMessage(props.action),
+        life: 3000,
+      });
+      emit("isActionSuccess", true);
     })
-    .catch(() => {
-      displayErrorMessage();
+    .catch((error) => {
+      toast.add({
+        severity: "warn",
+        summary: "Note",
+        detail: error.response.data.message,
+        life: 3000,
+      });
+      emit("isActionSuccess", false);
     });
 }
 </script>
