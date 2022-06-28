@@ -25,11 +25,12 @@ export class AuthService {
 		if (user) {
 			return user;
 		}
-		return await this.registerUser(userDto.intraID);
+		return await this.registerUser(userDto);
 	}
 
-	private async registerUser(intraID: string): Promise<UserI> {
-		const username = null;
+	private async registerUser(userDto: ValidateUserDto): Promise<UserI> {
+		const intraID = userDto.intraID;
+		const username = userDto.username;
 		const avatar = '/default_avatar.png';
 		const socketCount = 0;
 		const createUserDto = { intraID, username, avatar, socketCount };
