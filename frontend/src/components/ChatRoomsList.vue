@@ -110,7 +110,6 @@ socket.on("postPublicRoomsList", (response) => {
 });
 
 socket.on("postPrivateChatRoom", (dMRoom) => {
-  console.log("Direct Message Room: ", dMRoom);
   router.push({
     name: "ChatBox",
     params: { roomName: dMRoom.name },
