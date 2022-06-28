@@ -49,19 +49,18 @@ const storeUser = createStore({
             withCredentials: true,
           })
           .then(async (response) => {
-            // console.log("before 2F");
-            // await axios
-            //   .get("http://localhost:8080/2fAuthenticate", {
-            //     withCredentials: true,
-            //   })
-            //   // await axios.get("http://localhost:8080/2fAuthenticate")
-            //   .then(() => {
-            //     console.log("after 2F");
-            commit("setAuthenticated");
-            commit("updateId", response.data.id);
-            commit("updateUserAvatar", response.data.avatar);
-            commit("updateTwoFactor", response.data.isTwoFactorAuthEnabled);
-            commit("updateUserName", response.data.username);
+            if (
+              response.data.isTwoFactorAuthEnabled &&
+              !response.data.isTwoFactorAuthenticated
+            ) {
+              router.push({ name: "2fAuthenticate" });
+            } else {
+              commit("setAuthenticated");
+              commit("updateId", response.data.id);
+              commit("updateUserAvatar", response.data.avatar);
+              commit("updateTwoFactor", response.data.isTwoFactorAuthEnabled);
+              commit("updateUserName", response.data.username);
+            }
           })
           // ;
           // }

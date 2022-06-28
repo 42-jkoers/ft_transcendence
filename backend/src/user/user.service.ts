@@ -179,6 +179,13 @@ export class UserService {
 		});
 	}
 
+	async updateTwoFactorAuth(id: number, status: boolean) {
+		return this.userRepository.update(id, {
+			//TODO understand user repository
+			isTwoFactorAuthenticated: status,
+		});
+	}
+
 	async turnOnTwoFactorAuth(userId: number) {
 		return this.userRepository.update(userId, {
 			isTwoFactorAuthEnabled: true,

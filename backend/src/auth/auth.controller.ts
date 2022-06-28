@@ -58,10 +58,10 @@ export class AuthController {
 					req.user,
 				);
 			if (!isCodeValid) {
-				// console.log('input code is', twoFactorAuthCode);
-				// console.log('the code is invalid');
-				// res.redirect('http://localhost:8080/2fAuthenticate');
+				this.userService.updateTwoFactorAuth(req.user.id, false);
 				throw new UnauthorizedException('Wrong authentication code'); //TODO add error page to request reinput of the code later
+			} else {
+				this.userService.updateTwoFactorAuth(req.user.id, true);
 			}
 		}
 	}
@@ -79,7 +79,8 @@ export class AuthController {
 
 	@Get('logout')
 	@UseGuards(AuthenticatedGuard)
-	logout(@Req() req: Request) {
+	logout(@Req() req: Request, @Req() request: RequestWithUser) {
+		this.userService.updateTwoFactorAuth(request.user.id, false);
 		req.logOut();
 		return 'User has logged out. Goodbye!';
 	}
