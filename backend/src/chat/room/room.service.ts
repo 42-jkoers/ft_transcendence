@@ -220,6 +220,16 @@ export class RoomService {
 		return secondParticipant;
 	}
 
+	async getPublicRoomsList(userId: number) {
+		const publicRooms: RoomEntity[] =
+			await this.getAllPublicRoomsWithUserRole(userId);
+		const response = await this.transformDBDataToDtoForClient(
+			publicRooms,
+			userId,
+		);
+		return response;
+	}
+
 	async getAllPublicRoomsWithUserRole(userId: number): Promise<RoomEntity[]> {
 		const userRooms = await getRepository(RoomEntity)
 			.createQueryBuilder('room')
