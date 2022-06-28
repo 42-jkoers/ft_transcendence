@@ -14,13 +14,11 @@ export class MuteEntity {
 	id: number;
 
 	@Column()
-	@IsString()
-	@Length(1, 20)
-	time: string;
-
-	@Column()
 	@IsNumber()
 	userId: number;
+
+	@Column()
+	muteDeadline: Date;
 
 	@ManyToOne(() => RoomEntity, (room) => room.mutes, { onDelete: 'CASCADE' })
 	@JoinColumn()
