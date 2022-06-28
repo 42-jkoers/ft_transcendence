@@ -168,12 +168,18 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('setNewUserRole')
 	async handleSetNewUserRole(socket: Socket, setRoleDto: SetRoomRoleDto) {
-		console.log('inside backend');
-
 		const room: RoomEntity = await this.roomService.findRoomByName(
 			setRoleDto.roomName,
 		);
-		if (!room) return;
+		const user = await this.userService.findByID(
+			setRoleDto.userToGetNewRoleId,
+		);
+		// getting username to notify the admin that setNewUserRole either failed or succedded
+		const username: string = user.username;
+		if (!room) {
+			socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+			return;
+		}
 		if (
 			await this.roomService.IsUserEligibleToSetRole(
 				socket.data.user.id,
@@ -181,11 +187,16 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				setRoleDto.newRole,
 			)
 		) {
-			await this.roomService.setUserRole(
+			const userRoleUpdateResult = await this.roomService.setUserRole(
 				setRoleDto.userToGetNewRoleId,
 				room.id,
 				setRoleDto.newRole,
 			);
+
+			if (!userRoleUpdateResult) {
+				socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+				return;
+			}
 			const roomsList = await this.roomService.getPublicRoomsList(
 				setRoleDto.userToGetNewRoleId,
 			);
@@ -193,6 +204,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				.to(setRoleDto.userToGetNewRoleId.toString())
 				.emit('postPublicRoomsList', roomsList);
 		}
+		socket.emit('userRoleChanged', setRoleDto.newRole, username);
 	}
 
 	@SubscribeMessage('updateRoomPassword')

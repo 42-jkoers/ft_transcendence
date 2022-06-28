@@ -207,13 +207,14 @@ export class RoomService {
 	}
 
 	async setUserRole(userId: number, roomId: number, newRole: UserRole) {
-		await getConnection()
+		const result = await getConnection()
 			.createQueryBuilder()
 			.update(UserToRoomEntity)
 			.set({ role: newRole })
 			.where('userId = :userId', { userId })
 			.andWhere('roomId = :roomId', { roomId })
 			.execute();
+		return result.affected;
 	}
 
 	async getNonCurrentUserInDMRoom(
