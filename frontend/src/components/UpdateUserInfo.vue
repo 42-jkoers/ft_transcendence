@@ -148,7 +148,6 @@ async function updateData() {
       id: storeUser.state.user.id,
       username: username.value,
       avatar: avatar.value,
-      // TODO: add 2F
       isTwoFactorAuthEnabled: twoFactor.value,
     };
     await axios

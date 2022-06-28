@@ -17,40 +17,36 @@
 
 <script setup lang="ts">
 import axios from "axios";
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import router from "@/router";
 import Message from "primevue/message";
 
-const validationCode = ref("");
-const validate2F = ref(true);
-const codeSubmited = ref(false);
-const errorCount = ref(0);
-
-onMounted(() => {
-  console.log("2F view mounted");
-});
+const validationCode = ref<string>("");
+const validate2F = ref<boolean>(true);
+const codeSubmited = ref<boolean>(false);
+const errorCount = ref<number>(0);
 
 async function submitCode() {
   codeSubmited.value = true;
   const body = {
     twoFactorAuthCode: validationCode.value,
   };
+
   await axios
     .post("http://localhost:3000/auth/2f", body, {
       withCredentials: true,
     })
     .then(() => {
-      // validate2F.value = true;
-      console.log("success");
-
       router.push({ name: "UserHome" });
     })
-    .catch((error) => {
+    .catch(() => {
       validate2F.value = false;
       errorCount.value++;
+      if (errorCount.value > 5) {
+        router.push({ name: "UnAuthorized" });
+      }
     });
-  console.log(validationCode);
 }
 </script>

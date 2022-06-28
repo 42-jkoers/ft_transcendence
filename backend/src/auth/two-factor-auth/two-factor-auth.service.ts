@@ -1,11 +1,9 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ConfigService } from '@nestjs/config';
 import User from 'src/user/user.entity';
 import { authenticator } from 'otplib';
 import { toFileStream, toDataURL } from 'qrcode';
-import { response } from 'express';
-import { secureHeapUsed } from 'crypto';
 
 @Injectable()
 export class TwoFactorAuthService {
@@ -20,12 +18,12 @@ export class TwoFactorAuthService {
 			user.username,
 			this.configService.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'),
 			secret,
-		); //TODO should it be username?
+		);
 		console.log(secret);
 		await this.usersService.setTwoFactorAuthSecret(secret, user.id);
 		return {
 			secret,
-			otpauthUrl, //TODO why return both secret and url instead of only url
+			otpauthUrl,
 		};
 	}
 
@@ -33,10 +31,9 @@ export class TwoFactorAuthService {
 		return toFileStream(stream, otpauthUrl);
 	}
 
-	public async serveImage(response: Response, otpauthUrl: string) {
+	public async serveImage(otpauthUrl: string) {
 		toDataURL(otpauthUrl, function (err, qrImage) {
 			if (!err) {
-				// response.send(qrImage);
 				console.log(qrImage);
 				return qrImage;
 			} else {

@@ -25,16 +25,6 @@ export class AuthService {
 	async validateUser(userDto: ValidateUserDto): Promise<UserI> {
 		const user = await this.userService.findByIntraID(userDto.intraID);
 		if (user) {
-			// 	if (user.isTwoFactorAuthEnabled === true) {
-			// 		console.log('>> before get');
-			// 		const data = this.httpService.get(
-			// 			'http://localhost:8080/2fAuthenticate',
-			// 			{
-			// 				withCredentials: true,
-			// 			},
-			// 		);
-			// 	}
-			// 	console.log('>> after get');
 			return user;
 		}
 		return await this.registerUser(userDto);

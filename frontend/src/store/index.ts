@@ -62,9 +62,6 @@ const storeUser = createStore({
               commit("updateUserName", response.data.username);
             }
           })
-          // ;
-          // }
-          // )
           .catch(() => {
             console.log("user is not unauthorized");
           });
@@ -76,7 +73,6 @@ const storeUser = createStore({
       await axios
         .get("http://localhost:3000/two-factor-auth/generate")
         .then(() => {
-          //TODO do I really need response here? onlything I am doing is to update the two factor enable to true in the DB
           commit("updateTwoFactor", true);
         })
         .catch(() => {

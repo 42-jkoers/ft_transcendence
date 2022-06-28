@@ -20,7 +20,7 @@ import { HttpService } from '@nestjs/axios';
 @Controller('auth')
 export class AuthController {
 	constructor(
-		private userService: UserService, //TODO should be readonly? @Aileen
+		private userService: UserService,
 		private readonly twoFactorAuthService: TwoFactorAuthService,
 		private readonly httpService: HttpService,
 	) {}
@@ -37,17 +37,14 @@ export class AuthController {
 		if (req.user.isTwoFactorAuthEnabled === true) {
 			res.redirect('http://localhost:8080/2fAuthenticate');
 		} else res.redirect('http://localhost:8080/userhome');
-		// res.redirect('http://localhost:8080/userhome');
 	}
 
-	//TODO why this route is not entered? I checked the return value of the Auth guard, it is true.. @Aileen
 	@Post('2f')
 	@UseGuards(AuthenticatedGuard)
-	@HttpCode(200) //TODO double check the return code if still valid
+	@HttpCode(200)
 	async authentication(
-		@Req() req: RequestWithUser, //TODO why can only be RWU instead of Request
+		@Req() req: RequestWithUser,
 		@Body() twoFactorAuthCode: TwoFactorAuthCodeDto,
-		// @Res() res: Response,
 	) {
 		console.log('check!!!');
 		console.log('input validation code is', twoFactorAuthCode);
@@ -69,11 +66,6 @@ export class AuthController {
 	@Get('status')
 	@UseGuards(AuthenticatedGuard)
 	async status(@Req() req: RequestWithUser) {
-		// if (req.user.isTwoFactorAuthEnabled === true) {
-		// 	await this.httpService.get('http://localhost:8080/2fAuthenticate', {
-		// 		withCredentials: true,
-		// 	});
-		// }
 		return req.user;
 	}
 
