@@ -194,16 +194,18 @@ const items = ref([
   {
     label: "Ban user",
     visible: () =>
-      isOwner(currentRoom.value.userRole) ||
-      isAdmin(currentRoom.value.userRole),
+      (isOwner(currentRoom.value.userRole) ||
+        isAdmin(currentRoom.value.userRole)) &&
+      isNotYourself(computedID.value),
     command: () => socket.emit("banUserFromRoom"), //TODO pass user.id & room.name & add backend logic
   },
   {
     label: "Mute user",
     visible: () =>
-      isOwner(currentRoom.value.userRole) ||
-      isAdmin(currentRoom.value.userRole),
-    command: () => socket.emit("muteUserInRoom"), //TODO pass user.id & room.name & add backend logic
+      (isOwner(currentRoom.value.userRole) ||
+        isAdmin(currentRoom.value.userRole)) &&
+      isNotYourself(computedID.value),
+    command: () => socket.emit("muteUserInRoom"),
   },
 ]);
 
@@ -211,6 +213,8 @@ const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
 const isAdmin = (userRole: UserRole | undefined) =>
   userRole === 1 ? true : false;
+const isNotYourself = (userID: number) =>
+  userID === store.state.user.id ? false : true;
 </script>
 
 <style scoped>
