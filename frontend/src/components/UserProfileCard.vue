@@ -95,7 +95,9 @@ const isSafe = ref<boolean>();
 const isUserExist = ref<boolean>(false);
 
 watch(id, async () => {
-  await updateProfile();
+  if (id.value) {
+    await updateProfile();
+  }
 });
 
 onMounted(async () => {
