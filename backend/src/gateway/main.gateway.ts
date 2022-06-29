@@ -222,6 +222,8 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			} else {
 				client.emit('room deleted', roomName);
 			}
+		} else {
+			await this.getPublicRoomsList(client);
 		}
 	}
 
