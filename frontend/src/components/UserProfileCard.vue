@@ -70,7 +70,7 @@
 </template>
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import axios from "axios";
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -84,20 +84,21 @@ import { ErrorType, errorMessage } from "@/types/errorManagement";
 import UserStatus from "./UserStatus.vue";
 const toast = useToast();
 const route = useRoute();
-const id = route.params.id;
+const id = computed(() => route.params.id);
 const user = ref<UserProfileI>();
 const isSelf = ref<boolean>();
 const isFriend = ref<boolean>();
 const isSafe = ref<boolean>();
 const isUserExist = ref<boolean>(false);
 
+watch(id, async () => {
+  await updateProfile();
+});
+
 onMounted(async () => {
   try {
-    // TODO: to evaluate timeout
     setTimeout(async () => {
-      await findUser();
-      await checkRelationship();
-      evaluateIsSafe();
+      await updateProfile();
     }, 500); // wait till socket connection finished (to get correct socketCount)
   } catch (error) {
     toast.add({
@@ -109,16 +110,23 @@ onMounted(async () => {
   }
 });
 
+async function updateProfile() {
+  await findUser();
+  await checkRelationship();
+  evaluateIsSafe();
+}
+
 async function findUser() {
+  console.log(">> before findUser, params: ", route.params.id);
   await axios
-    .get("http://localhost:3000/user/find-by-id?id=" + id, {
+    .get("http://localhost:3000/user/find-by-id?id=" + id.value, {
       withCredentials: true,
     })
     .then((response) => {
       if (response.data) {
         user.value = response.data;
         isUserExist.value = true;
-        isSelf.value = id === String(storeUser.state.user.id);
+        isSelf.value = id.value === String(storeUser.state.user.id);
       } else {
         toast.add({
           severity: "error",
@@ -136,7 +144,7 @@ async function checkRelationship() {
       "http://localhost:3000/friend/is-friend?id1=" +
         storeUser.state.user.id +
         "&id2=" +
-        id,
+        id.value,
       { withCredentials: true }
     ).then((response) => {
       isFriend.value = response.data;
