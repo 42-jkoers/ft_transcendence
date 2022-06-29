@@ -350,7 +350,6 @@ export class RoomService {
 		);
 		room.mutes.push(newMute);
 		await this.roomEntityRepository.save(room);
-		console.log(room); //TODO remove
 	}
 
 	async checIfkMutedAndMuteDeadlineAndRemoveMute(
@@ -362,8 +361,6 @@ export class RoomService {
 			.where('room.name = :roomName', { roomName })
 			.leftJoinAndSelect('room.mutes', 'mutes')
 			.getOne();
-		console.log('room ', room); //TODO remove
-		console.log('mutes ', room.mutes); //TODO remove
 		const muteIndex = room.mutes.findIndex(
 			(element) => element.userId == userId,
 		);
