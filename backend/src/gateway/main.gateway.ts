@@ -90,19 +90,29 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user: UserI = await this.userService.findByID(
 			client.data.user.id,
 		);
-		const message: MessageI = {
-			text: addMessageDto.text,
-			user: undefined,
-			room: undefined,
-			created_at: undefined,
-			updated_at: undefined,
-		};
-		const createdMessage: MessageI = await this.messageService.create(
-			message,
-			user,
-			selectedRoom,
-		);
-		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
+		const isNotMutedOrDeadlinePassed =
+			await this.roomService.checIfkMutedAndMuteDeadlineAndRemoveMute(
+				user.id,
+				selectedRoom.name,
+			);
+		if (isNotMutedOrDeadlinePassed) {
+			//saves msg and emits to frontend if not muted
+			const message: MessageI = {
+				text: addMessageDto.text,
+				user: undefined,
+				room: undefined,
+				created_at: undefined,
+				updated_at: undefined,
+			};
+			const createdMessage: MessageI = await this.messageService.create(
+				message,
+				user,
+				selectedRoom,
+			);
+			this.server
+				.to(selectedRoom.name)
+				.emit('messageAdded', createdMessage); //server socket emits to all clients
+		}
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
