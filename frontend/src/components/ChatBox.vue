@@ -199,7 +199,7 @@ const items = ref([
       (isOwner(currentRoom.value.userRole) ||
         isAdmin(currentRoom.value.userRole)) &&
       isNotYourself(computedID.value),
-    command: () => socket.emit("banUserFromRoom"), //TODO pass user.id & room.name & add backend logic
+    command: () => banUserFromRoom(),
   },
   {
     label: "Mute user",
@@ -221,6 +221,19 @@ const muteUserInRoom = () => {
     severity: "success",
     summary: "Success",
     detail: "User has been muted",
+    life: 1000,
+  });
+};
+
+const banUserFromRoom = () => {
+  socket.emit("banUserFromRoom", {
+    userId: computedID.value,
+    roomName: route.params.roomName,
+  });
+  toast.add({
+    severity: "success",
+    summary: "Success",
+    detail: "User has been banned from room",
     life: 1000,
   });
 };
