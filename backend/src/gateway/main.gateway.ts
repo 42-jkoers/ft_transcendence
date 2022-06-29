@@ -27,6 +27,8 @@ import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
 import { GameService } from '../game/game.service';
 import { CreateGameDto } from 'src/game/game.dto';
 import { SetRoomRoleDto } from 'src/chat/room/dto/set.room.role.dto';
+import { MuteUserDto } from 'src/chat/room/dto/mute.user.dto';
+import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -90,19 +92,29 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user: UserI = await this.userService.findByID(
 			client.data.user.id,
 		);
-		const message: MessageI = {
-			text: addMessageDto.text,
-			user: undefined,
-			room: undefined,
-			created_at: undefined,
-			updated_at: undefined,
-		};
-		const createdMessage: MessageI = await this.messageService.create(
-			message,
-			user,
-			selectedRoom,
-		);
-		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
+		const isNotMutedOrDeadlinePassed =
+			await this.roomService.checIfkMutedAndMuteDeadlineAndRemoveMute(
+				user.id,
+				selectedRoom.name,
+			);
+		if (isNotMutedOrDeadlinePassed) {
+			//saves msg and emits to frontend if not muted
+			const message: MessageI = {
+				text: addMessageDto.text,
+				user: undefined,
+				room: undefined,
+				created_at: undefined,
+				updated_at: undefined,
+			};
+			const createdMessage: MessageI = await this.messageService.create(
+				message,
+				user,
+				selectedRoom,
+			);
+			this.server
+				.to(selectedRoom.name)
+				.emit('messageAdded', createdMessage); //server socket emits to all clients
+		}
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
@@ -113,7 +125,9 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@UseFilters(new WsExceptionFilter())
-	@UsePipes(new ValidationPipe({ transform: true }))
+	//ValidationPipe provides a convenient approach to enforce validation rules for all incoming client payloads,
+	// where the specific rules are declared with simple annotations in local class/DTO declarations in each module.
+	@UsePipes(new ValidationPipe({ transform: true })) // transform can automatically transform JS object payloads to be objects typed according to their DTO classes.
 	@SubscribeMessage('createRoom')
 	async handleCreateRoom(
 		@MessageBody() room: createRoomDto,
@@ -251,7 +265,31 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.data.user.id,
 			room,
 		);
-		await this.getPublicRoomsList(client);
+		const userLeftInRoom = await this.roomService.getOneUserLeftInRoom(
+			room,
+		);
+		if (!userLeftInRoom) {
+			await this.roomService.deleteRoom(room);
+			if (room.visibility === RoomVisibilityType.PUBLIC) {
+				this.server.sockets.emit('room deleted', roomName); // emitting to all the users that have public room in their list
+			} else {
+				client.emit('room deleted', roomName);
+			}
+		} else {
+			await this.getPublicRoomsList(client);
+		}
+	}
+
+	@SubscribeMessage('muteUserInRoom')
+	async muteUserInRoom(
+		@MessageBody() muteUser: MuteUserDto,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
@@ -307,6 +345,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	async sendGameList() {
+		const gameList = await this.gameService.getGameList();
+		this.server.emit('getGameList', gameList);
+	}
+
 	@UseFilters(new WsExceptionFilter())
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('createGame')
@@ -315,5 +358,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 	) {
 		await this.gameService.createGame(game, client.data.user);
+		await this.sendGameList();
+	}
+
+	@SubscribeMessage('getGameList')
+	async getGameList() {
+		await this.sendGameList();
 	}
 }

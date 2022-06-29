@@ -107,6 +107,15 @@ socket.on("postPublicRoomsList", (response) => {
   updateRoomsList(response);
 });
 
+socket.on("room deleted", (deletedRoomName) => {
+  if (deletedRoomName === route.params.roomName) {
+    router.push({
+      name: "Chat",
+    });
+  }
+  socket.emit("getPublicRoomsList");
+});
+
 socket.on("postPrivateChatRoom", (dMRoom) => {
   router.push({
     name: "ChatBox",

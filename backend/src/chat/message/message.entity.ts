@@ -22,7 +22,9 @@ export class MessageEntity {
 	@JoinColumn()
 	user: User;
 
-	@ManyToOne(() => RoomEntity, (room) => room.messages)
+	@ManyToOne(() => RoomEntity, (room) => room.messages, {
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn()
 	room: RoomEntity;
 
