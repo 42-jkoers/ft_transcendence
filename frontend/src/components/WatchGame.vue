@@ -33,13 +33,11 @@ import { ref, inject } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-import { useToast } from "primevue/usetoast";
 // import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 
 const socket: Socket = inject("socketioInstance");
 // const router = useRouter();
-const toast = useToast();
 const gameList = ref();
 
 setTimeout(() => {

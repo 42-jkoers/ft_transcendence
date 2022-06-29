@@ -219,6 +219,8 @@ Tutorial:
 (Tue) 2022-06-28
 	- setup GameView with WatchGame and JoinGame
 	- GameService add getGameList
+(Wed) 2022-06-29
+	- change gameList from axios to socket.
 
 **************************
 **		Next To To				**
