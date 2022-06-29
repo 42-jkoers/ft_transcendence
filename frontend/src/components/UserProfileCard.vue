@@ -101,7 +101,7 @@ watch(id, async () => {
 onMounted(async () => {
   setTimeout(async () => {
     await updateProfile();
-  }, 500); // wait till socket connection finished (to get correct socketCount)
+  }, 100); // wait till socket connection finished (to get correct socketCount)
 });
 
 async function updateProfile() {

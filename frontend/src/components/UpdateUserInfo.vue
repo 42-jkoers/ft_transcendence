@@ -59,7 +59,7 @@
     <div class="col-offset-5">
       <Button @click="updateData" label="Save" icon="pi pi-save" />
     </div>
-    <div class="col-3">
+    <!-- <div class="col-3">
       <Button
         class="p-button-danger"
         label="Deregister"
@@ -67,7 +67,7 @@
         iconPos="left"
         @click="proceedConfirmation"
       />
-    </div>
+    </div> -->
   </div>
 </template>
 <script setup lang="ts">
@@ -191,16 +191,16 @@ async function updateData() {
   }
 }
 
-async function proceedConfirmation() {
-  confirm.require({
-    message: "Are you sure you want to deregister?",
-    header: "Confirmation",
-    icon: "pi pi-exclamation-triangle",
-    accept: async () => {
-      await deregister();
-    },
-  });
-}
+// async function proceedConfirmation() {
+//   confirm.require({
+//     message: "Are you sure you want to deregister?",
+//     header: "Confirmation",
+//     icon: "pi pi-exclamation-triangle",
+//     accept: async () => {
+//       await deregister();
+//     },
+//   });
+// }
 
 async function deregister() {
   const postBody = {
