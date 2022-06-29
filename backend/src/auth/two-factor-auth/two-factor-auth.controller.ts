@@ -33,7 +33,6 @@ export class TwoFactorAuthController {
 			await this.twoFactorAuthenticationService.generateTwoFactorAuthSecret(
 				request.user,
 			);
-		console.log('url', otpauthUrl);
 		return this.twoFactorAuthenticationService.pipeQrCodeStream(
 			response,
 			otpauthUrl,

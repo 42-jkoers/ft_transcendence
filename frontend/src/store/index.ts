@@ -1,3 +1,4 @@
+import router from "@/router";
 import axios from "axios";
 import { createStore } from "vuex";
 
@@ -54,7 +55,6 @@ const storeUser = createStore({
             ) {
               router.push({ name: "2fAuthenticate" });
             } else {
-              console.log("enter else loop");
               commit("setAuthenticated");
               commit("updateId", response.data.id);
               commit("updateUserAvatar", response.data.avatar);
