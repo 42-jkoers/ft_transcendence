@@ -26,6 +26,7 @@ import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
 import { GameService } from '../game/game.service';
 import { CreateGameDto } from 'src/game/game.dto';
+import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -112,7 +113,9 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@UseFilters(new WsExceptionFilter())
-	@UsePipes(new ValidationPipe({ transform: true }))
+	//ValidationPipe provides a convenient approach to enforce validation rules for all incoming client payloads,
+	// where the specific rules are declared with simple annotations in local class/DTO declarations in each module.
+	@UsePipes(new ValidationPipe({ transform: true })) // transform can automatically transform JS object payloads to be objects typed according to their DTO classes.
 	@SubscribeMessage('createRoom')
 	async handleCreateRoom(
 		@MessageBody() room: createRoomDto,
@@ -209,7 +212,19 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.data.user.id,
 			room,
 		);
-		await this.getPublicRoomsList(client);
+		const userLeftInRoom = await this.roomService.getOneUserLeftInRoom(
+			room,
+		);
+		if (!userLeftInRoom) {
+			await this.roomService.deleteRoom(room);
+			if (room.visibility === RoomVisibilityType.PUBLIC) {
+				this.server.sockets.emit('room deleted', roomName); // emitting to all the users that have public room in their list
+			} else {
+				client.emit('room deleted', roomName);
+			}
+		} else {
+			await this.getPublicRoomsList(client);
+		}
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')

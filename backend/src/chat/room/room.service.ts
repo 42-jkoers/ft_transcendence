@@ -185,6 +185,28 @@ export class RoomService {
 		await this.roomEntityRepository.save(room);
 	}
 
+	async deleteRoom(room: RoomEntity) {
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(RoomEntity)
+			.where('id = :roomId', { roomId: room.id })
+			.execute();
+		// await this.roomEntityRepository.save;
+	}
+
+	// this function returns only one user if at least one is there, needed for finding out if room is empty
+	async getOneUserLeftInRoom(
+		room: RoomEntity,
+	): Promise<UserToRoomEntity | undefined> {
+		const userNumber = await this.userToroomEntityRepository.findOne({
+			where: {
+				roomId: room.id,
+			},
+		});
+		return userNumber;
+	}
+
 	async getNonCurrentUserInDMRoom(
 		currentUserId: number,
 		dMRoomId: number,
