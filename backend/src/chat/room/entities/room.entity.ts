@@ -35,6 +35,6 @@ export class RoomEntity {
 	@OneToMany(() => MessageEntity, (message) => message.room)
 	messages: MessageEntity[];
 
-	@OneToMany(() => MuteEntity, (mutes) => mutes.room)
+	@OneToMany(() => MuteEntity, (mutes) => mutes.room, { cascade: true })
 	mutes: MuteEntity[];
 }
