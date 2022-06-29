@@ -205,7 +205,12 @@ const items = ref([
       (isOwner(currentRoom.value.userRole) ||
         isAdmin(currentRoom.value.userRole)) &&
       isNotYourself(computedID.value),
-    command: () => socket.emit("muteUserInRoom"),
+    command: () =>
+      socket.emit("muteUserInRoom", {
+        id: computedID.value,
+        roomName: route.params.roomName,
+        durationMinute: 1, //TODO change after discussing with teammates
+      }),
   },
 ]);
 
