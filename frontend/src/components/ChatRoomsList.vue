@@ -94,23 +94,29 @@ const route = useRoute();
 
 const rooms = ref();
 setTimeout(() => {
-  // socket.emit("getUserRoomsList");
   socket.emit("getPublicRoomsList");
-}, 90); // FIXME: find a better solution?
+}, 120); // FIXME: find a better solution?
 
 const store = useStore();
 const updateRoomsList = (roomsList: Room[]) =>
   store.commit("updateRoomsList", roomsList);
 
 socket.on("postPublicRoomsList", (response) => {
-  // socket.on("getUserRoomsList", (response) => {
   console.log("rooms from server", response);
   rooms.value = response;
   updateRoomsList(response);
 });
 
+socket.on("room deleted", (deletedRoomName) => {
+  if (deletedRoomName === route.params.roomName) {
+    router.push({
+      name: "Chat",
+    });
+  }
+  socket.emit("getPublicRoomsList");
+});
+
 socket.on("postPrivateChatRoom", (dMRoom) => {
-  console.log("Direct Message Room: ", dMRoom);
   router.push({
     name: "ChatBox",
     params: { roomName: dMRoom.name },

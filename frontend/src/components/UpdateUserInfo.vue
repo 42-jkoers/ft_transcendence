@@ -90,7 +90,7 @@ const toast = useToast();
 
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
-const twoFactor = ref<boolean>(storeUser.state.user.twoFactor);
+const twoFactor = ref<boolean>(storeUser.state.user.twoFactorEnabled);
 const isUserNameInvalid = ref<boolean>(false);
 const invalidUserNameMessage = ref<string>("");
 
@@ -147,7 +147,7 @@ async function updateData() {
       id: storeUser.state.user.id,
       username: username.value,
       avatar: avatar.value,
-      // TODO: add 2F
+      isTwoFactorAuthEnabled: twoFactor.value,
     };
     await axios
       .post("http://localhost:3000/user/profile/update-userprofile", postBody, {
@@ -167,7 +167,15 @@ async function updateData() {
           // update storeUser
           storeUser.state.user.username = username.value;
           storeUser.state.user.avatar = avatar.value;
-          storeUser.state.user.twoFactor = twoFactor.value;
+          //if the 2f is enabled, the user is routed to the generate qrcode page
+          if (
+            !storeUser.state.user.twoFactorEnabled &&
+            twoFactor.value === true
+          ) {
+            router.push({ name: "enableTwoFactor" });
+          }
+          //update after check the value of the change on the 2fEnable
+          storeUser.state.user.twoFactorEnabled = twoFactor.value;
           // send signal to parent component
           emit("updated", true);
         }

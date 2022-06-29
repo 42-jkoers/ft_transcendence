@@ -1,3 +1,4 @@
+import router from "@/router";
 import axios from "axios";
 import { createStore } from "vuex";
 
@@ -8,7 +9,7 @@ const storeUser = createStore({
       id: 0,
       username: "",
       avatar: "",
-      twoFactor: false,
+      twoFactorEnabled: false,
     },
     roomsInfo: [],
   },
@@ -28,7 +29,7 @@ const storeUser = createStore({
       state.user.avatar = avatar;
     },
     updateTwoFactor(state, update) {
-      state.user.twoFactor = update;
+      state.user.twoFactorEnabled = update;
     },
     setAuthenticated(state) {
       state.isAuthenticated = true;
@@ -47,17 +48,37 @@ const storeUser = createStore({
           .get("http://localhost:3000/auth/status", {
             withCredentials: true,
           })
-          .then((response) => {
-            commit("setAuthenticated");
-            commit("updateId", response.data.id);
-            commit("updateUserAvatar", response.data.avatar);
-            // commit("updateTwoFactor", response.data.avatar); //TODO: 2F
-            commit("updateUserName", response.data.username);
+          .then(async (response) => {
+            if (
+              response.data.isTwoFactorAuthEnabled &&
+              !response.data.isTwoFactorAuthenticated
+            ) {
+              router.push({ name: "2fAuthenticate" });
+            } else {
+              console.log("enter else loop");
+              commit("setAuthenticated");
+              commit("updateId", response.data.id);
+              commit("updateUserAvatar", response.data.avatar);
+              commit("updateTwoFactor", response.data.isTwoFactorAuthEnabled);
+              commit("updateUserName", response.data.username);
+            }
           })
           .catch(() => {
             console.log("user is not unauthorized");
           });
       }
+    },
+    //action to enable 2f when the value was updated from disable to enable
+    //otherwise just call the commit("updateTwoFactor", response.data.isTwoFactorAuthEnabled) if from enable to disable
+    async enable2F({ commit }) {
+      await axios
+        .get("http://localhost:3000/two-factor-auth/generate")
+        .then(() => {
+          commit("updateTwoFactor", true);
+        })
+        .catch(() => {
+          console.log("error on commit the two factor enable");
+        });
     },
     logout({ commit }) {
       commit("unsetAuthenticated");

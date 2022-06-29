@@ -12,6 +12,9 @@ import { createRoomDto, RoomForUserDto } from './dto';
 import { directMessageDto } from './dto';
 import { UserToRoomEntity } from './entities/user.to.room.entity';
 import { UserRole } from './enums/user.role.enum';
+import { MuteUserDto } from './dto/mute.user.dto';
+import { MuteEntity } from './entities/mute.entity';
+import { MuteService } from './mute.service';
 
 @Injectable()
 export class RoomService {
@@ -24,6 +27,8 @@ export class RoomService {
 		private readonly userEntityRepository: Repository<User>,
 		@InjectRepository(UserToRoomEntity)
 		private readonly userToroomEntityRepository: Repository<UserToRoomEntity>,
+		@Inject(forwardRef(() => MuteService))
+		private readonly muteService: MuteService,
 	) {}
 
 	async findRoomById(roomId: number): Promise<RoomEntity> {
@@ -185,6 +190,60 @@ export class RoomService {
 		await this.roomEntityRepository.save(room);
 	}
 
+	async IsUserEligibleToSetRole(
+		currentUserId: number,
+		roomId: number,
+		anotherUserNewRole: UserRole,
+	): Promise<boolean> {
+		const userToRoomEntity =
+			await this.userToroomEntityRepository.findOneOrFail({
+				where: {
+					userId: currentUserId,
+					roomId: roomId,
+				},
+			});
+		if (!userToRoomEntity) return false;
+		const currentUserRole = userToRoomEntity.role;
+		return (
+			currentUserRole === UserRole.OWNER ||
+			(currentUserRole === UserRole.ADMIN &&
+				anotherUserNewRole > currentUserRole)
+		);
+	}
+
+	async setUserRole(userId: number, roomId: number, newRole: UserRole) {
+		const result = await getConnection()
+			.createQueryBuilder()
+			.update(UserToRoomEntity)
+			.set({ role: newRole })
+			.where('userId = :userId', { userId })
+			.andWhere('roomId = :roomId', { roomId })
+			.execute();
+		return result.affected;
+	}
+
+	async deleteRoom(room: RoomEntity) {
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(RoomEntity)
+			.where('id = :roomId', { roomId: room.id })
+			.execute();
+		// await this.roomEntityRepository.save;
+	}
+
+	// this function returns only one user if at least one is there, needed for finding out if room is empty
+	async getOneUserLeftInRoom(
+		room: RoomEntity,
+	): Promise<UserToRoomEntity | undefined> {
+		const userNumber = await this.userToroomEntityRepository.findOne({
+			where: {
+				roomId: room.id,
+			},
+		});
+		return userNumber;
+	}
+
 	async getNonCurrentUserInDMRoom(
 		currentUserId: number,
 		dMRoomId: number,
@@ -300,5 +359,57 @@ export class RoomService {
 	): Promise<boolean> {
 		const isMatch = await bcrypt.compare(password, hash);
 		return isMatch;
+	}
+
+	async muteUserInRoom(muteUser: MuteUserDto, mutingUserId: number) {
+		const roomName = muteUser.roomName;
+		const room = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			.where('room.name = :roomName', { roomName })
+			.leftJoinAndSelect('room.mutes', 'mutes')
+			.getOne();
+
+		await this.userService.isOwnerOrAdmin(mutingUserId, room.id);
+
+		const currentDate = new Date();
+		const muteLimitEnd = new Date(
+			currentDate.getTime() + muteUser.durationMinute * 60000,
+		);
+		const newMute: MuteEntity = await this.muteService.create(
+			muteUser.id,
+			muteLimitEnd,
+			room,
+		);
+		room.mutes.push(newMute);
+		await this.roomEntityRepository.save(room);
+		console.log(room); //TODO remove
+	}
+
+	async checIfkMutedAndMuteDeadlineAndRemoveMute(
+		userId: number,
+		roomName: string,
+	) {
+		const room = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			.where('room.name = :roomName', { roomName })
+			.leftJoinAndSelect('room.mutes', 'mutes')
+			.getOne();
+		console.log('room ', room); //TODO remove
+		console.log('mutes ', room.mutes); //TODO remove
+		const muteIndex = room.mutes.findIndex(
+			(element) => element.userId == userId,
+		);
+		console.log('mute index ', muteIndex);
+		const currentDate = new Date();
+		if (muteIndex != -1) {
+			if (currentDate < room.mutes[muteIndex].muteDeadline) {
+				return false;
+			} else {
+				room.mutes.splice(muteIndex, 1);
+				await this.roomEntityRepository.save(room);
+				return true;
+			}
+		}
+		return true;
 	}
 }

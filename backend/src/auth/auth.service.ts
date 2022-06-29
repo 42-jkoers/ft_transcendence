@@ -8,12 +8,14 @@ import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import * as session from 'express-session';
 import { UserI } from '../user/user.interface';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly userService: UserService,
 		private readonly configService: ConfigService,
+		private readonly httpService: HttpService,
 	) {}
 
 	/*

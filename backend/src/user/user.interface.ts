@@ -8,5 +8,8 @@ export interface UserI {
 	rooms?: RoomI[];
 	requestedFriends?: UserI[];
 	friends?: UserI[];
+	isTwoFactorAuthEnabled?: boolean;
+	isTwoFactorAuthenticated?: boolean;
+	twoFactorAuthSecret?: string;
 	socketCount?: number;
 }

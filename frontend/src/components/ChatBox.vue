@@ -87,25 +87,27 @@
 import { ref, inject, onMounted, onUnmounted, computed } from "vue";
 import { Socket } from "socket.io-client";
 import MessageI from "../types/Message.interface";
-import Card from "primevue/card";
-import InputText from "primevue/inputtext";
-import PrimeVueButton from "primevue/button";
-import Panel from "primevue/panel";
 import { useRoute } from "vue-router";
 import moment from "moment";
-import Chip from "primevue/chip";
-import ContextMenu from "primevue/contextmenu";
 import { useStore } from "vuex";
 import UserProfileI from "../types/UserProfile.interface";
 import storeUser from "@/store";
 import ChatBoxUserProfileDialogue from "./ChatBoxUserProfileDialogue.vue";
 import { UserRole } from "@/types/UserRole.Enum";
 import ChatBoxAddUsersDialogue from "./ChatBoxAddUsersDialogue.vue";
+import Card from "primevue/card";
+import InputText from "primevue/inputtext";
+import PrimeVueButton from "primevue/button";
+import Panel from "primevue/panel";
+import Chip from "primevue/chip";
+import ContextMenu from "primevue/contextmenu";
+import { useToast } from "primevue/usetoast";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
+const toast = useToast();
 
 const clickedUser = ref<UserProfileI>(storeUser.state.user);
 const computedID = computed(() => {
@@ -151,6 +153,49 @@ function sendMessage() {
   input.value = "";
 }
 
+const ShowSuccessfulRoleChangeMessage = (
+  newUserRole: UserRole,
+  username: string
+) => {
+  const userRoleMessage = {
+    [UserRole.OWNER]: "is the chat room owner now",
+    [UserRole.ADMIN]: "is the chat room administrator now",
+    [UserRole.VISITOR]: "is set as a chat room visitor",
+    [UserRole.BLOCKED]: "is blocked from chat",
+  };
+
+  toast.add({
+    severity: "success",
+    summary: "Success",
+    detail: `${username} ${userRoleMessage[newUserRole]}`,
+    life: 2000,
+  });
+};
+const ShowRoleChangeFailMessage = (newUserRole: UserRole, username: string) => {
+  const userRoleMessage = {
+    [UserRole.OWNER]: "set as the room owner",
+    [UserRole.ADMIN]: "set as the room administrator",
+    [UserRole.VISITOR]: "set as the room visitor",
+    [UserRole.BLOCKED]: "blocked from chat",
+  };
+
+  toast.add({
+    severity: "error",
+    summary: "Error",
+    detail: `${username} has left the room and cannot be ${userRoleMessage[newUserRole]}`,
+    life: 2000,
+  });
+};
+
+socket.on("setUserRoleFail", (newUserRole: UserRole, username: string) => {
+  ShowRoleChangeFailMessage(newUserRole, username);
+  console.log(`${username} is not in this chat room any more`);
+});
+
+socket.on("userRoleChanged", (newUserRole: UserRole, username: string) => {
+  ShowSuccessfulRoleChangeMessage(newUserRole, username);
+});
+
 const addUserToRoom = () => {
   socket.emit("addUserToRoom", route.params.roomName);
 };
@@ -182,35 +227,61 @@ const items = ref([
   {
     label: "Play pong",
     icon: "pi pi-fw pi-caret-right",
+    visible: () => store.state.user.id !== computedID.value,
   }, //TODO add a View to play game when we have it ready
   {
     separator: true,
   },
   {
     label: "Set admin",
-    visible: () => isOwner(currentRoom.value.userRole),
-    command: () => socket.emit("setUserAsAdmin"), //TODO pass user.id & room.name & add backend logic
+    visible: () =>
+      isOwner(currentRoom.value.userRole) &&
+      store.state.user.id !== computedID.value,
+    command: () =>
+      socket.emit("setNewUserRole", {
+        newRole: UserRole.ADMIN,
+        userToGetNewRoleId: computedID.value,
+        roomName: currentRoom.value.name,
+      }),
   },
   {
     label: "Ban user",
     visible: () =>
-      isOwner(currentRoom.value.userRole) ||
-      isAdmin(currentRoom.value.userRole),
+      (isOwner(currentRoom.value.userRole) ||
+        isAdmin(currentRoom.value.userRole)) &&
+      isNotYourself(computedID.value),
     command: () => socket.emit("banUserFromRoom"), //TODO pass user.id & room.name & add backend logic
   },
   {
     label: "Mute user",
     visible: () =>
-      isOwner(currentRoom.value.userRole) ||
-      isAdmin(currentRoom.value.userRole),
-    command: () => socket.emit("muteUserInRoom"), //TODO pass user.id & room.name & add backend logic
+      (isOwner(currentRoom.value.userRole) ||
+        isAdmin(currentRoom.value.userRole)) &&
+      isNotYourself(computedID.value),
+    command: () => muteUserInRoom(),
   },
 ]);
 
+const muteUserInRoom = () => {
+  socket.emit("muteUserInRoom", {
+    id: computedID.value,
+    roomName: route.params.roomName,
+    durationMinute: 1, //TODO change after discussing with teammates
+  });
+  toast.add({
+    severity: "success",
+    summary: "Success",
+    detail: "User has been muted",
+    life: 1000,
+  });
+};
+
 const isOwner = (userRole: UserRole | undefined) =>
-  userRole === 0 ? true : false;
+  userRole === UserRole.OWNER ? true : false;
 const isAdmin = (userRole: UserRole | undefined) =>
   userRole === 1 ? true : false;
+const isNotYourself = (userID: number) =>
+  userID === store.state.user.id ? false : true;
 </script>
 
 <style scoped>
