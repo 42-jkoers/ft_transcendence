@@ -90,6 +90,7 @@ export class UserService {
 			await this.userRepository.update(userData.id, {
 				username: userData.username,
 				avatar: userData.avatar,
+				isTwoFactorAuthEnabled: userData.isTwoFactorAuthEnabled,
 			});
 		} catch (error) {
 			return undefined;
@@ -168,5 +169,24 @@ export class UserService {
 			.andWhere({ username: Not('admin') })
 			.getMany();
 		return userList;
+	}
+
+	// async setTwoFactorAuthenticationSecret(secret: string, username: string) {
+	async setTwoFactorAuthSecret(secret: string, id: number) {
+		return this.userRepository.update(id, {
+			twoFactorAuthSecret: secret,
+		});
+	}
+
+	async updateTwoFactorAuth(id: number, status: boolean) {
+		return this.userRepository.update(id, {
+			isTwoFactorAuthenticated: status,
+		});
+	}
+
+	async turnOnTwoFactorAuth(userId: number) {
+		return this.userRepository.update(userId, {
+			isTwoFactorAuthEnabled: true,
+		});
 	}
 }

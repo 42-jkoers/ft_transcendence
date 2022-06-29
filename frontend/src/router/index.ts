@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "@/views/HomeView.vue";
 import UserSettingView from "@/views/UserSettingView.vue";
 import UnAuthorizedView from "@/views/UnAuthorizedView.vue";
+import TwoFactorAuthView from "@/views/TwoFactorAuthView.vue";
 import LogOutView from "@/views/LogOutView.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
@@ -11,6 +12,7 @@ import ChatBox from "@/components/ChatBox.vue";
 import UserProfileCard from "@/components/UserProfileCard.vue";
 import storeUser from "@/store";
 import FriendsView from "@/views/FriendsView.vue";
+import EnableTwoFactorView from "@/views/EnableTwoFactorView.vue";
 import GameView from "@/views/GameView.vue";
 
 const routes: Array<RouteRecordRaw> = [
@@ -76,6 +78,16 @@ const routes: Array<RouteRecordRaw> = [
     component: ComingSoonView,
   },
   {
+    path: "/2fAuthenticate",
+    name: "2fAuthenticate",
+    component: TwoFactorAuthView,
+  },
+  {
+    path: "/enableTwoFactor",
+    name: "enableTwoFactor",
+    component: EnableTwoFactorView,
+  },
+  {
     path: "/game",
     name: "Game",
     component: GameView,
@@ -95,7 +107,7 @@ const checkLogInState = async function () {
 };
 
 router.beforeEach(async (to) => {
-  if (to.name !== "UnAuthorized") {
+  if (to.name !== "UnAuthorized" && to.name !== "2fAuthenticate") {
     await checkLogInState();
     if (to.name !== "Home" && storeUser.state.isAuthenticated === false) {
       router.push({ name: "Home" });
