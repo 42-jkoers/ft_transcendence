@@ -70,7 +70,7 @@
 </template>
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, computed, watch, inject } from "vue";
 import axios from "axios";
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -82,6 +82,9 @@ import { EditFriendActionType } from "@/types/editFriendAction";
 import { useToast } from "primevue/usetoast";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
 import UserStatus from "./UserStatus.vue";
+import { Socket } from "socket.io-client";
+
+const socket: Socket = inject("socketioInstance");
 const toast = useToast();
 const route = useRoute();
 const id = computed(() => route.params.id);
@@ -96,18 +99,9 @@ watch(id, async () => {
 });
 
 onMounted(async () => {
-  try {
-    setTimeout(async () => {
-      await updateProfile();
-    }, 500); // wait till socket connection finished (to get correct socketCount)
-  } catch (error) {
-    toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: errorMessage(ErrorType.GENERAL),
-      life: 3000,
-    });
-  }
+  setTimeout(async () => {
+    await updateProfile();
+  }, 500); // wait till socket connection finished (to get correct socketCount)
 });
 
 async function updateProfile() {
@@ -117,27 +111,22 @@ async function updateProfile() {
 }
 
 async function findUser() {
-  console.log(">> before findUser, params: ", route.params.id);
-  await axios
-    .get("http://localhost:3000/user/find-by-id?id=" + id.value, {
-      withCredentials: true,
-    })
-    .then((response) => {
-      if (response.data) {
-        user.value = response.data;
-        isUserExist.value = true;
-        isSelf.value = id.value === String(storeUser.state.user.id);
-      } else {
-        toast.add({
-          severity: "error",
-          summary: "Error",
-          detail: errorMessage(ErrorType.USER_NOT_EXIST),
-          life: 3000,
-        });
-      }
-    });
+  socket.emit("getUserProfile", id.value);
+  socket.on("getUserProfile", (response) => {
+    if (response) {
+      user.value = response;
+      isUserExist.value = true;
+      isSelf.value = id.value === String(storeUser.state.user.id);
+    } else {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errorMessage(ErrorType.USER_NOT_EXIST),
+        life: 3000,
+      });
+    }
+  });
 }
-
 async function checkRelationship() {
   if (!isSelf.value) {
     await axios(
