@@ -328,16 +328,34 @@ export class RoomService {
 		);
 		room.mutes.push(newMute);
 		await this.roomEntityRepository.save(room);
-		console.log(room);
+		console.log(room); //TODO remove
 	}
 
-	async isUserMutedInRoom(userId: number, roomName: string) {
-		const isUserInMutesArray = await getRepository(RoomEntity)
+	async checIfkMutedAndMuteDeadlineAndRemoveMute(
+		userId: number,
+		roomName: string,
+	) {
+		const room = await getRepository(RoomEntity)
 			.createQueryBuilder('room')
+			.where('room.name = :roomName', { roomName })
 			.leftJoinAndSelect('room.mutes', 'mutes')
-			.where('mutes.userId = :userId', { userId })
-			.andWhere('room.name = :roomName', { roomName })
-			.getCount();
-		return isUserInMutesArray;
+			.getOne();
+		console.log('room ', room); //TODO remove
+		console.log('mutes ', room.mutes); //TODO remove
+		const muteIndex = room.mutes.findIndex(
+			(element) => element.userId == userId,
+		);
+		console.log('mute index ', muteIndex);
+		const currentDate = new Date();
+		if (muteIndex != -1) {
+			if (currentDate < room.mutes[muteIndex].muteDeadline) {
+				return false;
+			} else {
+				room.mutes.splice(muteIndex, 1);
+				await this.roomEntityRepository.save(room);
+				return true;
+			}
+		}
+		return true;
 	}
 }
