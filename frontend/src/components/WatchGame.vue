@@ -24,14 +24,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import axios from "axios";
 import { ref, inject } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import { useToast } from "primevue/usetoast";
 // import { useRouter } from "vue-router";
-import { ErrorType, errorMessage } from "@/types/errorManagement";
 import { Socket } from "socket.io-client";
 
 const socket: Socket = inject("socketioInstance");
