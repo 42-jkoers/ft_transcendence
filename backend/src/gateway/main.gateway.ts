@@ -303,6 +303,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	async sendGameList() {
+		const gameList = await this.gameService.getGameList();
+		this.server.emit('getGameList', gameList);
+	}
+
 	@UseFilters(new WsExceptionFilter())
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('createGame')
@@ -311,5 +316,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 	) {
 		await this.gameService.createGame(game, client.data.user);
+		await this.sendGameList();
+	}
+
+	@SubscribeMessage('getGameList')
+	async getGameList() {
+		await this.sendGameList();
 	}
 }
