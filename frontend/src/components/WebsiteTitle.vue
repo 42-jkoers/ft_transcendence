@@ -18,9 +18,7 @@ import ConfirmDialog from "primevue/confirmdialog";
 import { computed } from "vue";
 
 const isUserLogIn = computed(() => {
-  return (
-    storeUser.state.isAuthenticated && storeUser.state.user.username !== ""
-  );
+  return storeUser.state.isAuthenticated;
 });
 </script>
 <style scoped>

@@ -101,11 +101,13 @@ import storeUser from "@/store";
 import ChatBoxUserProfileDialogue from "./ChatBoxUserProfileDialogue.vue";
 import { UserRole } from "@/types/UserRole.Enum";
 import ChatBoxAddUsersDialogue from "./ChatBoxAddUsersDialogue.vue";
+import { useToast } from "primevue/usetoast";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
+const toast = useToast();
 
 const clickedUser = ref<UserProfileI>(storeUser.state.user);
 const computedID = computed(() => {
@@ -194,23 +196,41 @@ const items = ref([
   {
     label: "Ban user",
     visible: () =>
-      isOwner(currentRoom.value.userRole) ||
-      isAdmin(currentRoom.value.userRole),
+      (isOwner(currentRoom.value.userRole) ||
+        isAdmin(currentRoom.value.userRole)) &&
+      isNotYourself(computedID.value),
     command: () => socket.emit("banUserFromRoom"), //TODO pass user.id & room.name & add backend logic
   },
   {
     label: "Mute user",
     visible: () =>
-      isOwner(currentRoom.value.userRole) ||
-      isAdmin(currentRoom.value.userRole),
-    command: () => socket.emit("muteUserInRoom"), //TODO pass user.id & room.name & add backend logic
+      (isOwner(currentRoom.value.userRole) ||
+        isAdmin(currentRoom.value.userRole)) &&
+      isNotYourself(computedID.value),
+    command: () => muteUserInRoom(),
   },
 ]);
+
+const muteUserInRoom = () => {
+  socket.emit("muteUserInRoom", {
+    id: computedID.value,
+    roomName: route.params.roomName,
+    durationMinute: 1, //TODO change after discussing with teammates
+  });
+  toast.add({
+    severity: "success",
+    summary: "Success",
+    detail: "User has been muted",
+    life: 1000,
+  });
+};
 
 const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
 const isAdmin = (userRole: UserRole | undefined) =>
   userRole === 1 ? true : false;
+const isNotYourself = (userID: number) =>
+  userID === store.state.user.id ? false : true;
 </script>
 
 <style scoped>

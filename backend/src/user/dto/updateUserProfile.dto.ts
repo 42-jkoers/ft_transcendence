@@ -19,4 +19,6 @@ export class UpdateUserProfileDto {
 	@IsString()
 	@IsNotEmpty()
 	avatar: string;
+
+	isTwoFactorAuthEnabled: boolean;
 }
