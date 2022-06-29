@@ -3,7 +3,12 @@
     <div>
       <Card style="width: 30%; margin: 5%; border-radius: 5%; border: Groove">
         <template #header>
-          <img :src="user?.avatar" style="width: 90%; margin-top: 5%" />
+          <img
+            :src="user?.avatar"
+            width="300"
+            height="300"
+            style="width: 95%; margin-top: 5%; border-radius: 3%"
+          />
         </template>
         <template #title>
           <h3>
