@@ -55,6 +55,7 @@ const storeUser = createStore({
             ) {
               router.push({ name: "2fAuthenticate" });
             } else {
+              console.log("enter else loop");
               commit("setAuthenticated");
               commit("updateId", response.data.id);
               commit("updateUserAvatar", response.data.avatar);

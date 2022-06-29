@@ -44,7 +44,7 @@ async function submitCode() {
     .catch(() => {
       validate2F.value = false;
       errorCount.value++;
-      if (errorCount.value > 5) {
+      if (errorCount.value > 4) {
         router.push({ name: "UnAuthorized" });
       }
     });
