@@ -127,6 +127,7 @@ async function findUser() {
     }
   });
 }
+
 async function checkRelationship() {
   if (!isSelf.value) {
     await axios(
