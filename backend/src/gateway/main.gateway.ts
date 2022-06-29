@@ -26,6 +26,7 @@ import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
 import { GameService } from '../game/game.service';
 import { CreateGameDto } from 'src/game/game.dto';
+import { MuteUserDto } from 'src/chat/room/dto/mute.user.dto';
 import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
 
 @WebSocketGateway({
@@ -90,19 +91,29 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user: UserI = await this.userService.findByID(
 			client.data.user.id,
 		);
-		const message: MessageI = {
-			text: addMessageDto.text,
-			user: undefined,
-			room: undefined,
-			created_at: undefined,
-			updated_at: undefined,
-		};
-		const createdMessage: MessageI = await this.messageService.create(
-			message,
-			user,
-			selectedRoom,
-		);
-		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
+		const isNotMutedOrDeadlinePassed =
+			await this.roomService.checIfkMutedAndMuteDeadlineAndRemoveMute(
+				user.id,
+				selectedRoom.name,
+			);
+		if (isNotMutedOrDeadlinePassed) {
+			//saves msg and emits to frontend if not muted
+			const message: MessageI = {
+				text: addMessageDto.text,
+				user: undefined,
+				room: undefined,
+				created_at: undefined,
+				updated_at: undefined,
+			};
+			const createdMessage: MessageI = await this.messageService.create(
+				message,
+				user,
+				selectedRoom,
+			);
+			this.server
+				.to(selectedRoom.name)
+				.emit('messageAdded', createdMessage); //server socket emits to all clients
+		}
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
@@ -225,6 +236,18 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		} else {
 			await this.getPublicRoomsList(client);
 		}
+	}
+
+	@SubscribeMessage('muteUserInRoom')
+	async muteUserInRoom(
+		@MessageBody() muteUser: MuteUserDto,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')

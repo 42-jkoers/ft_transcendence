@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getConnection, Not } from 'typeorm';
 import User from './user.entity';
@@ -171,6 +171,26 @@ export class UserService {
 		return userList;
 	}
 
+	async isOwnerOrAdmin(userId: number, roomId: number) {
+		const authorizedUser = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect(
+				'user.userToRooms',
+				'userToRooms',
+				'userToRooms.roomId = :roomId',
+				{
+					roomId,
+				},
+			)
+			.where('user.id = :userId', { userId })
+			.getOne();
+		if (authorizedUser && authorizedUser.userToRooms) {
+			for (const userToRoom of authorizedUser.userToRooms) {
+				if (userToRoom.role === 1 || userToRoom.role === 0) return;
+				else throw new UnauthorizedException();
+			}
+		}
+	}
 	// async setTwoFactorAuthenticationSecret(secret: string, username: string) {
 	async setTwoFactorAuthSecret(secret: string, id: number) {
 		return this.userRepository.update(id, {
