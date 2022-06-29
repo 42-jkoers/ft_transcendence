@@ -38,6 +38,6 @@ export class RoomEntity {
 	@OneToMany(() => MuteEntity, (mutes) => mutes.room, { cascade: true })
 	mutes: MuteEntity[];
 
-	@Column({ default: [] })
+	@Column('simple-array', { array: true, default: [] })
 	bannedUserIds: number[];
 }
