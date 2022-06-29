@@ -24,7 +24,7 @@ Tutorial:
 	https://www.youtube.com/watch?v=vGafqCNCCSs&t=2365s
 
 (Fri) 2022-05-06
-	- install pgadmin in docker-compose
+	- install  in docker-compose
 		- how to use: https://hevodata.com/learn/pgadmin-docker/
 		- visit pgadmin at http://localhost:8080
 	- Auth0 (might not be necessary...)
