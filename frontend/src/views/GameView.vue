@@ -1,6 +1,6 @@
 <template>
   <div class="grid">
-    <div class="col-6">
+    <div class="col-4">
       <WatchGame />
     </div>
     <div style="margin: 0 auto">

@@ -1,6 +1,11 @@
 <template>
   <div>
-    <DataTable :value="gameList" responsiveLayout="scroll">
+    <DataTable
+      :value="gameList"
+      responsiveLayout="scroll"
+      :scrollable="true"
+      scrollHeight="60vh"
+    >
       <template #header>
         <div class="flex justify-content-center align-items-center">
           <h3>Game List</h3>
@@ -14,7 +19,7 @@
       <Column header="Watch" headerStyle="width: 10%">
         <template #body="slotProps">
           <Button
-            class="p-button-rounded p-button-text p-button-outlined"
+            class="p-button-rounded p-button-text p-button-outlined p-button-sm"
             icon="pi pi-eye"
             @click="watchGame(slotProps.data.id)"
           />
