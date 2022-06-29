@@ -153,7 +153,6 @@ function sendMessage() {
   input.value = "";
 }
 
-const toast = useToast();
 const ShowSuccessfulRoleChangeMessage = (
   newUserRole: UserRole,
   username: string
