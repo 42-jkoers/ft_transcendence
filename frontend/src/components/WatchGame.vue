@@ -6,15 +6,6 @@
           <h3>Game List</h3>
         </div>
       </template>
-      <Column headerStyle="width: 5%">
-        <template #header>
-          <Button
-            icon="pi pi-refresh"
-            class="p-button-rounded p-button-text p-button-outlined p-button-sm"
-            @click="refreshGameList"
-          />
-        </template>
-      </Column>
       <Column header="GameName" headerStyle="width: 40%">
         <template #body="slotProps">
           {{ slotProps.data.name }}
@@ -34,39 +25,27 @@
 </template>
 <script setup lang="ts">
 import axios from "axios";
-import { onMounted, ref } from "vue";
+import { ref, inject } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import { useToast } from "primevue/usetoast";
-import { useRouter } from "vue-router";
+// import { useRouter } from "vue-router";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
+import { Socket } from "socket.io-client";
 
-const router = useRouter();
+const socket: Socket = inject("socketioInstance");
+// const router = useRouter();
 const toast = useToast();
 const gameList = ref();
 
-onMounted(async () => {
-  await refreshGameList();
-});
+setTimeout(() => {
+  socket.emit("getGameList");
+}, 100);
 
-async function refreshGameList() {
-  await axios
-    .get("http://localhost:3000/game/list", {
-      withCredentials: true,
-    })
-    .then((response) => {
-      gameList.value = response.data;
-    })
-    .catch(() => {
-      toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: errorMessage(ErrorType.GENERAL),
-        life: 3000,
-      });
-    });
-}
+socket.on("getGameList", (response) => {
+  gameList.value = response;
+});
 
 function watchGame(gameId: number) {
   // TODO: to add route to game
