@@ -52,7 +52,22 @@ socket?.on("postBlockedList", (blockedList) => {
   blockedUsers.value = blockedList;
 });
 
-const unblockUser = (userId: number) => {
-  socket?.emit("UnblockUser", userId);
+const toast = useToast();
+socket?.on(
+  "unblockUserResult",
+  (response: { id: number; username: string } | undefined) => {
+    if (!response) {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: `Error unblocking user`,
+        life: 2000,
+      });
+    }
+  }
+);
+
+const unblockUser = (id: number) => {
+  socket?.emit("unblockUser", { id });
 };
 </script>

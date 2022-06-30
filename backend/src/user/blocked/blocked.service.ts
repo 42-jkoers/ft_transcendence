@@ -29,18 +29,38 @@ export class BlockedUsersService {
 		}
 	}
 
-	async getBlockedUsers(user: User) {
-		const blockedUsers = await getRepository(User)
-			.createQueryBuilder('user')
-			.leftJoinAndSelect('user.blocked', 'blockedUser')
-			.where('blockedUser.id = :id', { id: user.id })
-			.getMany();
-		// return blockedUsers;
+	async unblockUser(
+		userToUnblock: UserI,
+		currentUser: UserI,
+	): Promise<{ id: number; username: string } | undefined> {
+		// console.log("current user ", currentUser,);
+
+		try {
+			await this.userRepository
+				.createQueryBuilder('user')
+				.relation(User, 'blocked')
+				.of(currentUser)
+				.remove(userToUnblock);
+			return { id: userToUnblock.id, username: userToUnblock.username };
+		} catch (err) {
+			return undefined;
+		}
+	}
+
+	counter = 0;
+	async getBlockedUsers(currentUser: User) {
+		const user = await getRepository(User).findOne({
+			relations: ['blocked'],
+			where: { id: currentUser.id },
+		});
+		const blockedUsers = user.blocked;
 		const usersForClient = await Promise.all(
 			blockedUsers.map(async (blockedUser) => {
 				return plainToClass(UserForClientDto, blockedUser);
 			}),
 		);
+		console.log('usersForClient', usersForClient);
+
 		return usersForClient;
 	}
 }

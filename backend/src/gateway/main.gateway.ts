@@ -324,6 +324,25 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		socket.emit('postBlockedList', blockedUsers);
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
+	@SubscribeMessage('unblockUser')
+	async handleUnblock(
+		@MessageBody() userDto: UserIdDto,
+		@ConnectedSocket() socket: Socket,
+	) {
+		const userToUnblock: UserI = await this.userService.findByID(
+			userDto.id,
+		);
+		if (!userToUnblock) {
+			socket.emit('unblockUserResult', undefined);
+		}
+		const response = await this.blockedUsersService.unblockUser(
+			userToUnblock,
+			socket.data.user,
+		);
+		if (response) this.handleGetBlockedUsersList(socket);
+	}
+
 	@SubscribeMessage('checkRoomPasswordMatch')
 	async checkRoomPasswordMatch(
 		client: Socket,
