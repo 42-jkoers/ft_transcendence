@@ -19,7 +19,6 @@ export class TwoFactorAuthService {
 			this.configService.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'),
 			secret,
 		);
-		console.log(secret);
 		await this.usersService.setTwoFactorAuthSecret(secret, user.id);
 		return {
 			secret,

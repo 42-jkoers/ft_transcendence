@@ -10,7 +10,7 @@
   <br />
   <Button
     v-if="loadPicture"
-    label="Google authenticator added! Go to the validation step"
+    label="Google Authenticator added, go to next step!"
     class="mr-2"
     icon="pi pi-check"
     @click="validate2F"
@@ -22,7 +22,6 @@ import Button from "primevue/button";
 import axios from "axios";
 import router from "@/router";
 import { useToast } from "primevue/usetoast";
-import ConfirmationService from "primevue/confirmationservice";
 import { useConfirm } from "primevue/useconfirm";
 
 const image = ref();
@@ -61,14 +60,15 @@ function sendWrarning() {
     severity: "info",
     summary: "Warn message",
     detail:
-      "Please make sure you scan the QR code and add to your Google Authenticator before you leave the page!",
+      "Please make sure that you have scanned the QR code and added to your Google Authenticator before you leave the page!",
     life: 10000,
   });
 }
 
 function confirm1() {
   confirm.require({
-    message: "Are you sure you want to proceed?",
+    message:
+      "Are you sure you have added the QR code to the Google Authenticator?",
     header: "Confirmation",
     icon: "pi pi-exclamation-triangle",
     accept: () => {
@@ -83,7 +83,8 @@ function confirm1() {
       toast.add({
         severity: "info",
         summary: "Confirmed",
-        detail: "You have rejected",
+        detail:
+          "Please make sure you scan the QR code before going to the next step!",
         life: 3000,
       });
       router.push({ name: "enableTwoFactor" });

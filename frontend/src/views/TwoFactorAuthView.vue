@@ -10,7 +10,8 @@
       v-if="!validate2F && codeSubmited"
       severity="error"
       :closable="false"
-      >Wrong two factor authentication code. Please try again!</Message
+      >Wrong two factor authentication code. You have {{ 5 - errorCount }} times
+      left to try!</Message
     >
   </div>
 </template>

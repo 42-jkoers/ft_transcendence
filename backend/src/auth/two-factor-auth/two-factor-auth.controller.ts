@@ -39,20 +39,21 @@ export class TwoFactorAuthController {
 		);
 	}
 
-	@Post('turn-on')
-	@HttpCode(200)
-	@UseGuards(AuthenticatedGuard)
-	async turnOneTwoFactorAuth(
-		@Req() request: RequestWithUser,
-		@Body() { twoFactorAuthCode }: TwoFactorAuthCodeDto,
-	) {
-		const isCodeValid =
-			this.twoFactorAuthenticationService.VerifyTwoFactorAuthCode(
-				twoFactorAuthCode,
-				request.user,
-			);
-		if (!isCodeValid)
-			throw new UnauthorizedException('Wrong authentication code');
-		await this.usersService.turnOnTwoFactorAuth(request.user.id);
-	}
+	//future improvement, this is currently not needed as enable will be executed through frontend
+	// @Post('turn-on')
+	// @HttpCode(200)
+	// @UseGuards(AuthenticatedGuard)
+	// async turnOneTwoFactorAuth(
+	// 	@Req() request: RequestWithUser,
+	// 	@Body() { twoFactorAuthCode }: TwoFactorAuthCodeDto,
+	// ) {
+	// 	const isCodeValid =
+	// 		this.twoFactorAuthenticationService.VerifyTwoFactorAuthCode(
+	// 			twoFactorAuthCode,
+	// 			request.user,
+	// 		);
+	// 	if (!isCodeValid)
+	// 		throw new UnauthorizedException('Wrong authentication code');
+	// 	await this.usersService.turnOnTwoFactorAuth(request.user.id);
+	// }
 }
