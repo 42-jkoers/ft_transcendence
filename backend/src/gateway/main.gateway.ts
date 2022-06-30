@@ -365,4 +365,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async getGameList() {
 		await this.sendGameList();
 	}
+
+	@SubscribeMessage('getUserProfile')
+	async getUser(
+		@MessageBody() id: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user = await this.userService.getUserByID(id);
+		client.emit('getUserProfile', user);
+	}
 }
