@@ -183,6 +183,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			.emit('postPublicRoomsList', roomsList);
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('setNewUserRole')
 	async handleSetNewUserRole(socket: Socket, setRoleDto: SetRoomRoleDto) {
 		const room: RoomEntity = await this.roomService.findRoomByName(
@@ -295,19 +296,25 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
 	}
 
+	@UseFilters(new WsExceptionFilter())
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('blockUser')
 	async handleblockUser(
 		@MessageBody() userToBlockIdDto: UserIdDto,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
 		const userToBlock: UserI = await this.userService.findByID(
 			userToBlockIdDto.id,
 		);
-		if (!userToBlock) console.log('exception');
-		console.log('userToBlockIdDto: ', userToBlockIdDto);
-		// console.log('userToBlock', userToBlock);
-
-		await this.blockedUsersService.blockUser(userToBlock, client.data.user);
+		if (!userToBlock) {
+			socket.emit('blockUserResult', undefined);
+		}
+		const response = await this.blockedUsersService.blockUser(
+			userToBlock,
+			socket.data.user,
+		);
+		// response will be either with blocked user data or undefined if the user is already in the blocked list
+		socket.emit('blockUserResult', response);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')

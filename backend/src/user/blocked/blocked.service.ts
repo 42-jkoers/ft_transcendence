@@ -11,11 +11,19 @@ export class BlockedUsersService {
 		private userRepository: Repository<User>,
 	) {}
 
-	async blockUser(userToBlock: UserI, currentUser: UserI) {
-		await this.userRepository
-			.createQueryBuilder('user')
-			.relation(User, 'blocked')
-			.of(currentUser)
-			.add(userToBlock);
+	async blockUser(
+		userToBlock: UserI,
+		currentUser: UserI,
+	): Promise<{ id: number; username: string } | undefined> {
+		try {
+			await this.userRepository
+				.createQueryBuilder('user')
+				.relation(User, 'blocked')
+				.of(currentUser)
+				.add(userToBlock);
+			return { id: userToBlock.id, username: userToBlock.username };
+		} catch (err) {
+			return undefined;
+		}
 	}
 }
