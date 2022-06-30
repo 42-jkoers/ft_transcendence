@@ -267,6 +267,22 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.getPublicRoomsList(client);
 	}
 
+	@SubscribeMessage('unBanUserFromRoom')
+	async unBanUserFromRoom(
+		@MessageBody() roomAndUser: RoomAndUserDTO,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.unBanUserFromRoom(
+			roomAndUser,
+			client.data.user.id,
+		);
+		await this.getPublicRoomsList(client);
+	}
+
 	@SubscribeMessage('isUserBanned')
 	async isUserBanned(
 		@MessageBody() roomAndUser: RoomAndUserDTO,
