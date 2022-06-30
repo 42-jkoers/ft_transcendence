@@ -180,6 +180,14 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			.emit('postPublicRoomsList', roomsList);
 	}
 
+	// @SubscribeMessage('getPublicRoomsList')
+	// async getPublicRoomsList(userId: number) {
+	// 	const roomsList = await this.roomService.getPublicRoomsList(userId);
+	// 	this.server
+	// 		.to(userId.toString())
+	// 		.emit('postPublicRoomsList', roomsList);
+	// } //TODO make sure Olga checks if it works accordingly.
+
 	@SubscribeMessage('updateRoomPassword')
 	async updateRoomPassword(
 		@ConnectedSocket() client: Socket,
