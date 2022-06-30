@@ -190,6 +190,38 @@ export class RoomService {
 		await this.roomEntityRepository.save(room);
 	}
 
+	async IsUserEligibleToSetRole(
+		currentUserId: number,
+		roomId: number,
+		anotherUserNewRole: UserRole,
+	): Promise<boolean> {
+		const userToRoomEntity =
+			await this.userToroomEntityRepository.findOneOrFail({
+				where: {
+					userId: currentUserId,
+					roomId: roomId,
+				},
+			});
+		if (!userToRoomEntity) return false;
+		const currentUserRole = userToRoomEntity.role;
+		return (
+			currentUserRole === UserRole.OWNER ||
+			(currentUserRole === UserRole.ADMIN &&
+				anotherUserNewRole > currentUserRole)
+		);
+	}
+
+	async setUserRole(userId: number, roomId: number, newRole: UserRole) {
+		const result = await getConnection()
+			.createQueryBuilder()
+			.update(UserToRoomEntity)
+			.set({ role: newRole })
+			.where('userId = :userId', { userId })
+			.andWhere('roomId = :roomId', { roomId })
+			.execute();
+		return result.affected;
+	}
+
 	async deleteRoom(room: RoomEntity) {
 		await getConnection()
 			.createQueryBuilder()

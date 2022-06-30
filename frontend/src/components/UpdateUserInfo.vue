@@ -79,13 +79,13 @@ import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
 import UploadAvatar from "@/components/UploadAvatar.vue";
-import { useConfirm } from "primevue/useconfirm";
+// import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import { errorMessage, ErrorType } from "@/types/errorManagement";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const confirm = useConfirm();
+// const confirm = useConfirm();
 const toast = useToast();
 
 const username = ref<string>(storeUser.state.user.username);
@@ -201,34 +201,34 @@ async function updateData() {
 //     },
 //   });
 // }
-
-async function deregister() {
-  const postBody = {
-    id: storeUser.state.user.id,
-  };
-  await axios
-    .post("http://localhost:3000/user/deregister", postBody, {
-      withCredentials: true,
-    })
-    .then(() => {
-      toast.add({
-        severity: "info",
-        summary: "Info",
-        detail: "User is deregistered.",
-        life: 3000,
-      });
-      storeUser.dispatch("logout");
-      router.push({ name: "Home" });
-    })
-    .catch(() => {
-      toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: errorMessage(ErrorType.GENERAL),
-        life: 3000,
-      });
-    });
-}
+//
+// async function deregister() {
+//   const postBody = {
+//     id: storeUser.state.user.id,
+//   };
+//   await axios
+//     .post("http://localhost:3000/user/deregister", postBody, {
+//       withCredentials: true,
+//     })
+//     .then(() => {
+//       toast.add({
+//         severity: "info",
+//         summary: "Info",
+//         detail: "User is deregistered.",
+//         life: 3000,
+//       });
+//       storeUser.dispatch("logout");
+//       router.push({ name: "Home" });
+//     })
+//     .catch(() => {
+//       toast.add({
+//         severity: "error",
+//         summary: "Error",
+//         detail: errorMessage(ErrorType.GENERAL),
+//         life: 3000,
+//       });
+//     });
+// }
 </script>
 <style scoped>
 .label {
