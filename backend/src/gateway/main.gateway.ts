@@ -28,6 +28,7 @@ import { GameService } from '../game/game.service';
 import { CreateGameDto } from 'src/game/game.dto';
 import { MuteUserDto } from 'src/chat/room/dto/mute.user.dto';
 import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
+import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -248,6 +249,32 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		if (!user) console.log('exception'); //TODO throw exception
 		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
+	}
+
+	@SubscribeMessage('banUserFromRoom')
+	async banUserFromRoom(
+		@MessageBody() roomAndUser: RoomAndUserDTO,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.banUserFromRoom(
+			roomAndUser,
+			client.data.user.id,
+		);
+		await this.getPublicRoomsList(client);
+	}
+
+	@SubscribeMessage('isUserBanned')
+	async isUserBanned(
+		@MessageBody() roomAndUser: RoomAndUserDTO,
+		@ConnectedSocket() client: Socket,
+	) {
+		const isUserBanned = await this.roomService.isUserBanned(roomAndUser);
+		console.log('is banned ', isUserBanned);
+		client.emit('isUserBanned', isUserBanned);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
