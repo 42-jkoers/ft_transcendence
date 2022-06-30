@@ -113,12 +113,9 @@ const clickedUser = ref<UserProfileI>(storeUser.state.user);
 const computedID = computed(() => {
   return clickedUser.value.id;
 }); //items ref params need a calculated property
+const isUserBanned = ref<boolean>();
 const computedIsUserBanned = computed(() => {
-  let isBanned;
-  socket.on("isUserBanned", (response) => {
-    isBanned = response;
-  });
-  return isBanned;
+  return isUserBanned.value;
 });
 
 const displayUserProfileDialog = ref(false);
@@ -140,6 +137,10 @@ onMounted(() => {
     if (route.params.roomName === message.room.name)
       messages.value.unshift(message);
   }); //place the new message on top of the messages arrayy
+
+  socket.on("isUserBanned", (response) => {
+    isUserBanned.value = response;
+  });
 });
 
 onUnmounted(() => {
@@ -205,7 +206,7 @@ const items = ref([
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value) &&
-      isNotBanned(computedID.value),
+      !isBanned(computedID.value),
     command: () => banUserFromRoom(),
   },
   {
@@ -213,7 +214,7 @@ const items = ref([
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value) &&
-      !isNotBanned(computedID.value),
+      isBanned(computedID.value),
     command: () => unBanUserFromRoom(),
   },
   {
@@ -271,13 +272,12 @@ const isOwnerOrAdmin = (userRole: UserRole | undefined) =>
   userRole < 2 ? true : false;
 const isNotYourself = (userID: number) =>
   userID === store.state.user.id ? false : true;
-const isNotBanned = (userID: number) => {
+const isBanned = (userID: number) => {
   socket.emit("isUserBanned", {
     userId: userID,
     roomName: route.params.roomName,
   });
-  if (computedIsUserBanned.value) return false;
-  else true;
+  return computedIsUserBanned.value;
 };
 </script>
 
