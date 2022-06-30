@@ -16,25 +16,29 @@
       alt="User Profile"
     />
     <template #footer>
-      <Button
-        v-if="store.state.user.id !== props.clickedUserObject.id"
-        label="Message"
-        icon="pi pi-envelope"
-        @click="sendDM"
+      <ChatBoxSendDMButton
+        :clickedUserId="clickedUserObject.id"
+        v-if="userId !== props.clickedUserObject.id"
+        @closeDialog="handleClose"
       />
-      <Button label="View Profile" icon="pi pi-user" @click="pushToProfile" />
+      <Button
+        label="View Profile"
+        icon="pi pi-user"
+        class="p-button-rounded p-button-outlined"
+        @click="pushToProfile"
+      />
     </template>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits, defineProps, inject, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { Socket } from "socket.io-client";
+import { ref, defineEmits, defineProps } from "vue";
+import { useRouter } from "vue-router";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import Image from "primevue/image"; //TODO style img width
 import { useStore } from "vuex";
+import ChatBoxSendDMButton from "./ChatBoxSendDMButton.vue";
 
 const isOnline = ref(true); //FIXME change this when we have onlin/offline info in user
 const props = defineProps(["isDialogVisible", "clickedUserObject"]);
@@ -49,34 +53,8 @@ const pushToProfile = () => {
   });
 };
 
-const socket: Socket = inject("socketioInstance");
 const store = useStore();
-const route = useRoute();
-
-const sendDM = () => {
-  const dMRoom = computed(() =>
-    store.state.roomsInfo.find(
-      (room) =>
-        room.isDirectMessage &&
-        room.secondParticipant[0] === props.clickedUserObject.id
-    )
-  );
-  if (dMRoom.value) {
-    if (route.params.roomName === dMRoom.value.name) {
-      handleClose();
-    }
-    router.push({
-      name: "ChatBox",
-      params: { roomName: dMRoom.value.name },
-    });
-  } else {
-    const dMRequest = {
-      isDirectMessage: true,
-      userIds: [props.clickedUserObject.id],
-    };
-    socket.emit("createPrivateChatRoom", dMRequest);
-  }
-};
+const userId = ref<number>(store.state.user.id);
 
 const handleClose = () => {
   emit("update:isDialogVisible", false);
