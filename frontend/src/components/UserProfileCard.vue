@@ -28,12 +28,7 @@
             </div>
             <div v-else>
               <div>
-                <Button
-                  label="Message"
-                  class="p-button-rounded p-button-outlined"
-                  icon="pi pi-envelope"
-                  @click="toPrivateMessage"
-                />
+                <ChatBoxSendDMButton :clickedUserId="user?.id" />
               </div>
               <br />
             </div>
@@ -77,6 +72,8 @@ import { EditFriendActionType } from "@/types/editFriendAction";
 import { useToast } from "primevue/usetoast";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
 import UserStatus from "./UserStatus.vue";
+import ChatBoxSendDMButton from "./ChatBoxSendDMButton.vue";
+
 const toast = useToast();
 const route = useRoute();
 const id = route.params.id;
@@ -152,10 +149,6 @@ const router = useRouter();
 
 function toSetting() {
   router.push({ name: "UserSetting" });
-}
-
-function toPrivateMessage() {
-  console.log("go to private message"); //TODO: to change route to private chat
 }
 
 function catchEvent(event) {
