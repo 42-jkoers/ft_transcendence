@@ -26,6 +26,7 @@ import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
 import { GameService } from '../game/game.service';
 import { CreateGameDto } from 'src/game/game.dto';
+import { SetRoomRoleDto } from 'src/chat/room/dto/set.room.role.dto';
 import { MuteUserDto } from 'src/chat/room/dto/mute.user.dto';
 import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
 import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
@@ -160,7 +161,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		for (const socket of sockets) {
 			socket.join(createdDMRoom.name);
 		}
-
+		// both users in the room will have their roomlists updated:
 		const roomsList = await this.roomService.getPublicRoomsList(
 			secondUserId,
 		);
@@ -187,6 +188,46 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	// 		.to(userId.toString())
 	// 		.emit('postPublicRoomsList', roomsList);
 	// } //TODO make sure Olga checks if it works accordingly.
+	@SubscribeMessage('setNewUserRole')
+	async handleSetNewUserRole(socket: Socket, setRoleDto: SetRoomRoleDto) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			setRoleDto.roomName,
+		);
+		const user = await this.userService.findByID(
+			setRoleDto.userToGetNewRoleId,
+		);
+		// getting username to notify the admin that setNewUserRole either failed or succedded
+		const username: string = user.username;
+		if (!room) {
+			socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+			return;
+		}
+		if (
+			await this.roomService.IsUserEligibleToSetRole(
+				socket.data.user.id,
+				room.id,
+				setRoleDto.newRole,
+			)
+		) {
+			const userRoleUpdateResult = await this.roomService.setUserRole(
+				setRoleDto.userToGetNewRoleId,
+				room.id,
+				setRoleDto.newRole,
+			);
+
+			if (!userRoleUpdateResult) {
+				socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+				return;
+			}
+			const roomsList = await this.roomService.getPublicRoomsList(
+				setRoleDto.userToGetNewRoleId,
+			);
+			this.server
+				.to(setRoleDto.userToGetNewRoleId.toString())
+				.emit('postPublicRoomsList', roomsList);
+		}
+		socket.emit('userRoleChanged', setRoleDto.newRole, username);
+	}
 
 	@SubscribeMessage('updateRoomPassword')
 	async updateRoomPassword(
