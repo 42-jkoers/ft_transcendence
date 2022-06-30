@@ -167,16 +167,18 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server
 			.to(secondUserId.toString())
 			.emit('postPublicRoomsList', roomsList);
-		await this.getPublicRoomsList(client.data.user.id);
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
-	async getPublicRoomsList(userId: number) {
-		const roomsList = await this.roomService.getPublicRoomsList(userId);
+	async getPublicRoomsList(client) {
+		const roomsList = await this.roomService.getPublicRoomsList(
+			client.data.user.id,
+		);
 		this.server
-			.to(userId.toString())
+			.to(client.data.user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
-	} //TODO make sure Olga checks if it workds accordingly.
+	}
 
 	@SubscribeMessage('updateRoomPassword')
 	async updateRoomPassword(
@@ -187,7 +189,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomToUpdate.name,
 		);
 		await this.roomService.updateRoomPassword(room, roomToUpdate.password);
-		await this.getPublicRoomsList(client.data.user.id);
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('addUserToRoom')
@@ -207,7 +209,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log(
 			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
 		);
-		await this.getPublicRoomsList(client.data.user.id);
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('removeUserFromRoom')
@@ -233,7 +235,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				client.emit('room deleted', roomName);
 			}
 		} else {
-			await this.getPublicRoomsList(client.data.user.id);
+			await this.getPublicRoomsList(client);
 		}
 	}
 
@@ -247,7 +249,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		if (!user) console.log('exception'); //TODO throw exception
 		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
-		await this.getPublicRoomsList(muteUser.id);
 	}
 
 	@SubscribeMessage('banUserFromRoom')
@@ -263,8 +264,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomAndUser,
 			client.data.user.id,
 		);
-		await this.getPublicRoomsList(client.data.user.id);
-		await this.getPublicRoomsList(roomAndUser.userId); //FIXME input text should disappear immediately!
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('unBanUserFromRoom')
@@ -280,8 +280,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomAndUser,
 			client.data.user.id,
 		);
-		await this.getPublicRoomsList(client.data.user.id);
-		await this.getPublicRoomsList(roomAndUser.userId);
+		await this.getPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('isUserBanned')
@@ -343,7 +342,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		for (const socket of sockets) {
 			socket.join(room.name); //joins each socket of the added user to this room
 			console.log(`${user.username} has been added to ${room.name}`);
-			await this.getPublicRoomsList(socket.data.user.id); //to refresh rooms in added users page
+			await this.getPublicRoomsList(socket); //to refresh rooms in added users page
 		}
 	}
 
