@@ -12,6 +12,7 @@ import ChatBox from "@/components/ChatBox.vue";
 import UserProfileCard from "@/components/UserProfileCard.vue";
 import storeUser from "@/store";
 import FriendsView from "@/views/FriendsView.vue";
+import BlockedUsersView from "@/views/BlockedUsersView.vue";
 import EnableTwoFactorView from "@/views/EnableTwoFactorView.vue";
 import GameView from "@/views/GameView.vue";
 
@@ -61,6 +62,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/friends",
     name: "Friends",
     component: FriendsView,
+  },
+  {
+    path: "/blocked",
+    name: "Blocked",
+    component: BlockedUsersView,
   },
   {
     path: "/chat/create-chatroom",
