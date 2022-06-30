@@ -397,6 +397,21 @@ export class RoomService {
 		return true;
 	}
 
+	async unBanUserFromRoom(roomAndUser: RoomAndUserDTO, mutingUserId: number) {
+		const room = await this.findRoomByName(roomAndUser.roomName);
+		await this.userService.isOwnerOrAdmin(mutingUserId, room.id);
+		const banIndex = room.bannedUserIds.findIndex(
+			(element) => element == roomAndUser.userId,
+		);
+		//check if user is already banned
+		if (banIndex) {
+			// add user's id to banned users
+			room.bannedUserIds.splice(banIndex, 1);
+			await this.roomEntityRepository.save(room);
+			console.log(room); //TODO remove after PR
+		}
+	}
+
 	async isUserBanned(roomAndUser: RoomAndUserDTO) {
 		const room = await this.findRoomByName(roomAndUser.roomName);
 		const banIndex = room.bannedUserIds.findIndex(
