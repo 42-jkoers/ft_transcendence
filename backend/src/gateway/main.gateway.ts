@@ -296,7 +296,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
 	}
 
-	@UseFilters(new WsExceptionFilter())
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('blockUser')
 	async handleblockUser(
@@ -315,6 +314,14 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		// response will be either with blocked user data or undefined if the user is already in the blocked list
 		socket.emit('blockUserResult', response);
+	}
+
+	@SubscribeMessage('getBlockedList')
+	async handleGetBlockedUsersList(@ConnectedSocket() socket: Socket) {
+		const blockedUsers = await this.blockedUsersService.getBlockedUsers(
+			socket.data.user,
+		);
+		socket.emit('postBlockedList', blockedUsers);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
