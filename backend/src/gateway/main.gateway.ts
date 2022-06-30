@@ -272,6 +272,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomAndUser,
 			client.data.user.id,
 		);
+		//leave the room with all the connected sockets
+		const sockets = await this.server
+			.in(roomAndUser.userId.toString())
+			.fetchSockets(); //fetches all connected sockets for this specific user
+		for (const socket of sockets) {
+			socket.leave(roomAndUser.roomName); //leaves each socket of the added user to this room
+		}
 		await this.getPublicRoomsList(client);
 	}
 
