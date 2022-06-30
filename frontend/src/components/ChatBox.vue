@@ -197,6 +197,27 @@ socket.on("userRoleChanged", (newUserRole: UserRole, username: string) => {
   ShowSuccessfulRoleChangeMessage(newUserRole, username);
 });
 
+socket.on(
+  "blockUserResult",
+  (response: { id: number; username: string } | undefined) => {
+    if (!response) {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: `Error blocking the user`,
+        life: 2000,
+      });
+    } else {
+      toast.add({
+        severity: "success",
+        summary: "Success",
+        detail: `${response.username} is blocked`,
+        life: 2000,
+      });
+    }
+  }
+);
+
 const addUserToRoom = () => {
   socket.emit("addUserToRoom", route.params.roomName);
 };
