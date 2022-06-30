@@ -396,4 +396,14 @@ export class RoomService {
 		}
 		return true;
 	}
+
+	async isUserBanned(roomAndUser: RoomAndUserDTO) {
+		const room = await this.findRoomByName(roomAndUser.roomName);
+		const banIndex = room.bannedUserIds.findIndex(
+			(element) => element == roomAndUser.userId,
+		);
+		//check if user is already banned
+		if (banIndex == -1) return false;
+		else return true;
+	}
 }
