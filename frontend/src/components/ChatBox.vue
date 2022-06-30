@@ -113,6 +113,13 @@ const clickedUser = ref<UserProfileI>(storeUser.state.user);
 const computedID = computed(() => {
   return clickedUser.value.id;
 }); //items ref params need a calculated property
+const computedIsUserBanned = computed(() => {
+  let isBanned;
+  socket.on("isUserBanned", (response) => {
+    isBanned = response;
+  });
+  return isBanned;
+});
 
 const displayUserProfileDialog = ref(false);
 const displayAddUsersDialogue = ref(false);
@@ -196,16 +203,23 @@ const items = ref([
   {
     label: "Ban user",
     visible: () =>
-      (isOwner(currentRoom.value.userRole) ||
-        isAdmin(currentRoom.value.userRole)) &&
-      isNotYourself(computedID.value),
+      isOwnerOrAdmin(currentRoom.value.userRole) &&
+      isNotYourself(computedID.value) &&
+      isNotBanned(computedID.value),
     command: () => banUserFromRoom(),
+  },
+  {
+    label: "Unban user",
+    visible: () =>
+      isOwnerOrAdmin(currentRoom.value.userRole) &&
+      isNotYourself(computedID.value) &&
+      !isNotBanned(computedID.value),
+    command: () => unBanUserFromRoom(),
   },
   {
     label: "Mute user",
     visible: () =>
-      (isOwner(currentRoom.value.userRole) ||
-        isAdmin(currentRoom.value.userRole)) &&
+      isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value),
     command: () => muteUserInRoom(),
   },
@@ -238,12 +252,33 @@ const banUserFromRoom = () => {
   });
 };
 
+const unBanUserFromRoom = () => {
+  socket.emit("unBanUserFromRoom", {
+    userId: computedID.value,
+    roomName: route.params.roomName,
+  });
+  toast.add({
+    severity: "success",
+    summary: "Success",
+    detail: "User has been unbanned",
+    life: 1000,
+  });
+};
+
 const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
-const isAdmin = (userRole: UserRole | undefined) =>
-  userRole === 1 ? true : false;
+const isOwnerOrAdmin = (userRole: UserRole | undefined) =>
+  userRole < 2 ? true : false;
 const isNotYourself = (userID: number) =>
   userID === store.state.user.id ? false : true;
+const isNotBanned = (userID: number) => {
+  socket.emit("isUserBanned", {
+    userId: userID,
+    roomName: route.params.roomName,
+  });
+  if (computedIsUserBanned.value) return false;
+  else true;
+};
 </script>
 
 <style scoped>
