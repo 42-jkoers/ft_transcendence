@@ -102,6 +102,7 @@ import Panel from "primevue/panel";
 import Chip from "primevue/chip";
 import ContextMenu from "primevue/contextmenu";
 import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
@@ -182,7 +183,7 @@ const ShowRoleChangeFailMessage = (newUserRole: UserRole, username: string) => {
   toast.add({
     severity: "error",
     summary: "Error",
-    detail: `${username} has left the room and cannot be ${userRoleMessage[newUserRole]}`,
+    detail: `${username} cannot be ${userRoleMessage[newUserRole]}`,
     life: 2000,
   });
 };
@@ -213,6 +214,19 @@ function onChipRightClick(user: UserProfileI) {
   clickedUser.value = user;
   menu.value.show(event);
 } //shows ContextMenu when UserChip is right clicked and reassigns the ID value
+const confirm = useConfirm();
+
+const confirmBlockUser = () => {
+  confirm.require({
+    message: `Are you sure you want to block ${clickedUser.value.username}?`,
+    header: `Block ${clickedUser.value.username}?`,
+    icon: "pi pi-info-circle",
+    acceptClass: "p-button-danger",
+    accept: () => {
+      socket.emit("blockUser", { userToBlockId: computedID.value });
+    },
+  });
+};
 
 const menu = ref();
 const items = ref([
@@ -259,6 +273,11 @@ const items = ref([
         isAdmin(currentRoom.value.userRole)) &&
       isNotYourself(computedID.value),
     command: () => muteUserInRoom(),
+  },
+  {
+    label: "Block",
+    visible: () => isNotYourself(computedID.value),
+    command: () => confirmBlockUser(),
   },
 ]);
 
