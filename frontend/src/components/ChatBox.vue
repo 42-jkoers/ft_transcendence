@@ -223,7 +223,7 @@ const confirmBlockUser = () => {
     icon: "pi pi-info-circle",
     acceptClass: "p-button-danger",
     accept: () => {
-      socket.emit("blockUser", { userToBlockId: computedID.value });
+      socket.emit("blockUser", { id: computedID.value });
     },
   });
 };

@@ -29,6 +29,8 @@ import { CreateGameDto } from 'src/game/game.dto';
 import { SetRoomRoleDto } from 'src/chat/room/dto/set.room.role.dto';
 import { MuteUserDto } from 'src/chat/room/dto/mute.user.dto';
 import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
+import { UserIdDto } from 'src/user/dto';
+import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -40,6 +42,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly connectedUserService: ConnectedUserService,
 		private readonly messageService: MessageService,
 		private readonly userService: UserService,
+		private readonly blockedUsersService: BlockedUsersService,
 		private readonly gameService: GameService,
 	) {}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
@@ -290,6 +293,21 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		if (!user) console.log('exception'); //TODO throw exception
 		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
+	}
+
+	@SubscribeMessage('blockUser')
+	async handleblockUser(
+		@MessageBody() userToBlockIdDto: UserIdDto,
+		@ConnectedSocket() client: Socket,
+	) {
+		const userToBlock: UserI = await this.userService.findByID(
+			userToBlockIdDto.id,
+		);
+		if (!userToBlock) console.log('exception');
+		console.log('userToBlockIdDto: ', userToBlockIdDto);
+		// console.log('userToBlock', userToBlock);
+
+		await this.blockedUsersService.blockUser(userToBlock, client.data.user);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
