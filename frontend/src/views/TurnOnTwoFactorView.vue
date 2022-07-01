@@ -23,6 +23,7 @@ import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import router from "@/router";
 import Message from "primevue/message";
+import storeUser from "@/store";
 
 const validationCode = ref<string>("");
 const validate2F = ref<boolean>(true);
@@ -36,10 +37,11 @@ async function submitCode() {
   };
 
   await axios
-    .post("http://localhost:3000/auth/2f", body, {
+    .post("http://localhost:3000/two-factor-auth/turn-on", body, {
       withCredentials: true,
     })
     .then(() => {
+      storeUser.dispatch("enable2F");
       router.push({ name: "UserHome" });
     })
     .catch(() => {

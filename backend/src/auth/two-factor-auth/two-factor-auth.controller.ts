@@ -33,13 +33,13 @@ export class TwoFactorAuthController {
 			await this.twoFactorAuthenticationService.generateTwoFactorAuthSecret(
 				request.user,
 			);
-		console.log('url', otpauthUrl);
 		return this.twoFactorAuthenticationService.pipeQrCodeStream(
 			response,
 			otpauthUrl,
 		);
 	}
 
+	//future improvement, this is currently not needed as enable will be executed through frontend
 	@Post('turn-on')
 	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
@@ -52,8 +52,11 @@ export class TwoFactorAuthController {
 				twoFactorAuthCode,
 				request.user,
 			);
-		if (!isCodeValid)
+		if (!isCodeValid) {
+			this.usersService.updateTwoFactorAuth(request.user.id, false);
 			throw new UnauthorizedException('Wrong authentication code');
+		}
+		this.usersService.updateTwoFactorAuth(request.user.id, true);
 		await this.usersService.turnOnTwoFactorAuth(request.user.id);
 	}
 }

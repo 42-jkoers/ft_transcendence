@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import {
+	MiddlewareConsumer,
+	Module,
+	NestModule,
+	RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -21,12 +26,12 @@ import { LoggerMiddleware } from './logger.middleware';
 	controllers: [AppController],
 	providers: [AppService],
 })
-// export class AppModule {
-// TODO remove later, this is to implement the logger for the middleware
-export class AppModule implements NestModule{
-	configure(consumer: MiddlewareConsumer) {
-		consumer
-		.apply(LoggerMiddleware)
-		.forRoutes({ path: 'auth/2f', method: RequestMethod.POST });
-	}
+export class AppModule {
+	// TODO remove later, this is to implement the logger for the middleware
+	// export class AppModule implements NestModule{
+	// 	configure(consumer: MiddlewareConsumer) {
+	// 		consumer
+	// 		.apply(LoggerMiddleware)
+	// 		.forRoutes({ path: 'auth/2f', method: RequestMethod.POST });
+	// 	}
 }
