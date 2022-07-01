@@ -22,8 +22,8 @@ import { plainToClass } from 'class-transformer';
 import { RoomForUserDto } from 'src/chat/room/dto';
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
-import { GameService } from '../game/game.service';
-import { CreateGameDto } from 'src/game/game.dto';
+import { GameService, tick } from '../game/game.service';
+import { CreateGameDto, PaddleUpdateDto } from 'src/game/game.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -36,7 +36,14 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly messageService: MessageService,
 		private readonly userService: UserService,
 		private readonly gameService: GameService,
-	) {}
+	) {
+		// console.log('constructor');
+		setInterval(() => {
+			for (const update of tick()) {
+				this.server.in(update.socketRoomID).emit('gameFrame', update);
+			}
+		}, 80); // TODO: something better than this, handling server lag
+	}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
 
@@ -66,7 +73,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			socketID: client.id,
 			user,
 		}); // save connection to DB
-		this.server.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set //FIXME check
+		client.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set
 	}
 
 	async handleDisconnect(client: Socket) {
@@ -224,9 +231,28 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.gameService.createGame(game, client.data.user);
 	}
 
+	// TODO: ValidationPipe
 	@SubscribeMessage('getGame')
-	async getGame(client: Socket, id: string) {
-		const game = await this.gameService.findByID(id);
+	async getGame(client: Socket, id: number) {
+		const game = this.gameService.findInPlayByID(id);
 		client.emit('getGame', game);
+		client.join(game.socketRoomID); // TODO: remove from room afterwards
+		console.log('getGame', id, game.socketRoomID);
+	}
+
+	// @SubscribeMessage('getUserType')
+	// async getUserType(client: Socket, id: string) {
+	// 	const type = await this.gameService.getUserType(
+	// 		id,
+	// 		client.data.user.id,
+	// 	);
+	// 	client.emit('getUserType', type);
+	// }
+
+	// @UseFilters(new WsExceptionFilter())
+	// @UsePipes(new ValidationPipe({ transform: true }))
+	@SubscribeMessage('paddleUpdate')
+	async paddleUpdate(socket: Socket, pos: PaddleUpdateDto) {
+		await this.gameService.playerUpdate(socket.data.user.id, pos);
 	}
 }
