@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits, inject } from "vue";
+import { ref, defineEmits, defineProps, inject } from "vue";
 import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
 import Dialog from "primevue/dialog";
@@ -38,6 +38,7 @@ import { useToast } from "primevue/usetoast";
 
 const socket: Socket = inject("socketioInstance");
 const route = useRoute();
+defineProps(["isDialogVisible"]);
 const emit = defineEmits(["update:isDialogVisible"]);
 const toast = useToast();
 const userList = ref();
