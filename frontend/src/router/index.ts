@@ -15,6 +15,7 @@ import FriendsView from "@/views/FriendsView.vue";
 import BlockedUsersView from "@/views/BlockedUsersView.vue";
 import EnableTwoFactorView from "@/views/EnableTwoFactorView.vue";
 import GameView from "@/views/GameView.vue";
+import TurnOnTwoFactorView from "@/views/TurnOnTwoFactorView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -87,6 +88,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/2fAuthenticate",
     name: "2fAuthenticate",
     component: TwoFactorAuthView,
+  },
+  {
+    path: "/turnOnTwoFactor",
+    name: "turnOnTwoFactor",
+    component: TurnOnTwoFactorView,
   },
   {
     path: "/enableTwoFactor",

@@ -46,8 +46,6 @@ export class AuthController {
 		@Req() req: RequestWithUser,
 		@Body() twoFactorAuthCode: TwoFactorAuthCodeDto,
 	) {
-		console.log('check!!!');
-		console.log('input validation code is', twoFactorAuthCode);
 		if (req.user.isTwoFactorAuthEnabled) {
 			const isCodeValid =
 				this.twoFactorAuthService.VerifyTwoFactorAuthCode(

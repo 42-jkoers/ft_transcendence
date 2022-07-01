@@ -139,10 +139,20 @@ function warnUserNameInvalid(message: string) {
 }
 
 async function updateData() {
+  // let callTurnOn: boolean = false;
+  let callTurnOn = false;
   if (isUserNameValid(username.value) === false) {
     warnUserNameInvalid(invalidUserNameMessage.value);
   } else {
     // post username to update user profile
+    // TODO change to enum later
+    // only pass the true value when nothing changed, otherwise always pass disable.
+    // it will only be enabled when the turn-on is called
+    if (!storeUser.state.user.twoFactorEnabled && twoFactor.value === true)
+      callTurnOn = true;
+    if (storeUser.state.user.twoFactorEnabled && twoFactor.value)
+      twoFactor.value = true;
+    else twoFactor.value = false;
     const postBody = {
       id: storeUser.state.user.id,
       username: username.value,
@@ -168,10 +178,7 @@ async function updateData() {
           storeUser.state.user.username = username.value;
           storeUser.state.user.avatar = avatar.value;
           //if the 2f is enabled, the user is routed to the generate qrcode page
-          if (
-            !storeUser.state.user.twoFactorEnabled &&
-            twoFactor.value === true
-          ) {
+          if (callTurnOn === true) {
             router.push({ name: "enableTwoFactor" });
           }
           //update after check the value of the change on the 2fEnable
