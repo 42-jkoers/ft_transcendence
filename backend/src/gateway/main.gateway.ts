@@ -348,6 +348,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				userDto.id,
 				socket.data.user.id,
 			);
+			socket.emit('unblockUserResult', response);
 		}
 	}
 
@@ -359,7 +360,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (dmRoom) {
 			this.server.socketsLeave(dmRoom.name);
 		}
-		console.log('left dmroom ', dmRoom.name);
 	}
 
 	async subscribeUsersToDirectMessageRoom(user1Id: number, user2Id: number) {
@@ -371,7 +371,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				.in(user2Id.toString())
 				.socketsJoin(dmRoom.name);
 		}
-		console.log('joined dmroom ', dmRoom.name);
 	}
 
 	@SubscribeMessage('banUserFromRoom')
@@ -388,18 +387,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.data.user.id,
 		);
 	}
-	//
-	// 	//leave the room with all the connected sockets
-	// 	async unsubscribeUserFromChannel(room, userId) {
-	// 		// await this.server.socketsLeave(room);
-	// 		const sockets = await this.server
-	// 			.in(roomAndUser.userId.toString())
-	// 			.fetchSockets(); //fetches all connected sockets for this specific user
-	// 		for (const socket of sockets) {
-	// 			socket.leave(roomAndUser.roomName); //leaves each socket of the added user to this room
-	// 		}
-	// 		await this.getPublicRoomsList(client);
-	// 	}
 
 	@SubscribeMessage('unBanUserFromRoom')
 	async unBanUserFromRoom(
