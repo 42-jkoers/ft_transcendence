@@ -55,7 +55,6 @@ export function tick(): Frame[] {
 	for (const game of inPlays) {
 		for (const player of game.players) {
 			if (player.update !== PaddleUpdate.none) {
-				console.log('playerupdate');
 				player.paddle.y -= player.update * 5; // TODO: sensitivity
 				player.update = 0;
 			}
