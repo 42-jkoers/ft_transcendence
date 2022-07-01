@@ -59,8 +59,6 @@ export class BlockedUsersService {
 				return plainToClass(UserForClientDto, blockedUser);
 			}),
 		);
-		console.log('usersForClient', usersForClient);
-
 		return usersForClient;
 	}
 }

@@ -44,6 +44,23 @@ export class RoomService {
 		});
 	}
 
+	async findDMRoom(user1Id: number, user2Id: number): Promise<RoomEntity> {
+		const dmRoom = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			.leftJoinAndSelect('room.userToRooms', 'userToRooms')
+			.where('userToRooms.userId = :userId', {
+				userId: user1Id,
+			})
+			.andWhere('userToRooms.userId = :userId', {
+				userId: user2Id,
+			})
+			.andWhere('room.isDirectMessage = :isDirectMessage', {
+				isDirectMessage: true,
+			})
+			.getOne();
+		return dmRoom;
+	}
+
 	async createPrivateChatRoom(
 		dMRoom: directMessageDto,
 		userIdToAdd: number,
