@@ -69,7 +69,6 @@ const onRow = (event) => {
       life: 1000,
     });
   } else {
-    console.log(`room ${route.params.roomName} user ${user.username} added`);
     socket.emit("userAddsAnotherUserToRoom", {
       userId: user.id,
       roomName: route.params.roomName,
