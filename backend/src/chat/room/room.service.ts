@@ -15,6 +15,7 @@ import { UserRole } from './enums/user.role.enum';
 import { MuteUserDto } from './dto/mute.user.dto';
 import { MuteEntity } from './entities/mute.entity';
 import { MuteService } from './mute.service';
+import { RoomAndUserDTO } from './dto/room.and.user.dto';
 
 @Injectable()
 export class RoomService {
@@ -382,7 +383,6 @@ export class RoomService {
 		);
 		room.mutes.push(newMute);
 		await this.roomEntityRepository.save(room);
-		console.log(room); //TODO remove
 	}
 
 	async checIfkMutedAndMuteDeadlineAndRemoveMute(
@@ -394,12 +394,9 @@ export class RoomService {
 			.where('room.name = :roomName', { roomName })
 			.leftJoinAndSelect('room.mutes', 'mutes')
 			.getOne();
-		console.log('room ', room); //TODO remove
-		console.log('mutes ', room.mutes); //TODO remove
 		const muteIndex = room.mutes.findIndex(
 			(element) => element.userId == userId,
 		);
-		console.log('mute index ', muteIndex);
 		const currentDate = new Date();
 		if (muteIndex != -1) {
 			if (currentDate < room.mutes[muteIndex].muteDeadline) {
@@ -411,5 +408,49 @@ export class RoomService {
 			}
 		}
 		return true;
+	}
+
+	async banUserFromRoom(roomAndUser: RoomAndUserDTO, mutingUserId: number) {
+		const room = await this.findRoomByName(roomAndUser.roomName);
+		await this.userService.isOwnerOrAdmin(mutingUserId, room.id);
+		const banIndex = room.bannedUserIds.findIndex(
+			(element) => element == roomAndUser.userId,
+		);
+		//check if user is already banned
+		if (banIndex == -1) {
+			//remove banned user from room and delete room from user
+			await this.deleteUserRoomRelationship(roomAndUser.userId, room);
+			// add user's id to banned users
+			room.bannedUserIds.push(roomAndUser.userId);
+			await this.roomEntityRepository.save(room);
+			console.log(room); //TODO remove after PR
+			return false;
+		}
+		return true;
+	}
+
+	async unBanUserFromRoom(roomAndUser: RoomAndUserDTO, mutingUserId: number) {
+		const room = await this.findRoomByName(roomAndUser.roomName);
+		await this.userService.isOwnerOrAdmin(mutingUserId, room.id);
+		const banIndex = room.bannedUserIds.findIndex(
+			(element) => element == roomAndUser.userId,
+		);
+		//check if user is already banned
+		if (banIndex) {
+			// add user's id to banned users
+			room.bannedUserIds.splice(banIndex, 1);
+			await this.roomEntityRepository.save(room);
+			console.log(room); //TODO remove after PR
+		}
+	}
+
+	async isUserBanned(roomAndUser: RoomAndUserDTO) {
+		const room = await this.findRoomByName(roomAndUser.roomName);
+		const banIndex = room.bannedUserIds.findIndex(
+			(element) => element == roomAndUser.userId,
+		);
+		//check if user is already banned
+		if (banIndex == -1) return false;
+		else return true;
 	}
 }

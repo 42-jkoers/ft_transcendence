@@ -31,6 +31,7 @@ import { MuteUserDto } from 'src/chat/room/dto/mute.user.dto';
 import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
 import { UserIdDto } from 'src/user/dto';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
+import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -341,6 +342,55 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			socket.data.user,
 		);
 		if (response) this.handleGetBlockedUsersList(socket);
+	}
+
+	@SubscribeMessage('banUserFromRoom')
+	async banUserFromRoom(
+		@MessageBody() roomAndUser: RoomAndUserDTO,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.banUserFromRoom(
+			roomAndUser,
+			client.data.user.id,
+		);
+		//leave the room with all the connected sockets
+		const sockets = await this.server
+			.in(roomAndUser.userId.toString())
+			.fetchSockets(); //fetches all connected sockets for this specific user
+		for (const socket of sockets) {
+			socket.leave(roomAndUser.roomName); //leaves each socket of the added user to this room
+		}
+		await this.getPublicRoomsList(client);
+	}
+
+	@SubscribeMessage('unBanUserFromRoom')
+	async unBanUserFromRoom(
+		@MessageBody() roomAndUser: RoomAndUserDTO,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.unBanUserFromRoom(
+			roomAndUser,
+			client.data.user.id,
+		);
+		await this.getPublicRoomsList(client);
+	}
+
+	@SubscribeMessage('isUserBanned')
+	async isUserBanned(
+		@MessageBody() roomAndUser: RoomAndUserDTO,
+		@ConnectedSocket() client: Socket,
+	) {
+		const isUserBanned = await this.roomService.isUserBanned(roomAndUser);
+		console.log('is banned ', isUserBanned);
+		client.emit('isUserBanned', isUserBanned);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
