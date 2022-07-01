@@ -53,8 +53,12 @@
       </div>
     </div>
     <div id="input-field" class="card col-12">
+      <UnblockUserButton
+        v-if="currentRoom && isUserBlocked"
+        :userId="currentRoom.secondParticipant[0]"
+      />
       <div
-        v-if="currentRoom && currentRoom.userRole !== undefined"
+        v-else-if="currentRoom && currentRoom.userRole !== undefined"
         class="flex justify-content-center align-items-strech flex-wrap card-container"
       >
         <InputText
@@ -103,6 +107,7 @@ import Chip from "primevue/chip";
 import ContextMenu from "primevue/contextmenu";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
+import UnblockUserButton from "./UnblockUserButton.vue";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
@@ -198,12 +203,29 @@ const ShowRoleChangeFailMessage = (newUserRole: UserRole, username: string) => {
 
 socket.on("setUserRoleFail", (newUserRole: UserRole, username: string) => {
   ShowRoleChangeFailMessage(newUserRole, username);
-  console.log(`${username} is not in this chat room any more`);
 });
 
 socket.on("userRoleChanged", (newUserRole: UserRole, username: string) => {
   ShowSuccessfulRoleChangeMessage(newUserRole, username);
 });
+
+function isBlockedUser(roomDisplayName: string): boolean {
+  const isUserBlocked: boolean = store.state.blockedUsers.find(
+    (blockedUser: { id: number; username: string }) =>
+      blockedUser.username === roomDisplayName
+  );
+  return isUserBlocked ? true : false;
+}
+
+const isUserBlocked = ref<boolean>(false);
+
+const addBlockedUsersToStore = (response: { id: number; username: string }) =>
+  store.commit("addBlockedUsersToStore", response);
+
+const removeBlockedUsersFromStore = (response: {
+  id: number;
+  username: string;
+}) => store.commit("removeBlockedUsersFromStore", response);
 
 socket.on(
   "blockUserResult",
@@ -216,12 +238,25 @@ socket.on(
         life: 2000,
       });
     } else {
+      addBlockedUsersToStore(response);
+      isUserBlocked.value = true;
+    }
+  }
+);
+
+socket?.on(
+  "unblockUserResult",
+  (response: { id: number; username: string } | undefined) => {
+    if (!response) {
       toast.add({
-        severity: "success",
-        summary: "Success",
-        detail: `${response.username} is blocked`,
+        severity: "error",
+        summary: "Error",
+        detail: `Error unblocking user`,
         life: 2000,
       });
+    } else {
+      removeBlockedUsersFromStore(response);
+      isUserBlocked.value = false;
     }
   }
 );

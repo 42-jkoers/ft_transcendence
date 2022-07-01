@@ -17,12 +17,7 @@
       <Column headerStyle="width: 20%">
         <template #body="slotProps">
           <div class="flex align-items-center flex-column sm:flex-row">
-            <Button
-              v-tooltip.top="'Unblock'"
-              class="p-button-rounded p-button-text p-button-outlined"
-              icon="pi pi-user-minus"
-              @click="unblockUser(slotProps.data.id)"
-            />
+            <UnblockUserButton :userId="slotProps.data.id" />
           </div>
         </template>
       </Column>
@@ -36,10 +31,9 @@ import { Socket } from "socket.io-client";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Chip from "primevue/chip";
-import Button from "primevue/button";
-
+import UnblockUserButton from "@/components/UnblockUserButton.vue";
 import { useToast } from "primevue/usetoast";
-// const toast = useToast();
+import { useStore } from "vuex";
 
 const socket: Socket | undefined = inject("socketioInstance");
 
@@ -52,6 +46,7 @@ socket?.on("postBlockedList", (blockedList) => {
   blockedUsers.value = blockedList;
 });
 
+const store = useStore();
 const toast = useToast();
 socket?.on(
   "unblockUserResult",
@@ -63,11 +58,9 @@ socket?.on(
         detail: `Error unblocking user`,
         life: 2000,
       });
+    } else {
+      store.commit("removeBlockedUsersFromStore", response);
     }
   }
 );
-
-const unblockUser = (id: number) => {
-  socket?.emit("unblockUser", { id });
-};
 </script>
