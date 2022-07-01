@@ -205,9 +205,9 @@ export class UserService {
 	}
 
 	//currently not needed, for futher improvement:only enable when the next step is clicked instead of change saved
-	// async turnOnTwoFactorAuth(userId: number) {
-	// 	return this.userRepository.update(userId, {
-	// 		isTwoFactorAuthEnabled: true,
-	// 	});
-	// }
+	async turnOnTwoFactorAuth(userId: number) {
+		return this.userRepository.update(userId, {
+			isTwoFactorAuthEnabled: true,
+		});
+	}
 }

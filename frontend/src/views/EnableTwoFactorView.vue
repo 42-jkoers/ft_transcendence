@@ -52,7 +52,8 @@ async function generateQR() {
 
 async function validate2F() {
   await confirm1();
-  router.push({ name: "2fAuthenticate" });
+  // router.push({ name: "2fAuthenticate" });
+  router.push({ name: "turnOnTwoFactor" });
 }
 
 function sendWrarning() {

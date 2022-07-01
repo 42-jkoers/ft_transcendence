@@ -49,6 +49,12 @@ const storeUser = createStore({
             withCredentials: true,
           })
           .then(async (response) => {
+            console.log(
+              "enable?",
+              response.data.isTwoFactorAuthEnabled,
+              "2f authenticated?",
+              response.data.isTwoFactorAuthenticated
+            );
             if (
               response.data.isTwoFactorAuthEnabled &&
               !response.data.isTwoFactorAuthenticated
@@ -67,17 +73,8 @@ const storeUser = createStore({
           });
       }
     },
-    //action to enable 2f when the value was updated from disable to enable
-    //otherwise just call the commit("updateTwoFactor", response.data.isTwoFactorAuthEnabled) if from enable to disable
     async enable2F({ commit }) {
-      await axios
-        .get("http://localhost:3000/two-factor-auth/generate")
-        .then(() => {
-          commit("updateTwoFactor", true);
-        })
-        .catch(() => {
-          console.log("error on commit the two factor enable");
-        });
+      commit("updateTwoFactor", true);
     },
     logout({ commit }) {
       commit("unsetAuthenticated");
