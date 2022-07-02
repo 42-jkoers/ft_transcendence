@@ -153,6 +153,10 @@ onUnmounted(() => {
   socket.off("messageAdded"); //to prevent multiple event binding in every rerender
 });
 
+socket.on("NoPermissionToAddMessage", () => {
+  console.log("No permission event caught");
+}); //TODO: do we need to handle this?
+
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   if (input.value) {
