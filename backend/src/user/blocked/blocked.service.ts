@@ -13,6 +13,28 @@ export class BlockedUsersService {
 		private userRepository: Repository<User>,
 	) {}
 
+	async isDirectMessagingBlocked(
+		user_1Id: number,
+		user_2Id: number,
+	): Promise<boolean> {
+		// if first user hasn't blocked the second
+		if (!(await this.isUserBlockedBy(user_1Id, user_2Id))) {
+			return await this.isUserBlockedBy(user_2Id, user_1Id); // return the blocking result of the first user By the second one
+		}
+		return true; // else means the 1st user has blocked the second
+	}
+
+	async isUserBlockedBy(
+		userToCheckId: number,
+		blockedByUserId: number,
+	): Promise<boolean> {
+		const blockedUsers = await this.findBlockedForUser(blockedByUserId);
+		const blockedUser: User = blockedUsers.find(
+			(blocked) => blocked.id === userToCheckId,
+		);
+		return blockedUser ? true : false;
+	}
+
 	async blockUser(
 		userToBlock: UserI,
 		currentUser: UserI,
@@ -47,13 +69,18 @@ export class BlockedUsersService {
 		}
 	}
 
-	counter = 0;
-	async getBlockedUsers(currentUser: User) {
+	async findBlockedForUser(userId: number): Promise<User[]> {
 		const user = await getRepository(User).findOne({
 			relations: ['blocked'],
-			where: { id: currentUser.id },
+			where: { id: userId },
 		});
-		const blockedUsers = user.blocked;
+		return user.blocked;
+	}
+
+	// function finds the list of blocked users for current user and transforms it into list of dto's
+	// with the info that client might need(blocked users' ids and usernames)
+	async getBlockedUsersList(userId: number): Promise<UserForClientDto[]> {
+		const blockedUsers = await this.findBlockedForUser(userId);
 		const usersForClient = await Promise.all(
 			blockedUsers.map(async (blockedUser) => {
 				return plainToClass(UserForClientDto, blockedUser);

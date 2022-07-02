@@ -101,6 +101,22 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				user.id,
 				selectedRoom.name,
 			);
+		if (selectedRoom.isDirectMessage) {
+			const secondParticipant =
+				await this.roomService.getSecondUserInDMRoom(
+					client.data.user.id,
+					selectedRoom.id,
+				);
+			if (
+				await this.blockedUsersService.isDirectMessagingBlocked(
+					client.data.user.id,
+					secondParticipant?.id,
+				)
+			) {
+				this.server.emit('NoPermissionToAddMessage');
+				return;
+			}
+		}
 		if (isNotMutedOrDeadlinePassed) {
 			//saves msg and emits to frontend if not muted
 			const message: MessageI = {
@@ -296,8 +312,8 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('getBlockedList')
 	async handleGetBlockedUsersList(@ConnectedSocket() socket: Socket) {
-		const blockedUsers = await this.blockedUsersService.getBlockedUsers(
-			socket.data.user,
+		const blockedUsers = await this.blockedUsersService.getBlockedUsersList(
+			socket.data.user.id,
 		);
 		socket.emit('postBlockedList', blockedUsers);
 	}
