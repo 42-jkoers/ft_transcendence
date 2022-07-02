@@ -13,24 +13,6 @@ import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
 import { Paddle, GameInPlay, Frame, Player } from "@backend/game/game.dto";
 
-const socket: Socket = inject("socketioInstance") as Socket;
-const route = useRoute();
-
-socket.on("BadRequestException", (response) => {
-  console.log("BadRequestException", response);
-});
-
-socket.on("clientConnected", () => {
-  console.log("mounted");
-
-  socket.emit("getGame", parseInt(route.params.id as string));
-
-  //   socket.emit("getUserType", route.params.id);
-  //   socket.on("getUserType", (type: string) => {
-  //     console.log("you are a", type);
-  //   });
-});
-
 function draw(
   context: CanvasRenderingContext2D,
   width: number,
@@ -77,22 +59,24 @@ function draw(
   }
 }
 
-let g_canvas: HTMLCanvasElement | undefined;
-let g_context: CanvasRenderingContext2D | null;
-let g_game;
-
-socket.on("getGame", (game: GameInPlay) => {
-  g_game = game;
-});
-
-socket.on("gameFrame", (frame: Frame) => {
-  if (!g_canvas || !g_context) return;
-  draw(g_context, g_canvas.width, g_canvas.height, frame.paddles, 15);
-});
-
 onMounted(() => {
-  g_canvas = document.getElementById("game") as HTMLCanvasElement;
-  g_context = g_canvas.getContext("2d");
+  const g_canvas = document.getElementById("game") as HTMLCanvasElement;
+  const g_context = g_canvas.getContext("2d") as CanvasRenderingContext2D;
+  const socket: Socket = inject("socketioInstance") as Socket;
+  const route = useRoute();
+  let g_game;
+
+  socket.on("BadRequestException", (response) => {
+    console.log("BadRequestException", response);
+  });
+
+  socket.on("getGame", (game: GameInPlay) => {
+    g_game = game;
+  });
+
+  socket.on("gameFrame", (frame: Frame) => {
+    draw(g_context, g_canvas.width, g_canvas.height, frame.paddles, 15);
+  });
 
   window.addEventListener("keydown", (e) => {
     switch (e.key) {
@@ -109,5 +93,16 @@ onMounted(() => {
         break;
     }
   });
+
+  socket.on("clientConnected", () => {
+    console.log("connected");
+    socket.emit("getGame", parseInt(route.params.id as string));
+
+    //   socket.emit("getUserType", route.params.id);
+    //   socket.on("getUserType", (type: string) => {
+    //     console.log("you are a", type);
+    //   });
+  });
+  socket.connect();
 });
 </script>
