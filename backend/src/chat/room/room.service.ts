@@ -262,7 +262,7 @@ export class RoomService {
 		return userNumber;
 	}
 
-	async getNonCurrentUserInDMRoom(
+	async getSecondUserInDMRoom(
 		currentUserId: number,
 		dMRoomId: number,
 	): Promise<User> {
@@ -318,11 +318,10 @@ export class RoomService {
 			rooms.map(async (room) => {
 				const listedRoom = plainToClass(RoomForUserDto, room);
 				if (room.isDirectMessage) {
-					const secondParticipant =
-						await this.getNonCurrentUserInDMRoom(
-							currentUserId,
-							room.id,
-						);
+					const secondParticipant = await this.getSecondUserInDMRoom(
+						currentUserId,
+						room.id,
+					);
 					listedRoom.secondParticipant = secondParticipant
 						? [secondParticipant.id, secondParticipant.username]
 						: [];
