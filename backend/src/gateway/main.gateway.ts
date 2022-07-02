@@ -42,7 +42,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			for (const update of tick()) {
 				this.server.in(update.socketRoomID).emit('gameFrame', update);
 			}
-		}, 80); // TODO: something better than this, handling server lag
+		}, 1000 / 60); // TODO: something better than this, handling server lag
 	}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');

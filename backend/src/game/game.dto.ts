@@ -30,8 +30,8 @@ export enum GameStatus {
 export interface Paddle {
 	y: number; // fraction
 	x: number;
-	width: number;
 	height: number;
+	speed: number;
 }
 
 export interface Player {

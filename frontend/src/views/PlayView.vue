@@ -11,15 +11,16 @@
 import { inject, onMounted } from "vue";
 import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
-import { Paddle, GameInPlay, Frame, Player } from "@backend/game/game.dto";
+import { Paddle, GameInPlay, Frame } from "@backend/game/game.dto";
 
 function draw(
   context: CanvasRenderingContext2D,
   width: number,
   height: number,
   paddles: Paddle[],
-  grid: number
+  scaler: number
 ) {
+  const grid = scaler * 0.03;
   context.clearRect(0, 0, width, height);
 
   // leftPaddle.y += leftPaddle.dy;
@@ -40,7 +41,7 @@ function draw(
 
   context.fillStyle = "white";
   for (const paddle of paddles) {
-    context.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    context.fillRect(paddle.x, paddle.y, grid, paddle.height);
   }
 
   // ball.x += ball.dx;
@@ -59,23 +60,40 @@ function draw(
   }
 }
 
+function initCanvas(
+  game: GameInPlay,
+  ctx: CanvasRenderingContext2D,
+  scaler: number
+) {
+  console.log("init", game);
+  ctx.canvas.width = game.canvas.width * scaler;
+  ctx.canvas.height = game.canvas.height * scaler;
+}
+
+function scaleFrame(frame: Frame, scaler: number) {
+  for (const paddle of frame.paddles) {
+    paddle.height *= scaler;
+    paddle.x *= scaler;
+    paddle.y *= scaler;
+  }
+}
+
 onMounted(() => {
-  const g_canvas = document.getElementById("game") as HTMLCanvasElement;
-  const g_context = g_canvas.getContext("2d") as CanvasRenderingContext2D;
+  const canvas = document.getElementById("game") as HTMLCanvasElement;
+  const context = canvas.getContext("2d") as CanvasRenderingContext2D;
   const socket: Socket = inject("socketioInstance") as Socket;
   const route = useRoute();
-  let g_game;
+  const scaler = 500;
 
   socket.on("BadRequestException", (response) => {
     console.log("BadRequestException", response);
   });
 
-  socket.on("getGame", (game: GameInPlay) => {
-    g_game = game;
-  });
+  socket.on("getGame", (game: GameInPlay) => initCanvas(game, context, scaler));
 
   socket.on("gameFrame", (frame: Frame) => {
-    draw(g_context, g_canvas.width, g_canvas.height, frame.paddles, 15);
+    scaleFrame(frame, scaler);
+    draw(context, canvas.width, canvas.height, frame.paddles, scaler);
   });
 
   window.addEventListener("keydown", (e) => {

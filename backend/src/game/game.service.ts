@@ -22,8 +22,8 @@ const inPlays: GameInPlay[] = [
 		id: 1,
 		socketRoomID: 'game1',
 		status: 1,
-		canvas: { height: 300, width: 400 },
-		players: [createPlayer(2, 400, 300, 'left')],
+		canvas: { width: 4 / 3, height: 1 },
+		players: [createPlayer(2, 4 / 3, 1, 'left')],
 	}, // TODO: remove
 ];
 
@@ -55,7 +55,7 @@ export function tick(): Frame[] {
 	for (const game of inPlays) {
 		for (const player of game.players) {
 			if (player.update !== PaddleUpdate.none) {
-				player.paddle.y -= player.update * 5; // TODO: sensitivity
+				player.paddle.y -= player.update * player.paddle.speed;
 				player.update = 0;
 			}
 		}
@@ -82,9 +82,9 @@ function createPlayer(
 		score: 0,
 		update: PaddleUpdate.none,
 		paddle: {
-			width: canvasWidth * 0.01,
-			height: canvasHeight * 0.05,
-			y: canvasHeight * 0.5,
+			speed: canvasWidth * 0.01,
+			height: canvasHeight * 0.1,
+			y: canvasHeight * 0.05,
 			x:
 				position == 'left'
 					? canvasWidth * 0.01
@@ -113,8 +113,8 @@ export class GameService {
 		newGame.players = [creator];
 		await this.gameEntityRepository.save(newGame);
 		const canvas = {
-			height: 300,
-			width: 400, // TODO: use fraction instead of absolutes
+			height: 1,
+			width: 4 / 3,
 		};
 		const inPlay: GameInPlay = {
 			// id: newGame.id,
