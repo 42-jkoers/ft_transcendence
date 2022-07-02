@@ -1,5 +1,5 @@
 <template>
-  <div id="chatrooms-list">
+  <div v-if="isRoomsListReady" id="chatrooms-list">
     <ChatRoomPasswordDialogue
       :isDialogVisible="displayPasswordDialog"
       :roomName="selectedRoomName"
@@ -70,10 +70,19 @@
     </DataTable>
     <ContextMenu :model="menuItems" ref="cm" />
   </div>
+
+  <div v-else style="padding-top: 2rem">
+    <ProgressSpinner
+      class="flex align-items-center justify-content-center"
+      style="width: 50px; height: 50px"
+      strokeWidth="6"
+      animationDuration=".5s"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, inject } from "vue";
+import { ref, inject, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Socket } from "socket.io-client";
 import RoomVisibility from "@/types/RoomVisibility";
@@ -85,6 +94,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import ContextMenu from "primevue/contextmenu";
 import { useConfirm } from "primevue/useconfirm";
+import ProgressSpinner from "primevue/progressspinner";
 import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";
 
@@ -93,15 +103,21 @@ const router = useRouter();
 const route = useRoute();
 
 const rooms = ref();
-setTimeout(() => {
-  socket?.emit("getPublicRoomsList");
-}, 120); // FIXME: find a better solution?
+socket?.emit("getPublicRoomsList");
 
+const isRoomsListReady = ref<boolean>(false);
 const store = useStore();
+onMounted(() => {
+  if (!isRoomsListReady.value && store.state.roomsInfo.length > 0) {
+    rooms.value = store.state.roomsInfo;
+  }
+});
+
 const updateRoomsListInStore = (roomsList: Room[]) =>
   store.commit("updateRoomsListInStore", roomsList);
 
 socket?.on("postPublicRoomsList", (response) => {
+  isRoomsListReady.value = true;
   console.log("rooms from server", response);
   rooms.value = response;
   updateRoomsListInStore(response);
@@ -203,4 +219,21 @@ const editRoomPrivacy = () => {
   displayEditPrivacyDialog.value = true;
 };
 </script>
-<style></style>
+<style>
+@keyframes p-progress-spinner-color {
+  100%,
+  0% {
+    stroke: #efe4e3;
+  }
+  40% {
+    stroke: #8b8d90;
+  }
+  66% {
+    stroke: #fafffd;
+  }
+  80%,
+  90% {
+    stroke: #afada9;
+  }
+}
+</style>
