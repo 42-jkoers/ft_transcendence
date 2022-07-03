@@ -61,6 +61,19 @@ export class RoomService {
 		return dmRoom;
 	}
 
+	async isUserInRoom(
+		selectedUserId: number,
+		selectedRoomId: number,
+	): Promise<boolean> {
+		const findResult = await this.userToroomEntityRepository.findOne({
+			where: {
+				userId: selectedUserId,
+				roomId: selectedRoomId,
+			},
+		});
+		return findResult ? true : false;
+	}
+
 	async createPrivateChatRoom(
 		dMRoom: directMessageDto,
 		firstUserId: number,
@@ -378,6 +391,20 @@ export class RoomService {
 	): Promise<boolean> {
 		const isMatch = await bcrypt.compare(password, hash);
 		return isMatch;
+	}
+
+	async isUserAllowedToViewContent(
+		userId: number,
+		roomName: string,
+	): Promise<boolean> {
+		const room: RoomEntity = await this.findRoomByName(roomName);
+		if (room.visibility === RoomVisibilityType.PRIVATE || room.password) {
+			const isInRoom = await this.isUserInRoom(userId, room.id);
+			if (!isInRoom) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	async muteUserInRoom(muteUser: MuteUserDto, mutingUserId: number) {

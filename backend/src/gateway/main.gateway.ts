@@ -138,10 +138,26 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
-	async getMessagesForRoom(client: Socket, roomName: string) {
+	async getMessagesForRoom(socket: Socket, roomName: string) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+		if (
+			!(await this.roomService.isUserAllowedToViewContent(
+				socket.data.user.id,
+				roomName,
+			))
+		) {
+			socket.emit('noPermissionToViewContent');
+			return;
+		}
 		const response: MessageI[] =
 			await this.messageService.findMessagesForRoom(roomName);
-		client.emit('getMessagesForRoom', response);
+		socket.emit('getMessagesForRoom', response);
 	}
 
 	@UseFilters(new WsExceptionFilter())
@@ -203,9 +219,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const roomsList = await this.roomService.getPublicRoomsList(
 			socket.data.user.id,
 		);
-		this.server
-			.to(socket.data.user.id.toString())
-			.emit('postPublicRoomsList', roomsList);
+		socket.emit('postPublicRoomsList', roomsList);
 	}
 
 	@UsePipes(new ValidationPipe({ transform: true }))
@@ -342,9 +356,20 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			userToBlock,
 			socket.data.user,
 		);
-		await this.unsubscribeUsersFromDirectMessageRoom(
-			userToBlockIdDto.id,
+		const directMessageRoom =
+			await this.unsubscribeUsersFromDirectMessageRoom(
+				userToBlockIdDto.id,
+				socket.data.user.id,
+			);
+		await this.roomService.setUserRole(
+			userToBlock.id,
+			directMessageRoom.id,
+			UserRole.BLOCKED,
+		);
+		await this.roomService.setUserRole(
 			socket.data.user.id,
+			directMessageRoom.id,
+			UserRole.BLOCKING,
 		);
 		// response will be either with blocked user data or undefined if the user is already in the blocked list
 		socket.emit('blockUserResult', response);
@@ -384,6 +409,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (dmRoom) {
 			this.server.socketsLeave(dmRoom.name);
 		}
+		return dmRoom;
 	}
 
 	async subscribeUsersToDirectMessageRoom(user1Id: number, user2Id: number) {
