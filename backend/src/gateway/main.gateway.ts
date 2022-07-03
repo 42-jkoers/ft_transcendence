@@ -352,6 +352,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!userToBlock) {
 			socket.emit('blockUserResult', undefined);
 		}
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const response = await this.blockedUsersService.blockUser(
 			userToBlock,
 			socket.data.user,
@@ -373,6 +380,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		// response will be either with blocked user data or undefined if the user is already in the blocked list
 		socket.emit('blockUserResult', response);
+		await this.handleGetPublicRoomsList(socket);
 	}
 
 	@UsePipes(new ValidationPipe({ transform: true }))
