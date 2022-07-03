@@ -110,6 +110,7 @@ const store = useStore();
 onMounted(() => {
   if (!isRoomsListReady.value && store.state.roomsInfo.length > 0) {
     rooms.value = store.state.roomsInfo;
+    isRoomsListReady.value = true;
   }
 });
 
