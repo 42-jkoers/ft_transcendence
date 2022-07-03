@@ -319,7 +319,7 @@ export class RoomService {
 					publicRoom: RoomVisibilityType.PUBLIC,
 				},
 			)
-			.orderBy('userToRooms.role')
+			.orderBy('room.visibility')
 			.addOrderBy('room.name')
 			.getMany();
 		return userRooms;
