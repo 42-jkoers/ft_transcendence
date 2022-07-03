@@ -97,6 +97,7 @@ import { useConfirm } from "primevue/useconfirm";
 import ProgressSpinner from "primevue/progressspinner";
 import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";
+import { useToast } from "primevue/usetoast";
 
 const socket: Socket | undefined = inject("socketioInstance");
 const router = useRouter();
@@ -131,6 +132,16 @@ socket?.on("room deleted", (deletedRoomName) => {
     });
   }
   socket.emit("getPublicRoomsList");
+});
+
+const toast = useToast();
+socket?.on("CannotSendDirectMessage", (user) => {
+  toast.add({
+    severity: "error",
+    summary: "Error",
+    detail: `You cannot send messages to ${user.username}`,
+    life: 2000,
+  });
 });
 
 socket?.on("postPrivateChatRoom", (dMRoom) => {
