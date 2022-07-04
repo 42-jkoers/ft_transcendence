@@ -19,7 +19,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Express, Request } from 'express';
 import { UploadFileHelper } from './util/uploadfile.helper';
-import { DeleteUserDto, UpdateUserProfileDto } from './dto';
+import { UserIdDto, UpdateUserProfileDto } from './dto';
 
 @UseGuards(AuthenticatedGuard)
 @Controller('user')
@@ -51,7 +51,7 @@ export class UserController {
 	}
 
 	@Post('deregister')
-	async deregisterUser(@Req() req: Request, @Body() userDto: DeleteUserDto) {
+	async deregisterUser(@Req() req: Request, @Body() userDto: UserIdDto) {
 		const user: UserI = req.user;
 		if (user.id === userDto.id) {
 			await this.userService.deleteUser(userDto.id);

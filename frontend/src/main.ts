@@ -8,6 +8,7 @@ import "primeicons/primeicons.css"; //icons
 import "primeflex/primeflex.css"; //PrimeFlex
 import ConfirmationService from "primevue/confirmationservice";
 import ToastService from "primevue/toastservice";
+import Tooltip from "primevue/tooltip";
 import storeUser from "@/store";
 
 const app = createApp(App);
@@ -16,4 +17,5 @@ app.use(router);
 app.use(PrimeVue);
 app.use(ConfirmationService);
 app.use(ToastService);
+app.directive("tooltip", Tooltip);
 app.mount("#app");

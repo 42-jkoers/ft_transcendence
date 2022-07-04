@@ -18,12 +18,20 @@ import { MessageService } from '../chat/message/message.service';
 import { WsExceptionFilter } from '../exceptions/WsExceptionFilter';
 import { UseFilters } from '@nestjs/common';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
-import { plainToClass } from 'class-transformer';
-import { RoomForUserDto } from 'src/chat/room/dto';
+
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
 import { GameService, tick } from '../game/game.service';
-import { CreateGameDto, PaddleUpdateDto } from 'src/game/game.dto';
+import { PaddleUpdateDto } from 'src/game/game.dto';
+import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
+import { UserRole } from 'src/chat/room/enums/user.role.enum';
+import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
+import { SetRoomRoleDto } from 'src/chat/room/dto/set.room.role.dto';
+import { MuteUserDto } from 'src/chat/room/dto/mute.user.dto';
+import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
+import { UserIdDto } from 'src/user/dto';
+import { BlockedUsersService } from 'src/user/blocked/blocked.service';
+import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -35,6 +43,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly connectedUserService: ConnectedUserService,
 		private readonly messageService: MessageService,
 		private readonly userService: UserService,
+		private readonly blockedUsersService: BlockedUsersService,
 		private readonly gameService: GameService,
 	) {
 		// console.log('constructor');
@@ -59,11 +68,8 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				await this.roomService.getRoomsForUser(user.id); //TODO get only room names from room service
 			roomEntities.forEach((room) => {
 				client.join(room.name);
-				console.log(
-					`join on connection: ${user.username} w/${client.id} has joined room ${room.name}`,
-				);
 			}); //each new socket connection joins the room that the user is already a part of
-			// client.join(user.id.toString()); TODO implement this for private messaging
+			client.join(user.id.toString()); //all clients join a unique room called by their ids. this is needed to fetch all sockets of that user
 		} else {
 			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
@@ -90,31 +96,81 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages
-	async handleMessage(client: Socket, message: MessageI) {
+	async handleMessage(client: Socket, addMessageDto: AddMessageDto) {
 		const selectedRoom: RoomEntity = await this.roomService.findRoomByName(
-			message.room.name,
+			addMessageDto.room.name,
 		);
 		const user: UserI = await this.userService.findByID(
 			client.data.user.id,
 		);
-		const createdMessage: MessageI = await this.messageService.create(
-			message,
-			user,
-			selectedRoom,
-		);
-		this.server.to(selectedRoom.name).emit('messageAdded', createdMessage); //server socket emits to all clients
-		//TODO this.server.to(selectedRoom.name).to(user.id.toString()).emit('messageAdded', createdMessage);FOR DM?
+		const isNotMutedOrDeadlinePassed =
+			await this.roomService.checIfkMutedAndMuteDeadlineAndRemoveMute(
+				user.id,
+				selectedRoom.name,
+			);
+		if (selectedRoom.isDirectMessage) {
+			const secondParticipant =
+				await this.roomService.getSecondUserInDMRoom(
+					client.data.user.id,
+					selectedRoom.id,
+				);
+			if (
+				await this.blockedUsersService.isDirectMessagingBlocked(
+					client.data.user.id,
+					secondParticipant?.id,
+				)
+			) {
+				this.server.emit('NoPermissionToAddMessage');
+				return;
+			}
+		}
+		if (isNotMutedOrDeadlinePassed) {
+			//saves msg and emits to frontend if not muted
+			const message: MessageI = {
+				text: addMessageDto.text,
+				user: undefined,
+				room: undefined,
+				created_at: undefined,
+				updated_at: undefined,
+			};
+			const createdMessage: MessageI = await this.messageService.create(
+				message,
+				user,
+				selectedRoom,
+			);
+			this.server
+				.to(selectedRoom.name)
+				.emit('messageAdded', createdMessage); //server socket emits to all clients
+		}
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
-	async getMessagesForRoom(client: Socket, roomName: string) {
+	async getMessagesForRoom(socket: Socket, roomName: string) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+		if (
+			!(await this.roomService.isUserAllowedToViewContent(
+				socket.data.user.id,
+				roomName,
+			))
+		) {
+			socket.emit('noPermissionToViewContent');
+			return;
+		}
 		const response: MessageI[] =
 			await this.messageService.findMessagesForRoom(roomName);
-		client.emit('getMessagesForRoom', response);
+		socket.emit('getMessagesForRoom', response);
 	}
 
 	@UseFilters(new WsExceptionFilter())
-	@UsePipes(new ValidationPipe({ transform: true }))
+	//ValidationPipe provides a convenient approach to enforce validation rules for all incoming client payloads,
+	// where the specific rules are declared with simple annotations in local class/DTO declarations in each module.
+	@UsePipes(new ValidationPipe({ transform: true })) // transform can automatically transform JS object payloads to be objects typed according to their DTO classes.
 	@SubscribeMessage('createRoom')
 	async handleCreateRoom(
 		@MessageBody() room: createRoomDto,
@@ -124,43 +180,108 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
 		client.join(response.data);
-		console.log(
-			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
+	}
+
+	@UsePipes(new ValidationPipe({ transform: true }))
+	@SubscribeMessage('createPrivateChatRoom')
+	async handleCreatePrivateChatRoom(
+		@MessageBody() dMRoom: directMessageDto,
+		@ConnectedSocket() socket: Socket,
+	) {
+		if (
+			await this.blockedUsersService.isDirectMessagingBlocked(
+				socket.data.user.id,
+				dMRoom.userIds[0],
+			)
+		) {
+			const user = await this.userService.findByID(dMRoom.userIds[0]);
+			socket.emit('CannotSendDirectMessage', {
+				id: user.id,
+				username: user.username,
+			});
+			return;
+		}
+		const createdDMRoom = await this.roomService.createPrivateChatRoom(
+			dMRoom,
+			socket.data.user.id,
 		);
+		socket.emit('postPrivateChatRoom', createdDMRoom);
+
+		// fetching sockets of both users inside the private room
+		const secondUserId = dMRoom.userIds[0];
+		const sockets = await this.server
+			.in(socket.data.user.id.toString())
+			.in(secondUserId.toString())
+			.fetchSockets();
+		for (const socket of sockets) {
+			socket.join(createdDMRoom.name);
+		}
+		// both users in the room will have their roomlists updated:
+		const roomsList = await this.roomService.getPublicRoomsList(
+			secondUserId,
+		);
+		this.server
+			.to(secondUserId.toString())
+			.emit('postPublicRoomsList', roomsList);
+		await this.handleGetPublicRoomsList(socket);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
-	async getPublicRoomsList(client: Socket) {
-		const publicRooms: RoomEntity[] =
-			// await this.roomService.getAllPublicRoomsWithUserRole();
-			await this.roomService.getAllPublicRoomsWithUserRole(
-				client.data.user.id,
+	async handleGetPublicRoomsList(socket) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
 			);
-		const response = publicRooms.map((room) => {
-			const listedRoom = plainToClass(RoomForUserDto, room); //
-			listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
-			listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
-			return listedRoom;
-		});
-		client.emit('postPublicRoomsList', response);
+			socket.data.user = user;
+		}
+
+		const roomsList = await this.roomService.getPublicRoomsList(
+			socket.data.user.id,
+		);
+		socket.emit('postPublicRoomsList', roomsList);
 	}
 
-	@SubscribeMessage('getUserRoomsList')
-	async getUserRoomsList(client: Socket) {
-		if (client.data.user) {
-			const roomEntities: RoomEntity[] =
-				await this.roomService.getRoomsForUser(client.data.user.id);
-
-			// we don't need all information from the RoomEntity returned to the user, we'll have to serialize it
-			// by converting roomentity type to dto with several excluded and transformed properties
-			const response: RoomForUserDto[] = roomEntities.map((room) => {
-				const listedRoom = plainToClass(RoomForUserDto, room); //
-				listedRoom.userRole = room.userToRooms[0].role; // getting role from userToRooms array
-				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
-				return listedRoom;
-			});
-			client.emit('getUserRoomsList', response);
+	@UsePipes(new ValidationPipe({ transform: true }))
+	@SubscribeMessage('setNewUserRole')
+	async handleSetNewUserRole(socket: Socket, setRoleDto: SetRoomRoleDto) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			setRoleDto.roomName,
+		);
+		const user = await this.userService.findByID(
+			setRoleDto.userToGetNewRoleId,
+		);
+		// getting username to notify the admin that setNewUserRole either failed or succedded
+		const username: string = user.username;
+		if (!room) {
+			socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+			return;
 		}
+		if (
+			await this.roomService.IsUserEligibleToSetRole(
+				socket.data.user.id,
+				room.id,
+				setRoleDto.newRole,
+			)
+		) {
+			const userRoleUpdateResult = await this.roomService.setUserRole(
+				setRoleDto.userToGetNewRoleId,
+				room.id,
+				setRoleDto.newRole,
+			);
+
+			if (!userRoleUpdateResult) {
+				socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+				return;
+			}
+			const roomsList = await this.roomService.getPublicRoomsList(
+				setRoleDto.userToGetNewRoleId,
+			);
+			this.server
+				.to(setRoleDto.userToGetNewRoleId.toString())
+				.emit('postPublicRoomsList', roomsList);
+		}
+		socket.emit('userRoleChanged', setRoleDto.newRole, username);
 	}
 
 	@SubscribeMessage('updateRoomPassword')
@@ -172,7 +293,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomToUpdate.name,
 		);
 		await this.roomService.updateRoomPassword(room, roomToUpdate.password);
-		await this.getPublicRoomsList(client);
+		await this.handleGetPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('addUserToRoom')
@@ -183,12 +304,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const room: RoomEntity = await this.roomService.findRoomByName(
 			roomName,
 		);
-		await this.roomService.addVisitorToRoom(client.data.user.id, room);
-		client.join(room.name);
-		console.log(
-			`first time joining: ${client.data.user.username} w/${client.id} has joined room ${room.name}`,
+		await this.roomService.addUserToRoom(
+			client.data.user.id,
+			room,
+			UserRole.VISITOR,
 		);
-		await this.getPublicRoomsList(client);
+		client.join(room.name);
+		await this.handleGetPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('removeUserFromRoom')
@@ -203,7 +325,194 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.data.user.id,
 			room,
 		);
-		await this.getPublicRoomsList(client);
+		const userLeftInRoom = await this.roomService.getOneUserLeftInRoom(
+			room,
+		);
+		if (!userLeftInRoom) {
+			await this.roomService.deleteRoom(room);
+			if (room.visibility === RoomVisibilityType.PUBLIC) {
+				this.server.sockets.emit('room deleted', roomName); // emitting to all the users that have public room in their list
+			} else {
+				client.emit('room deleted', roomName);
+			}
+		} else {
+			await this.handleGetPublicRoomsList(client);
+		}
+	}
+
+	@SubscribeMessage('muteUserInRoom')
+	async muteUserInRoom(
+		@MessageBody() muteUser: MuteUserDto,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
+	}
+
+	@SubscribeMessage('getBlockedList')
+	async handleGetBlockedUsersList(@ConnectedSocket() socket: Socket) {
+		const blockedUsers = await this.blockedUsersService.getBlockedUsersList(
+			socket.data.user.id,
+		);
+		socket.emit('postBlockedList', blockedUsers);
+	}
+
+	@UsePipes(new ValidationPipe({ transform: true }))
+	@SubscribeMessage('blockUser')
+	async handleblockUser(
+		@MessageBody() userToBlockIdDto: UserIdDto,
+		@ConnectedSocket() socket: Socket,
+	) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+
+		const userToBlock: UserI = await this.userService.findByID(
+			userToBlockIdDto.id,
+		);
+		if (!userToBlock) {
+			socket.emit('blockUserResult', undefined);
+		}
+
+		const response = await this.blockedUsersService.blockUser(
+			userToBlock,
+			socket.data.user,
+		);
+		const directMessageRoom =
+			await this.unsubscribeUsersFromDirectMessageRoom(
+				userToBlockIdDto.id,
+				socket.data.user.id,
+			);
+		// if a user is blocked after dm room has been created it will live but users' roles will be reset for better UX
+		// if it hasn't been created before this step is skipped
+		if (directMessageRoom) {
+			await this.roomService.setUserRole(
+				userToBlock.id,
+				directMessageRoom.id,
+				UserRole.BLOCKED,
+			);
+			await this.roomService.setUserRole(
+				socket.data.user.id,
+				directMessageRoom.id,
+				UserRole.BLOCKING,
+			);
+		}
+		// response will be either with blocked user data or undefined if the user is already in the blocked list
+		socket.emit('blockUserResult', response);
+		await this.handleGetPublicRoomsList(socket);
+	}
+
+	@UsePipes(new ValidationPipe({ transform: true }))
+	@SubscribeMessage('unblockUser')
+	async handleUnblock(
+		@MessageBody() userDto: UserIdDto,
+		@ConnectedSocket() socket: Socket,
+	) {
+		const userToUnblock: UserI = await this.userService.findByID(
+			userDto.id,
+		);
+		if (!userToUnblock) {
+			socket.emit('unblockUserResult', undefined);
+		}
+		const response = await this.blockedUsersService.unblockUser(
+			userToUnblock,
+			socket.data.user,
+		);
+		if (response) {
+			this.handleGetBlockedUsersList(socket);
+			const directMessageRoom =
+				await this.subscribeUsersToDirectMessageRoom(
+					userDto.id,
+					socket.data.user.id,
+				);
+			if (directMessageRoom) {
+				await this.roomService.setUserRole(
+					userToUnblock.id,
+					directMessageRoom.id,
+					UserRole.VISITOR,
+				);
+				await this.roomService.setUserRole(
+					socket.data.user.id,
+					directMessageRoom.id,
+					UserRole.VISITOR,
+				);
+			}
+			socket.emit('unblockUserResult', response);
+		}
+	}
+
+	async unsubscribeUsersFromDirectMessageRoom(
+		user1Id: number,
+		user2Id: number,
+	) {
+		const dmRoom = await this.roomService.findDMRoom(user1Id, user2Id);
+		if (dmRoom) {
+			this.server.socketsLeave(dmRoom.name);
+		}
+		return dmRoom;
+	}
+
+	async subscribeUsersToDirectMessageRoom(
+		user1Id: number,
+		user2Id: number,
+	): Promise<RoomEntity> {
+		const dmRoom = await this.roomService.findDMRoom(user1Id, user2Id);
+		if (dmRoom) {
+			this.server.socketsLeave(dmRoom.name);
+			this.server
+				.in(user1Id.toString())
+				.in(user2Id.toString())
+				.socketsJoin(dmRoom.name);
+		}
+		return dmRoom;
+	}
+
+	@SubscribeMessage('banUserFromRoom')
+	async banUserFromRoom(
+		@MessageBody() roomAndUser: RoomAndUserDTO,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.banUserFromRoom(
+			roomAndUser,
+			client.data.user.id,
+		);
+	}
+
+	@SubscribeMessage('unBanUserFromRoom')
+	async unBanUserFromRoom(
+		@MessageBody() roomAndUser: RoomAndUserDTO,
+		@ConnectedSocket() client: Socket,
+	) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		if (!user) console.log('exception'); //TODO throw exception
+		await this.roomService.unBanUserFromRoom(
+			roomAndUser,
+			client.data.user.id,
+		);
+		await this.handleGetPublicRoomsList(client);
+	}
+
+	@SubscribeMessage('isUserBanned')
+	async isUserBanned(
+		@MessageBody() roomAndUser: RoomAndUserDTO,
+		@ConnectedSocket() client: Socket,
+	) {
+		const isUserBanned = await this.roomService.isUserBanned(roomAndUser);
+		console.log('is banned ', isUserBanned);
+		client.emit('isUserBanned', isUserBanned);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
@@ -221,14 +530,142 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.emit('isRoomPasswordMatched', isMatched);
 	}
 
-	@UseFilters(new WsExceptionFilter())
-	@UsePipes(new ValidationPipe({ transform: true }))
-	@SubscribeMessage('createGame')
-	async createGame(
-		@MessageBody() game: CreateGameDto,
+	@SubscribeMessage('getOneRoomWithUserToRoomRelations')
+	async getOneRoomWithUserToRoomRelations(client: Socket, roomName: string) {
+		const room: RoomEntity =
+			await this.roomService.getSpecificRoomWithUserToRoomRelations(
+				roomName,
+			);
+		client.emit('getOneRoomWithUserToRoomRelations', room);
+	}
+
+	@SubscribeMessage('getAllRegisteredUsersExceptYourselfAndAdmin')
+	async getAllRegisteredUsersExceptYourselfAndAdmin(client: Socket) {
+		const user: UserI = await this.userService.findByID(
+			client.data.user.id,
+		);
+		const response: UserI[] =
+			await this.userService.getAllRegisteredUsersExceptYourselfAndAdmin(
+				user.username,
+			);
+		client.emit('getAllRegisteredUsersExceptYourselfAndAdmin', response);
+	}
+
+	@SubscribeMessage('userAddsAnotherUserToRoom')
+	async userAddsAnotherUserToRoom(
+		@MessageBody() info: { userId: number; roomName: string },
+	) {
+		const room: RoomEntity = await this.roomService.findRoomByName(
+			info.roomName,
+		);
+		const user: UserI = await this.userService.findByID(info.userId);
+		await this.roomService.addUserToRoom(user.id, room, UserRole.VISITOR);
+		const sockets = await this.server.in(user.id.toString()).fetchSockets(); //fetches all connected sockets for this specific user
+		for (const socket of sockets) {
+			socket.join(room.name); //joins each socket of the added user to this room
+			console.log(`${user.username} has been added to ${room.name}`);
+			await this.handleGetPublicRoomsList(socket); //to refresh rooms in added users page
+		}
+	}
+
+	async sendGameList() {
+		const gameList = await this.gameService.getGameList();
+		this.server.emit('getGameList', gameList);
+	}
+
+	// @UseFilters(new WsExceptionFilter())
+	// @UsePipes(new ValidationPipe({ transform: true }))
+	// @SubscribeMessage('createGame')
+	// async createGame(
+	// 	@MessageBody() game: CreateGameDto,
+	// 	@ConnectedSocket() client: Socket,
+	// ) {
+	// 	await this.gameService.createGame(game, client.data.user);
+	// 	await this.sendGameList();
+	// }
+
+	@SubscribeMessage('getGameList')
+	async getGameList() {
+		await this.sendGameList();
+	}
+
+	@SubscribeMessage('getUserProfile')
+	async getUser(
+		@MessageBody() id: number,
 		@ConnectedSocket() client: Socket,
 	) {
-		await this.gameService.createGame(game, client.data.user);
+		const user = await this.userService.getUserByID(id);
+		client.emit('getUserProfile', user);
+	}
+
+	@SubscribeMessage('sendGameInvite')
+	async sendGameInvite(
+		@MessageBody() receiverId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const sender = await this.userService.getUserByID(client.data.user.id);
+		const receiver = await this.userService.getUserByID(receiverId);
+		// TODO: check error (if user doesn't exist);
+		await this.gameService.addGameInvite(sender, receiver);
+		// TODO: to emit to receiver's update list?
+	}
+
+	@SubscribeMessage('getReceivedGameInvites')
+	async getReceivedGameInvites(
+		@MessageBody() userId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const response = await this.gameService.getReceivedGameInvites(userId);
+		client.emit('getReceivedGameInvites', response);
+	}
+
+	@SubscribeMessage('removeGameInvite')
+	async removeGameInvite(
+		@MessageBody() senderId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const sender = await this.userService.getUserByID(senderId);
+		const receiver = await this.userService.getUserByID(
+			client.data.user.id,
+		);
+		if (!sender || !receiver) {
+			client.emit('errorGameInvite', 'User does not exist.');
+		} else {
+			const updateInviteList = await this.gameService.removeGameInvite(
+				sender,
+				receiver,
+			);
+			client.emit('getReceivedGameInvites', updateInviteList);
+		}
+	}
+
+	@SubscribeMessage('acceptGameInvite')
+	async acceptGameInvite(
+		@MessageBody() senderId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const sender = await this.userService.getUserByID(senderId);
+		const receiver = await this.userService.getUserByID(
+			client.data.user.id,
+		);
+		// step 1: to check if any user is already in a game
+		if (!sender || !receiver) {
+			client.emit('errorGameInvite', 'User does not exist.');
+		} else if (sender.isGaming || receiver.isGaming) {
+			client.emit('errorGameInvite', 'User is already in a game.');
+		} else {
+			// step 2: create game
+			const createdGame = await this.gameService.createGame(
+				sender,
+				receiver,
+			);
+			// step 3: refresh WatchGame list (for all clients)
+			await this.sendGameList();
+			// step 4: refresh Invite list (for current client)
+			const updateInviteList =
+				await this.gameService.getReceivedGameInvites(receiver.id);
+			client.emit('getReceivedGameInvites', updateInviteList);
+		}
 	}
 
 	// TODO: ValidationPipe

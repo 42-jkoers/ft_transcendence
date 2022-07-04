@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, getConnection } from 'typeorm';
+import { Repository, getConnection, Not } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto, UpdateUserProfileDto } from './dto';
 import { UserI } from './user.interface';
@@ -9,6 +9,7 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { UserToRoomEntity } from 'src/chat/room/entities/user.to.room.entity';
 import ConnectedUserEntity from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
+import { UserRole } from 'src/chat/room/enums/user.role.enum';
 
 @Injectable()
 export class UserService {
@@ -51,14 +52,19 @@ export class UserService {
 		newUser.requestedFriends = [];
 		newUser.friends = [];
 		const createdUser: UserI = await this.userRepository.save(newUser);
-		await this.roomService.addVisitorToRoom(createdUser.id, defaultRoom);
+		await this.roomService.addUserToRoom(
+			createdUser.id,
+			defaultRoom,
+			UserRole.VISITOR,
+		);
 
 		//FIXME: temp for testing protected rooms:
 		const protectedWithPassword: RoomEntity =
 			await this.roomService.findRoomById(2);
-		await this.roomService.addVisitorToRoom(
+		await this.roomService.addUserToRoom(
 			createdUser.id,
 			protectedWithPassword,
+			UserRole.VISITOR,
 		);
 
 		return createdUser;
@@ -84,6 +90,7 @@ export class UserService {
 			await this.userRepository.update(userData.id, {
 				username: userData.username,
 				avatar: userData.avatar,
+				isTwoFactorAuthEnabled: userData.isTwoFactorAuthEnabled,
 			});
 		} catch (error) {
 			return undefined;
@@ -151,5 +158,56 @@ export class UserService {
 			.from(User)
 			.where('id = :userId', { userId })
 			.execute();
+	}
+
+	async getAllRegisteredUsersExceptYourselfAndAdmin(
+		userName: string,
+	): Promise<UserI[]> {
+		const userList = await this.userRepository
+			.createQueryBuilder('user')
+			.where({ username: Not(userName) })
+			.andWhere({ username: Not('admin') })
+			.getMany();
+		return userList;
+	}
+
+	async isOwnerOrAdmin(userId: number, roomId: number) {
+		const authorizedUser = await this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect(
+				'user.userToRooms',
+				'userToRooms',
+				'userToRooms.roomId = :roomId',
+				{
+					roomId,
+				},
+			)
+			.where('user.id = :userId', { userId })
+			.getOne();
+		if (authorizedUser && authorizedUser.userToRooms) {
+			for (const userToRoom of authorizedUser.userToRooms) {
+				if (userToRoom.role === 1 || userToRoom.role === 0) return;
+				else throw new UnauthorizedException();
+			}
+		}
+	}
+	// async setTwoFactorAuthenticationSecret(secret: string, username: string) {
+	async setTwoFactorAuthSecret(secret: string, id: number) {
+		return this.userRepository.update(id, {
+			twoFactorAuthSecret: secret,
+		});
+	}
+
+	async updateTwoFactorAuth(id: number, status: boolean) {
+		return this.userRepository.update(id, {
+			isTwoFactorAuthenticated: status,
+		});
+	}
+
+	//currently not needed, for futher improvement:only enable when the next step is clicked instead of change saved
+	async turnOnTwoFactorAuth(userId: number) {
+		return this.userRepository.update(userId, {
+			isTwoFactorAuthEnabled: true,
+		});
 	}
 }

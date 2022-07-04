@@ -9,21 +9,27 @@ type TagSeverityType = "success" | "info" | "warning" | "danger" | undefined;
 
 const props = defineProps({
   socketCount: Number,
+  isGaming: Boolean,
 });
 const status = ref<string>();
 const icon = ref<string>();
 const style = ref<TagSeverityType>();
 
 onMounted(() => {
-  if (props.socketCount == 0) {
+  if (props.socketCount === 0) {
     status.value = "Offline";
     icon.value = "pi pi-power-off";
     style.value = undefined;
   } else {
-    // TODO: to add game status
-    status.value = "Online";
-    icon.value = "pi pi-user";
-    style.value = "success";
+    if (props.isGaming) {
+      status.value = "Gaming";
+      icon.value = "pi pi-discord";
+      style.value = "info";
+    } else {
+      status.value = "Online";
+      icon.value = "pi pi-user";
+      style.value = "success";
+    }
   }
 });
 </script>

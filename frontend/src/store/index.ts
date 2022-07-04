@@ -1,6 +1,4 @@
 import router from "@/router";
-import RoomVisibility from "@/types/RoomVisibility";
-import Room from "@/types/Room";
 import axios from "axios";
 import { createStore } from "vuex";
 
@@ -11,7 +9,7 @@ const storeUser = createStore({
       id: 0,
       username: "",
       avatar: "",
-      twoFactor: false,
+      twoFactorEnabled: false,
     },
     roomsInfo: [],
   },
@@ -31,7 +29,7 @@ const storeUser = createStore({
       state.user.avatar = avatar;
     },
     updateTwoFactor(state, update) {
-      state.user.twoFactor = update;
+      state.user.twoFactorEnabled = update;
     },
     setAuthenticated(state) {
       state.isAuthenticated = true;
@@ -39,7 +37,7 @@ const storeUser = createStore({
     unsetAuthenticated(state) {
       state.isAuthenticated = false;
     },
-    updateRoomsList(state, updatedRoomsList) {
+    updateRoomsListInStore(state, updatedRoomsList) {
       state.roomsInfo = updatedRoomsList;
     },
   },
@@ -50,14 +48,23 @@ const storeUser = createStore({
           .get("http://localhost:3000/auth/status", {
             withCredentials: true,
           })
-          .then((response) => {
-            commit("setAuthenticated");
-            commit("updateId", response.data.id);
-            commit("updateUserAvatar", response.data.avatar);
-            // commit("updateTwoFactor", response.data.avatar); //TODO: 2F
-            if (!response.data.username) {
-              router.push({ name: "Register" });
+          .then(async (response) => {
+            console.log(
+              "enable?",
+              response.data.isTwoFactorAuthEnabled,
+              "2f authenticated?",
+              response.data.isTwoFactorAuthenticated
+            );
+            if (
+              response.data.isTwoFactorAuthEnabled &&
+              !response.data.isTwoFactorAuthenticated
+            ) {
+              router.push({ name: "2fAuthenticate" });
             } else {
+              commit("setAuthenticated");
+              commit("updateId", response.data.id);
+              commit("updateUserAvatar", response.data.avatar);
+              commit("updateTwoFactor", response.data.isTwoFactorAuthEnabled);
               commit("updateUserName", response.data.username);
             }
           })
@@ -65,6 +72,9 @@ const storeUser = createStore({
             console.log("user is not unauthorized");
           });
       }
+    },
+    async enable2F({ commit }) {
+      commit("updateTwoFactor", true);
     },
     logout({ commit }) {
       commit("unsetAuthenticated");
