@@ -28,9 +28,10 @@ export enum GameStatus {
 }
 
 export interface Paddle {
-	y: number; // fraction
-	x: number;
+	y: number; // point is defined as center of ball
+	x: number; // point is defined as center of ball
 	height: number;
+	width: number;
 	speed: number;
 }
 
@@ -42,32 +43,34 @@ export interface Player {
 }
 
 export interface Frame {
-	// ball: {
-	// 	x: number;
-	// 	y: number;
-	// };
+	ball: {
+		x: number; // point is defined as center of ball
+		y: number; // point is defined as center of ball
+		radius: number;
+	};
 	paddles: Paddle[];
 	socketRoomID: string;
 }
 
-// export interface Ball {
-// 	x: number;
-// 	y: number;
-// 	dx: number;
-// 	dy: number;
-// 	radius: number;
-// 	resetting: boolean;
-// }
+export interface Ball {
+	x: number;
+	y: number;
+	dx: number;
+	dy: number;
+	radius: number;
+}
+
+export interface Canvas {
+	width: number;
+	height: number;
+	grid: number;
+}
 
 export interface GameInPlay {
 	id: number;
 	socketRoomID: string;
 	status: GameStatus;
-	// ball: Ball;
-	canvas: {
-		width: number;
-		height: number;
-		grid: number;
-	};
+	ball: Ball;
+	canvas: Canvas;
 	players: Player[];
 }

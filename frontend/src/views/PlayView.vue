@@ -11,13 +11,9 @@
 import { inject, onMounted } from "vue";
 import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
-import { Paddle, GameInPlay, Frame } from "@backend/game/game.dto";
+import { GameInPlay, Frame } from "@backend/game/game.dto";
 
-function draw(
-  context: CanvasRenderingContext2D,
-  game: GameInPlay,
-  paddles: Paddle[]
-) {
+function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
   const { width, height, grid } = game.canvas;
   context.clearRect(0, 0, width, height);
 
@@ -38,14 +34,16 @@ function draw(
   // }
 
   context.fillStyle = "white";
-  for (const paddle of paddles) {
+  for (const paddle of f.paddles) {
     context.fillRect(paddle.x, paddle.y, grid, paddle.height);
   }
 
-  // ball.x += ball.dx;
-  // ball.y += ball.dy;
-
-  // context.fillRect(ball.x, ball.y, ball.width, ball.height);
+  context.fillRect(
+    f.ball.x - f.ball.radius / 2,
+    f.ball.y - f.ball.radius / 2,
+    f.ball.radius * 2,
+    f.ball.radius * 2
+  );
 
   // walls
   context.fillStyle = "lightgrey";
@@ -67,9 +65,13 @@ function initCanvas(game: GameInPlay, ctx: CanvasRenderingContext2D) {
 function scaleFrame(frame: Frame, scaler: number) {
   for (const paddle of frame.paddles) {
     paddle.height *= scaler;
+    paddle.width *= scaler;
     paddle.x *= scaler;
     paddle.y *= scaler;
   }
+  frame.ball.x *= scaler;
+  frame.ball.y *= scaler;
+  frame.ball.radius *= scaler;
 }
 
 function scaleGame(game: GameInPlay, scalar: number) {
@@ -98,8 +100,9 @@ onMounted(() => {
 
   socket.on("gameFrame", (frame: Frame) => {
     scaleFrame(frame, scaler);
+    // console.log(frame);
     if (gameInPlay) {
-      draw(context, gameInPlay, frame.paddles);
+      draw(context, gameInPlay, frame);
     }
   });
 

@@ -9,6 +9,9 @@ import {
 	CreateGameDto,
 	PaddleUpdate,
 	PaddleUpdateDto,
+	Ball,
+	Paddle,
+	Canvas,
 } from './game.dto';
 import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,28 +24,42 @@ const inPlays: GameInPlay[] = [
 	createGameInPlay(2, 1), // TODO: remove
 ];
 
-// function collides(ball: Ball, paddle: Paddle): boolean {
-// 	return (
-// 		ball.x < paddle.x + paddle.width &&
-// 		ball.x + ball.radius > paddle.x &&
-// 		ball.y < paddle.y + paddle.height &&
-// 		ball.y + ball.radius > paddle.y
-// 	);
-// }
+function collides(ball: Ball, paddle: Paddle) {
+	const collides =
+		ball.x + ball.radius < paddle.x + paddle.width &&
+		ball.y + ball.radius > paddle.y &&
+		ball.y - ball.radius > paddle.y;
+	if (collides) {
+		ball.x = ball.radius + paddle.x + Number.EPSILON;
+		ball.dx *= -1;
+		console.log('c');
+	}
+}
 
-// function updateBall(game: GameInPlay) {
-// 	game.ball.x += game.ball.dx;
-// 	game.ball.y += game.ball.dy;
+function updateBall(game: GameInPlay) {
+	const c = game.canvas;
+	const ball = game.ball;
 
-// 	// prevent ball from going through walls
-// 	if (game.ball.y < game.ball.radius) {
-// 		game.ball.y = game.ball.radius;
-// 		game.ball.dy *= -1;
-// 	} else if (game.ball.y + game.ball.radius > canvas.height - grid) {
-// 		game.ball.y = canvas.height - grid * 2;
-// 		game.ball.dy *= -1;
-// 	}
-// }
+	ball.x += ball.dx;
+	ball.y += ball.dy;
+
+	if (ball.y < ball.radius) {
+		ball.y = ball.radius + Number.EPSILON;
+		ball.dy *= -1;
+	} //
+	else if (ball.y + ball.radius > c.height) {
+		ball.y = c.height - ball.radius - Number.EPSILON;
+		ball.dy *= -1;
+	} //
+	else if (ball.x + ball.radius > c.width) {
+		// TODO: remove this
+		ball.dx *= -1;
+		ball.x = c.width - ball.radius - Number.EPSILON;
+	} else
+		for (const player of game.players) {
+			collides(ball, player.paddle);
+		}
+}
 
 export function tick(): Frame[] {
 	const updates: Frame[] = [];
@@ -54,9 +71,11 @@ export function tick(): Frame[] {
 			}
 		}
 
-		// TODO: add ball
+		updateBall(game);
+
 		// extracting only relevant information
 		const frame: Frame = {
+			ball: { x: game.ball.x, y: game.ball.y, radius: game.ball.radius },
 			socketRoomID: game.socketRoomID,
 			paddles: game.players.map((p) => p.paddle),
 		};
@@ -67,8 +86,7 @@ export function tick(): Frame[] {
 
 function createPlayer(
 	id: number,
-	canvasWidth: number,
-	canvasHeight: number,
+	canvas: Canvas,
 	position: 'left' | 'right',
 ): Player {
 	return {
@@ -76,34 +94,44 @@ function createPlayer(
 		score: 0,
 		update: PaddleUpdate.none,
 		paddle: {
-			speed: canvasWidth * 0.01,
-			height: canvasHeight * 0.1,
-			y: canvasHeight * 0.05,
+			speed: canvas.width * 0.01,
+			height: canvas.height * 0.2,
+			width: canvas.grid,
+			y: canvas.height * 0.05,
 			x:
 				position == 'left'
-					? canvasWidth * 0.01
-					: canvasWidth - canvasWidth * 0.01,
+					? canvas.width * 0.01
+					: canvas.width - canvas.width * 0.01,
 		},
 	};
 }
 
 function createGameInPlay(creatorID: number, gameID: number): GameInPlay {
-	const canvas = {
+	const canvas: Canvas = {
 		height: 1,
 		width: 4 / 3,
 		grid: 0.025,
 	};
-	return {
+	const game = {
 		// id: newGame.id,
 		id: gameID, // For now always referencing the same game in the database because this object will be destroyed on restart
 		socketRoomID: `game${gameID}`,
 		status: GameStatus.PLAYING, // TODO: should be in que
+		ball: {
+			x: canvas.width * 0.5,
+			y: canvas.height * 0.5,
+			dx: canvas.height * -0.004,
+			dy: canvas.height * -0.005,
+			radius: canvas.grid,
+		},
 		canvas,
 		players: [
-			createPlayer(creatorID, canvas.width, canvas.height, 'left'),
+			createPlayer(creatorID, canvas, 'left'),
 			// createPlayer(creator.id, canvas.width, canvas.height, 'right'), // TODO
 		],
 	};
+	console.log(game);
+	return game;
 }
 
 Injectable();
