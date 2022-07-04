@@ -39,6 +39,10 @@ export class User {
 	// https://stackoverflow.com/questions/43747765/self-referencing-manytomany-relationship-typeorm
 	friends: User[];
 
+	@ManyToMany(() => User, { cascade: true })
+	@JoinTable({ joinColumn: { name: 'userId_1' } })
+	blocked: User[];
+
 	@JoinColumn()
 	@OneToMany(() => ConnectedUserEntity, (connection) => connection.user)
 	connections: ConnectedUserEntity[];

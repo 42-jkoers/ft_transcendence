@@ -32,6 +32,7 @@
       <Column header="Profile" headerStyle="width: 10%">
         <template #body="slotProps">
           <Button
+            v-tooltip.top="'View profile'"
             icon="pi pi-user"
             class="p-button-rounded p-button-text p-button-outlined"
             @click="viewProfile(slotProps.data.id)"
@@ -42,12 +43,14 @@
         <template #body="slotProps">
           <div>
             <EditFriendButton
+              v-tooltip.top="'Remove request'"
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-times"
               :action="EditFriendActionType.REJECT_REQUEST"
               @isActionSuccess="catchEvent($event)"
             />
             <EditFriendButton
+              v-tooltip.top="'Add friend'"
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-check"
               :action="EditFriendActionType.ADD_FRIEND"
