@@ -18,7 +18,9 @@ import ConfirmDialog from "primevue/confirmdialog";
 import { computed, inject } from "vue";
 import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
+import { useConfirm } from "primevue/useconfirm";
 
+const confirm = useConfirm();
 const socket: Socket = inject("socketioInstance") as Socket;
 const router = useRouter();
 const isUserLogIn = computed(() => {
@@ -26,11 +28,16 @@ const isUserLogIn = computed(() => {
 });
 
 socket.on("startGame", (response) => {
-  // TODO: countdown?
-  // TODO: confirmation dialog?
-  router.push({
-    name: "Play",
-    params: { id: response },
+  confirm.require({
+    message: "Start game now",
+    header: "Confirmation",
+    icon: "pi pi-exclamation-triangle",
+    accept: () => {
+      router.push({
+        name: "Play",
+        params: { id: response },
+      });
+    },
   });
 });
 </script>
