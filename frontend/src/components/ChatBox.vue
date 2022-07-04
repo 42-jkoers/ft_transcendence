@@ -310,6 +310,9 @@ const items = ref([
     label: "Play pong",
     icon: "pi pi-fw pi-caret-right",
     visible: () => store.state.user.id !== computedID.value,
+    command: () => {
+      socket.emit("sendGameInvite", computedID.value);
+    },
   }, //TODO add a View to play game when we have it ready
   {
     separator: true,

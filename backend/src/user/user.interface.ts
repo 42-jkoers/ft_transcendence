@@ -13,4 +13,5 @@ export interface UserI {
 	isTwoFactorAuthenticated?: boolean;
 	twoFactorAuthSecret?: string;
 	socketCount?: number;
+	sentGameInvites?: UserI[];
 }

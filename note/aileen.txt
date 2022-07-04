@@ -222,6 +222,14 @@ Tutorial:
 (Wed) 2022-06-29
 	- change gameList from axios to socket.
 
+******************************************
+**				Branch - 	game_invite					**
+******************************************
+(Mon) 2022-07-04
+	- add sentGameInvites relation in User Entity
+	- add add/remove/get game invite in gameService
+	- build Game Invite component in frontend
+	
 **************************
 **		Next To To				**
 **************************

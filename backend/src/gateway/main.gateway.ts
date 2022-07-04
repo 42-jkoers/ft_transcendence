@@ -512,4 +512,26 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user = await this.userService.getUserByID(id);
 		client.emit('getUserProfile', user);
 	}
+
+	@SubscribeMessage('sendGameInvite')
+	async sendGameInvite(
+		@MessageBody() receiverId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const sender = await this.userService.getUserByID(client.data.user.id);
+		const receiver = await this.userService.getUserByID(receiverId);
+		// TODO: check error (if user doesn't exist);
+		await this.gameService.addGameInvite(sender, receiver);
+	}
+
+	@SubscribeMessage('getReceivedGameInvites')
+	async getReceivedGameInvites(
+		@MessageBody() userId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		console.log('>> user id is: ', userId);
+		const response = await this.gameService.getReceivedGameInvites(userId);
+		client.emit('getReceivedGameInvites', response);
+		console.log('>> send list: ', response);
+	}
 }
