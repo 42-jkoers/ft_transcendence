@@ -17,7 +17,10 @@
         </template>
         <template #content>
           <div v-if="isSafe">
-            <UserStatus :socketCount="user?.socketCount" />
+            <UserStatus
+              :socketCount="user?.socketCount"
+              :isGaming="user?.isGaming"
+            />
             <h4>(to be add) game record</h4>
           </div>
         </template>
