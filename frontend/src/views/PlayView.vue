@@ -15,12 +15,10 @@ import { Paddle, GameInPlay, Frame } from "@backend/game/game.dto";
 
 function draw(
   context: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  paddles: Paddle[],
-  scaler: number
+  game: GameInPlay,
+  paddles: Paddle[]
 ) {
-  const grid = scaler * 0.03;
+  const { width, height, grid } = game.canvas;
   context.clearRect(0, 0, width, height);
 
   // leftPaddle.y += leftPaddle.dy;
@@ -60,14 +58,10 @@ function draw(
   }
 }
 
-function initCanvas(
-  game: GameInPlay,
-  ctx: CanvasRenderingContext2D,
-  scaler: number
-) {
+function initCanvas(game: GameInPlay, ctx: CanvasRenderingContext2D) {
   console.log("init", game);
-  ctx.canvas.width = game.canvas.width * scaler;
-  ctx.canvas.height = game.canvas.height * scaler;
+  ctx.canvas.width = game.canvas.width;
+  ctx.canvas.height = game.canvas.height;
 }
 
 function scaleFrame(frame: Frame, scaler: number) {
@@ -78,22 +72,35 @@ function scaleFrame(frame: Frame, scaler: number) {
   }
 }
 
+function scaleGame(game: GameInPlay, scalar: number) {
+  game.canvas.height *= scalar;
+  game.canvas.width *= scalar;
+  game.canvas.grid *= scalar;
+}
+
 onMounted(() => {
   const canvas = document.getElementById("game") as HTMLCanvasElement;
   const context = canvas.getContext("2d") as CanvasRenderingContext2D;
   const socket: Socket = inject("socketioInstance") as Socket;
   const route = useRoute();
   const scaler = 500;
+  let gameInPlay: GameInPlay | undefined;
 
   socket.on("BadRequestException", (response) => {
     console.log("BadRequestException", response);
   });
 
-  socket.on("getGame", (game: GameInPlay) => initCanvas(game, context, scaler));
+  socket.on("getGame", (game: GameInPlay) => {
+    scaleGame(game, scaler);
+    gameInPlay = game;
+    initCanvas(game, context);
+  });
 
   socket.on("gameFrame", (frame: Frame) => {
     scaleFrame(frame, scaler);
-    draw(context, canvas.width, canvas.height, frame.paddles, scaler);
+    if (gameInPlay) {
+      draw(context, gameInPlay, frame.paddles);
+    }
   });
 
   window.addEventListener("keydown", (e) => {

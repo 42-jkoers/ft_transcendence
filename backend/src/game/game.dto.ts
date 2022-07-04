@@ -67,6 +67,7 @@ export interface GameInPlay {
 	canvas: {
 		width: number;
 		height: number;
+		grid: number;
 	};
 	players: Player[];
 }

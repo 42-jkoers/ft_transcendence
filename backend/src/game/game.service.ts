@@ -18,13 +18,7 @@ import User from 'src/user/user.entity';
 // It is not in the postgres database because in a normal game there will be 60 updates per second
 // a postgres cannot keep up with that
 const inPlays: GameInPlay[] = [
-	{
-		id: 1,
-		socketRoomID: 'game1',
-		status: 1,
-		canvas: { width: 4 / 3, height: 1 },
-		players: [createPlayer(2, 4 / 3, 1, 'left')],
-	}, // TODO: remove
+	createGameInPlay(2, 1), // TODO: remove
 ];
 
 // function collides(ball: Ball, paddle: Paddle): boolean {
@@ -93,6 +87,25 @@ function createPlayer(
 	};
 }
 
+function createGameInPlay(creatorID: number, gameID: number): GameInPlay {
+	const canvas = {
+		height: 1,
+		width: 4 / 3,
+		grid: 0.025,
+	};
+	return {
+		// id: newGame.id,
+		id: gameID, // For now always referencing the same game in the database because this object will be destroyed on restart
+		socketRoomID: `game${gameID}`,
+		status: GameStatus.PLAYING, // TODO: should be in que
+		canvas,
+		players: [
+			createPlayer(creatorID, canvas.width, canvas.height, 'left'),
+			// createPlayer(creator.id, canvas.width, canvas.height, 'right'), // TODO
+		],
+	};
+}
+
 Injectable();
 export class GameService {
 	constructor(
@@ -112,21 +125,7 @@ export class GameService {
 		newGame.name = payload.name;
 		newGame.players = [creator];
 		await this.gameEntityRepository.save(newGame);
-		const canvas = {
-			height: 1,
-			width: 4 / 3,
-		};
-		const inPlay: GameInPlay = {
-			// id: newGame.id,
-			id: 1, // For now always referencing the same game in the database because this object will be destroyed on restart
-			socketRoomID: `game${newGame.id}`,
-			status: GameStatus.PLAYING, // TODO: should be in que
-			canvas,
-			players: [
-				createPlayer(creator.id, canvas.width, canvas.height, 'left'),
-				// createPlayer(creator.id, canvas.width, canvas.height, 'right'), // TODO
-			],
-		};
+		const inPlay: GameInPlay = createGameInPlay(creator.id, newGame.id);
 		inPlays.push(inPlay);
 		console.log('created game', newGame, inPlay);
 		return newGame;
