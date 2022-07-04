@@ -16,8 +16,17 @@
       alt="User Profile"
     />
     <template #footer>
-      <Button label="Message" icon="pi pi-envelope" @click="sendDM" />
-      <Button label="View Profile" icon="pi pi-user" @click="pushToProfile" />
+      <ChatBoxSendDMButton
+        :clickedUserId="clickedUserObject.id"
+        v-if="userId !== props.clickedUserObject.id"
+        @closeDialog="handleClose"
+      />
+      <Button
+        label="View Profile"
+        icon="pi pi-user"
+        class="p-button-rounded p-button-outlined"
+        @click="pushToProfile"
+      />
     </template>
   </Dialog>
 </template>
@@ -28,6 +37,8 @@ import { useRouter } from "vue-router";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import Image from "primevue/image"; //TODO style img width
+import { useStore } from "vuex";
+import ChatBoxSendDMButton from "./ChatBoxSendDMButton.vue";
 
 const isOnline = ref(true); //FIXME change this when we have onlin/offline info in user
 const props = defineProps(["isDialogVisible", "clickedUserObject"]);
@@ -42,9 +53,8 @@ const pushToProfile = () => {
   });
 };
 
-const sendDM = () => {
-  //TODO add DM logic
-};
+const store = useStore();
+const userId = ref<number>(store.state.user.id);
 
 const handleClose = () => {
   emit("update:isDialogVisible", false);

@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "@/views/HomeView.vue";
-import RegisterView from "@/views/RegisterView.vue";
 import UserSettingView from "@/views/UserSettingView.vue";
 import UnAuthorizedView from "@/views/UnAuthorizedView.vue";
+import TwoFactorAuthView from "@/views/TwoFactorAuthView.vue";
 import LogOutView from "@/views/LogOutView.vue";
 import UserHomeView from "@/views/UserHomeView.vue";
 import ComingSoonView from "@/views/ComingSoonView.vue";
@@ -12,6 +12,7 @@ import ChatBox from "@/components/ChatBox.vue";
 import UserProfileCard from "@/components/UserProfileCard.vue";
 import storeUser from "@/store";
 import FriendsView from "@/views/FriendsView.vue";
+import EnableTwoFactorView from "@/views/EnableTwoFactorView.vue";
 import GameView from "@/views/GameView.vue";
 import PlayView from "@/views/PlayView.vue";
 
@@ -68,14 +69,6 @@ const routes: Array<RouteRecordRaw> = [
     component: CreateRoom,
   },
   {
-    path: "/register",
-    name: "Register",
-    component: RegisterView,
-    beforeEnter: () => {
-      checkRegisterStatus();
-    },
-  },
-  {
     path: "/un-authorized",
     name: "UnAuthorized",
     component: UnAuthorizedView,
@@ -84,6 +77,16 @@ const routes: Array<RouteRecordRaw> = [
     path: "/coming-soon",
     name: "ComingSoon",
     component: ComingSoonView,
+  },
+  {
+    path: "/2fAuthenticate",
+    name: "2fAuthenticate",
+    component: TwoFactorAuthView,
+  },
+  {
+    path: "/enableTwoFactor",
+    name: "enableTwoFactor",
+    component: EnableTwoFactorView,
   },
   {
     path: "/game",
@@ -102,28 +105,15 @@ const router = createRouter({
   routes,
 });
 
-/* Only new user (with default empty username is able to enter the register view */
-const checkRegisterStatus = async function () {
-  if (storeUser.state.isAuthenticated) {
-    if (storeUser.state.user.username !== "") {
-      router.push({ name: "UserHome" });
-    }
-  } else {
-    router.push({ name: "UserHome" });
-  }
-};
-
 /* Check if the user is logged in */
 const checkLogInState = async function () {
   if (storeUser.state.isAuthenticated === false) {
     await storeUser.dispatch("login");
-  } else if (storeUser.state.user.username === "") {
-    router.push({ name: "Register" });
   }
 };
 
 router.beforeEach(async (to) => {
-  if (to.name !== "Register" && to.name !== "UnAuthorized") {
+  if (to.name !== "UnAuthorized" && to.name !== "2fAuthenticate") {
     await checkLogInState();
     if (to.name !== "Home" && storeUser.state.isAuthenticated === false) {
       router.push({ name: "Home" });

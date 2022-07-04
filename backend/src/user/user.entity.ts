@@ -43,7 +43,7 @@ export class User {
 	@OneToMany(() => ConnectedUserEntity, (connection) => connection.user)
 	connections: ConnectedUserEntity[];
 
-	@OneToMany(() => UserToRoomEntity, (userToRoom) => userToRoom.room, {
+	@OneToMany(() => UserToRoomEntity, (userToRoom) => userToRoom.user, {
 		cascade: true,
 	})
 	public userToRooms!: UserToRoomEntity[];
@@ -51,6 +51,14 @@ export class User {
 	@OneToMany(() => MessageEntity, (message) => message.user)
 	messages: MessageEntity[];
 
+	@Column({ default: false })
+	public isTwoFactorAuthEnabled: boolean;
+
+	@Column({ default: false })
+	public isTwoFactorAuthenticated: boolean;
+
+	@Column({ nullable: true })
+	public twoFactorAuthSecret?: string;
 	@ManyToMany(() => GameEntity, (game) => game.players)
 	@JoinTable() // the user is the owner of the game
 	games: GameEntity[];

@@ -8,12 +8,14 @@ import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import * as session from 'express-session';
 import { UserI } from '../user/user.interface';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly userService: UserService,
 		private readonly configService: ConfigService,
+		private readonly httpService: HttpService,
 	) {}
 
 	/*
@@ -25,11 +27,12 @@ export class AuthService {
 		if (user) {
 			return user;
 		}
-		return await this.registerUser(userDto.intraID);
+		return await this.registerUser(userDto);
 	}
 
-	private async registerUser(intraID: string): Promise<UserI> {
-		const username = null;
+	private async registerUser(userDto: ValidateUserDto): Promise<UserI> {
+		const intraID = userDto.intraID;
+		const username = userDto.username;
 		const avatar = '/default_avatar.png';
 		const socketCount = 0;
 		const createUserDto = { intraID, username, avatar, socketCount };

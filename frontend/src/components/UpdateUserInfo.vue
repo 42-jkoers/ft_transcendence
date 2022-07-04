@@ -59,7 +59,7 @@
     <div class="col-offset-5">
       <Button @click="updateData" label="Save" icon="pi pi-save" />
     </div>
-    <div class="col-3">
+    <!-- <div class="col-3">
       <Button
         class="p-button-danger"
         label="Deregister"
@@ -67,12 +67,11 @@
         iconPos="left"
         @click="proceedConfirmation"
       />
-    </div>
+    </div> -->
   </div>
 </template>
 <script setup lang="ts">
 import InputText from "primevue/inputtext";
-import Message from "primevue/message";
 import Button from "primevue/button";
 import Avatar from "primevue/avatar";
 import InputSwitch from "primevue/inputswitch";
@@ -80,18 +79,18 @@ import { ref, defineEmits } from "vue";
 import storeUser from "@/store";
 import axios from "axios";
 import UploadAvatar from "@/components/UploadAvatar.vue";
-import { useConfirm } from "primevue/useconfirm";
+// import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import { errorMessage, ErrorType } from "@/types/errorManagement";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const confirm = useConfirm();
+// const confirm = useConfirm();
 const toast = useToast();
 
 const username = ref<string>(storeUser.state.user.username);
 const avatar = ref<string>(storeUser.state.user.avatar);
-const twoFactor = ref<boolean>(storeUser.state.user.twoFactor);
+const twoFactor = ref<boolean>(storeUser.state.user.twoFactorEnabled);
 const isUserNameInvalid = ref<boolean>(false);
 const invalidUserNameMessage = ref<string>("");
 
@@ -148,7 +147,7 @@ async function updateData() {
       id: storeUser.state.user.id,
       username: username.value,
       avatar: avatar.value,
-      // TODO: add 2F
+      isTwoFactorAuthEnabled: twoFactor.value,
     };
     await axios
       .post("http://localhost:3000/user/profile/update-userprofile", postBody, {
@@ -168,7 +167,15 @@ async function updateData() {
           // update storeUser
           storeUser.state.user.username = username.value;
           storeUser.state.user.avatar = avatar.value;
-          storeUser.state.user.twoFactor = twoFactor.value;
+          //if the 2f is enabled, the user is routed to the generate qrcode page
+          if (
+            !storeUser.state.user.twoFactorEnabled &&
+            twoFactor.value === true
+          ) {
+            router.push({ name: "enableTwoFactor" });
+          }
+          //update after check the value of the change on the 2fEnable
+          storeUser.state.user.twoFactorEnabled = twoFactor.value;
           // send signal to parent component
           emit("updated", true);
         }
@@ -184,44 +191,44 @@ async function updateData() {
   }
 }
 
-async function proceedConfirmation() {
-  confirm.require({
-    message: "Are you sure you want to deregister?",
-    header: "Confirmation",
-    icon: "pi pi-exclamation-triangle",
-    accept: async () => {
-      await deregister();
-    },
-  });
-}
-
-async function deregister() {
-  const postBody = {
-    id: storeUser.state.user.id,
-  };
-  await axios
-    .post("http://localhost:3000/user/deregister", postBody, {
-      withCredentials: true,
-    })
-    .then(() => {
-      toast.add({
-        severity: "info",
-        summary: "Info",
-        detail: "User is deregistered.",
-        life: 3000,
-      });
-      storeUser.dispatch("logout");
-      router.push({ name: "Home" });
-    })
-    .catch(() => {
-      toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: errorMessage(ErrorType.GENERAL),
-        life: 3000,
-      });
-    });
-}
+// async function proceedConfirmation() {
+//   confirm.require({
+//     message: "Are you sure you want to deregister?",
+//     header: "Confirmation",
+//     icon: "pi pi-exclamation-triangle",
+//     accept: async () => {
+//       await deregister();
+//     },
+//   });
+// }
+//
+// async function deregister() {
+//   const postBody = {
+//     id: storeUser.state.user.id,
+//   };
+//   await axios
+//     .post("http://localhost:3000/user/deregister", postBody, {
+//       withCredentials: true,
+//     })
+//     .then(() => {
+//       toast.add({
+//         severity: "info",
+//         summary: "Info",
+//         detail: "User is deregistered.",
+//         life: 3000,
+//       });
+//       storeUser.dispatch("logout");
+//       router.push({ name: "Home" });
+//     })
+//     .catch(() => {
+//       toast.add({
+//         severity: "error",
+//         summary: "Error",
+//         detail: errorMessage(ErrorType.GENERAL),
+//         life: 3000,
+//       });
+//     });
+// }
 </script>
 <style scoped>
 .label {

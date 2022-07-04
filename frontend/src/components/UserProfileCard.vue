@@ -3,7 +3,12 @@
     <div>
       <Card style="width: 30%; margin: 5%; border-radius: 5%; border: Groove">
         <template #header>
-          <img :src="user?.avatar" style="width: 90%; margin-top: 5%" />
+          <img
+            :src="user?.avatar"
+            width="300"
+            height="300"
+            style="width: 95%; margin-top: 5%; border-radius: 3%"
+          />
         </template>
         <template #title>
           <h3>
@@ -28,12 +33,7 @@
             </div>
             <div v-else>
               <div>
-                <Button
-                  label="Message"
-                  class="p-button-rounded p-button-outlined"
-                  icon="pi pi-envelope"
-                  @click="toPrivateMessage"
-                />
+                <ChatBoxSendDMButton :clickedUserId="user?.id" />
               </div>
               <br />
             </div>
@@ -65,7 +65,7 @@
 </template>
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed, watch, inject } from "vue";
 import axios from "axios";
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -77,52 +77,54 @@ import { EditFriendActionType } from "@/types/editFriendAction";
 import { useToast } from "primevue/usetoast";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
 import UserStatus from "./UserStatus.vue";
+import { Socket } from "socket.io-client";
+import ChatBoxSendDMButton from "./ChatBoxSendDMButton.vue";
+
+const socket: Socket = inject("socketioInstance");
+
 const toast = useToast();
 const route = useRoute();
-const id = route.params.id;
+const id = computed(() => route.params.id);
 const user = ref<UserProfileI>();
 const isSelf = ref<boolean>();
 const isFriend = ref<boolean>();
 const isSafe = ref<boolean>();
 const isUserExist = ref<boolean>(false);
 
-onMounted(async () => {
-  try {
-    // TODO: to evaluate timeout
-    setTimeout(async () => {
-      await findUser();
-      await checkRelationship();
-      evaluateIsSafe();
-    }, 500); // wait till socket connection finished (to get correct socketCount)
-  } catch (error) {
-    toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: errorMessage(ErrorType.GENERAL),
-      life: 3000,
-    });
+watch(id, async () => {
+  if (id.value) {
+    await updateProfile();
   }
 });
 
+onMounted(async () => {
+  setTimeout(async () => {
+    await updateProfile();
+  }, 100); // wait till socket connection finished (to get correct socketCount)
+});
+
+async function updateProfile() {
+  await findUser();
+  await checkRelationship();
+  evaluateIsSafe();
+}
+
 async function findUser() {
-  await axios
-    .get("http://localhost:3000/user/find-by-id?id=" + id, {
-      withCredentials: true,
-    })
-    .then((response) => {
-      if (response.data) {
-        user.value = response.data;
-        isUserExist.value = true;
-        isSelf.value = id === String(storeUser.state.user.id);
-      } else {
-        toast.add({
-          severity: "error",
-          summary: "Error",
-          detail: errorMessage(ErrorType.USER_NOT_EXIST),
-          life: 3000,
-        });
-      }
-    });
+  socket.emit("getUserProfile", id.value);
+  socket.on("getUserProfile", (response) => {
+    if (response) {
+      user.value = response;
+      isUserExist.value = true;
+      isSelf.value = id.value === String(storeUser.state.user.id);
+    } else {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errorMessage(ErrorType.USER_NOT_EXIST),
+        life: 3000,
+      });
+    }
+  });
 }
 
 async function checkRelationship() {
@@ -131,7 +133,7 @@ async function checkRelationship() {
       "http://localhost:3000/friend/is-friend?id1=" +
         storeUser.state.user.id +
         "&id2=" +
-        id,
+        id.value,
       { withCredentials: true }
     ).then((response) => {
       isFriend.value = response.data;
@@ -152,10 +154,6 @@ const router = useRouter();
 
 function toSetting() {
   router.push({ name: "UserSetting" });
-}
-
-function toPrivateMessage() {
-  console.log("go to private message"); //TODO: to change route to private chat
 }
 
 function catchEvent(event) {
