@@ -1,5 +1,5 @@
 <template>
-  <div id="chatrooms-list">
+  <div v-if="isRoomsListReady" id="chatrooms-list">
     <ChatRoomPasswordDialogue
       :isDialogVisible="displayPasswordDialog"
       :roomName="selectedRoomName"
@@ -70,10 +70,19 @@
     </DataTable>
     <ContextMenu :model="menuItems" ref="cm" />
   </div>
+
+  <div v-else style="padding-top: 2rem">
+    <ProgressSpinner
+      class="flex align-items-center justify-content-center"
+      style="width: 50px; height: 50px"
+      strokeWidth="6"
+      animationDuration=".5s"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, inject } from "vue";
+import { ref, inject, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Socket } from "socket.io-client";
 import RoomVisibility from "@/types/RoomVisibility";
@@ -85,23 +94,32 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import ContextMenu from "primevue/contextmenu";
 import { useConfirm } from "primevue/useconfirm";
+import ProgressSpinner from "primevue/progressspinner";
 import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";
+import { useToast } from "primevue/usetoast";
 
 const socket: Socket | undefined = inject("socketioInstance");
 const router = useRouter();
 const route = useRoute();
 
 const rooms = ref();
-setTimeout(() => {
-  socket?.emit("getPublicRoomsList");
-}, 120); // FIXME: find a better solution?
+socket?.emit("getPublicRoomsList");
 
+const isRoomsListReady = ref<boolean>(false);
 const store = useStore();
+onMounted(() => {
+  if (!isRoomsListReady.value && store.state.roomsInfo.length > 0) {
+    rooms.value = store.state.roomsInfo;
+    isRoomsListReady.value = true;
+  }
+});
+
 const updateRoomsListInStore = (roomsList: Room[]) =>
   store.commit("updateRoomsListInStore", roomsList);
 
 socket?.on("postPublicRoomsList", (response) => {
+  isRoomsListReady.value = true;
   console.log("rooms from server", response);
   rooms.value = response;
   updateRoomsListInStore(response);
@@ -114,6 +132,16 @@ socket?.on("room deleted", (deletedRoomName) => {
     });
   }
   socket.emit("getPublicRoomsList");
+});
+
+const toast = useToast();
+socket?.on("CannotSendDirectMessage", (user) => {
+  toast.add({
+    severity: "error",
+    summary: "Error",
+    detail: `You cannot send messages to ${user.username}`,
+    life: 2000,
+  });
 });
 
 socket?.on("postPrivateChatRoom", (dMRoom) => {
@@ -155,7 +183,7 @@ const menuItems = ref([
   {
     label: "Leave chat",
     // icon: "pi pi-exclamation-circle",
-    visible: () => !isInRoom(selectedRoom.value.userRole),
+    visible: () => isInRoom(selectedRoom.value.userRole),
     disabled: () =>
       selectedRoom.value.name === "general" ||
       selectedRoom.value.isDirectMessage,
@@ -164,8 +192,8 @@ const menuItems = ref([
   {
     label: "Join chat",
     // icon: "pi pi-exclamation-circle",
-    visible: () => isInRoom(selectedRoom.value.userRole),
-    command: () => socket?.emit("addUserToRoom", selectedRoom.value.name),
+    visible: () => !isInRoom(selectedRoom.value.userRole),
+    command: () => handleAddToRoom(selectedRoom.value),
   },
 ]);
 
@@ -175,7 +203,7 @@ const onRowContextMenu = (event) => {
 const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
 const isInRoom = (userRole: UserRole | undefined) =>
-  userRole === undefined ? true : false;
+  userRole === undefined ? false : true;
 
 const confirm = useConfirm();
 
@@ -199,8 +227,34 @@ const confirmLeave = (room) => {
   });
 };
 
+const handleAddToRoom = (room) => {
+  if (room.protected && room.userRole === undefined) {
+    selectedRoomName.value = room.name;
+    displayPasswordDialog.value = true;
+  } else {
+    socket?.emit("addUserToRoom", room.name);
+  }
+};
+
 const editRoomPrivacy = () => {
   displayEditPrivacyDialog.value = true;
 };
 </script>
-<style></style>
+<style>
+@keyframes p-progress-spinner-color {
+  100%,
+  0% {
+    stroke: #efe4e3;
+  }
+  40% {
+    stroke: #8b8d90;
+  }
+  66% {
+    stroke: #fafffd;
+  }
+  80%,
+  90% {
+    stroke: #afada9;
+  }
+}
+</style>

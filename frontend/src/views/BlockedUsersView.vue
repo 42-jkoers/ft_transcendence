@@ -33,7 +33,6 @@ import Column from "primevue/column";
 import Chip from "primevue/chip";
 import UnblockUserButton from "@/components/UnblockUserButton.vue";
 import { useToast } from "primevue/usetoast";
-import { useStore } from "vuex";
 
 const socket: Socket | undefined = inject("socketioInstance");
 
@@ -46,7 +45,6 @@ socket?.on("postBlockedList", (blockedList) => {
   blockedUsers.value = blockedList;
 });
 
-const store = useStore();
 const toast = useToast();
 socket?.on(
   "unblockUserResult",
@@ -58,8 +56,6 @@ socket?.on(
         detail: `Error unblocking user`,
         life: 2000,
       });
-    } else {
-      store.commit("removeBlockedUsersFromStore", response);
     }
   }
 );

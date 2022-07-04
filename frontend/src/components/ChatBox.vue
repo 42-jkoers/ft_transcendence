@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="allowedToViewContent">
     <Panel v-if="currentRoom" :header="currentRoom.displayName">
       <template
         v-if="currentRoom && currentRoom.isDirectMessage === false"
@@ -54,9 +54,17 @@
     </div>
     <div id="input-field" class="card col-12">
       <UnblockUserButton
-        v-if="currentRoom && isUserBlocked"
+        v-if="
+          currentRoom && currentRoom.isDirectMessage && isBlockingSecondUser
+        "
         :userId="currentRoom.secondParticipant[0]"
       />
+      <div
+        v-else-if="currentRoom && isBlocked"
+        class="flex justify-content-center align-items-center"
+      >
+        <h3>You cannot send messages to {{ currentRoom.displayName }}</h3>
+      </div>
       <div
         v-else-if="currentRoom && currentRoom.userRole !== undefined"
         class="flex justify-content-center align-items-strech flex-wrap card-container"
@@ -84,6 +92,9 @@
         class="p-button-outlined p-button-info mt-6"
       />
     </div>
+  </div>
+  <div v-else>
+    <Panel> </Panel>
   </div>
 </template>
 
@@ -124,6 +135,9 @@ const computedIsUserBanned = computed(() => {
   return isUserBanned.value;
 });
 
+const isBlockingSecondUser = ref<boolean>(false);
+const isBlocked = ref<boolean>(false);
+
 const displayUserProfileDialog = ref(false);
 const displayAddUsersDialogue = ref(false);
 
@@ -132,10 +146,27 @@ const currentRoom = computed(() =>
   store.state.roomsInfo.find((room) => room.name === route.params.roomName)
 );
 
+const allowedToViewContent = ref<boolean>(false);
 onMounted(() => {
   socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
 
+  socket.on("noPermissionToViewContent", () => {
+    allowedToViewContent.value = false;
+    console.log("No Permission To View Content event");
+  });
+
   socket.on("getMessagesForRoom", (response) => {
+    if (currentRoom.value) {
+      switch (currentRoom.value.userRole) {
+        case UserRole.BLOCKING:
+          isBlockingSecondUser.value = true;
+          break;
+        case UserRole.BLOCKED:
+          isBlocked.value = true;
+          break;
+      }
+    }
+    allowedToViewContent.value = true;
     messages.value = response;
   }); //recevies the existing messages from backend when room is first loaded
 
@@ -179,7 +210,10 @@ const ShowSuccessfulRoleChangeMessage = (
     [UserRole.OWNER]: "is the chat room owner now",
     [UserRole.ADMIN]: "is the chat room administrator now",
     [UserRole.VISITOR]: "is set as a chat room visitor",
-    [UserRole.BLOCKED]: "is blocked from chat",
+    [UserRole.BANNED]: "is banned from chat",
+    [UserRole.MUTED]: "is muted",
+    [UserRole.BLOCKED]: "is blocked",
+    [UserRole.BLOCKING]: "is blocking",
   };
 
   toast.add({
@@ -194,7 +228,10 @@ const ShowRoleChangeFailMessage = (newUserRole: UserRole, username: string) => {
     [UserRole.OWNER]: "set as the room owner",
     [UserRole.ADMIN]: "set as the room administrator",
     [UserRole.VISITOR]: "set as the room visitor",
+    [UserRole.BANNED]: "banned from chat",
+    [UserRole.MUTED]: "muted",
     [UserRole.BLOCKED]: "blocked from chat",
+    [UserRole.BLOCKING]: "is blocking",
   };
 
   toast.add({
@@ -213,24 +250,6 @@ socket.on("userRoleChanged", (newUserRole: UserRole, username: string) => {
   ShowSuccessfulRoleChangeMessage(newUserRole, username);
 });
 
-function isBlockedUser(roomDisplayName: string): boolean {
-  const isUserBlocked: boolean = store.state.blockedUsers.find(
-    (blockedUser: { id: number; username: string }) =>
-      blockedUser.username === roomDisplayName
-  );
-  return isUserBlocked ? true : false;
-}
-
-const isUserBlocked = ref<boolean>(false);
-
-const addBlockedUsersToStore = (response: { id: number; username: string }) =>
-  store.commit("addBlockedUsersToStore", response);
-
-const removeBlockedUsersFromStore = (response: {
-  id: number;
-  username: string;
-}) => store.commit("removeBlockedUsersFromStore", response);
-
 socket.on(
   "blockUserResult",
   (response: { id: number; username: string } | undefined) => {
@@ -242,8 +261,7 @@ socket.on(
         life: 2000,
       });
     } else {
-      addBlockedUsersToStore(response);
-      isUserBlocked.value = true;
+      isBlockingSecondUser.value = true;
     }
   }
 );
@@ -259,8 +277,7 @@ socket?.on(
         life: 2000,
       });
     } else {
-      removeBlockedUsersFromStore(response);
-      isUserBlocked.value = false;
+      isBlockingSecondUser.value = false;
     }
   }
 );
