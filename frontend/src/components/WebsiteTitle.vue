@@ -27,15 +27,15 @@ const isUserLogIn = computed(() => {
   return storeUser.state.isAuthenticated;
 });
 
-socket.on("startGame", (response) => {
+socket.on("readyToStartGame", (username, gameId) => {
   confirm.require({
-    message: "Start game now",
+    message: "Start game with " + username + " now?",
     header: "Confirmation",
     icon: "pi pi-exclamation-triangle",
     accept: () => {
       router.push({
         name: "Play",
-        params: { id: response },
+        params: { id: gameId },
       });
     },
   });

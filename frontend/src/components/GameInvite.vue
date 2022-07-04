@@ -68,6 +68,13 @@ socket.on("errorGameInvite", (response) => {
   });
 });
 
+socket.on("startGame", (response) => {
+  router.push({
+    name: "Play",
+    params: { id: response },
+  });
+});
+
 function rejectInvite(id: number) {
   socket.emit("removeGameInvite", id);
 }
