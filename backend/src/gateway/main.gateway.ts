@@ -373,8 +373,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!userToBlock) {
 			socket.emit('blockUserResult', undefined);
 		}
-		console.log('userToBlockIdDto', userToBlockIdDto);
-		console.log('userToBlock', userToBlock);
 
 		const response = await this.blockedUsersService.blockUser(
 			userToBlock,
@@ -422,10 +420,23 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		if (response) {
 			this.handleGetBlockedUsersList(socket);
-			await this.subscribeUsersToDirectMessageRoom(
-				userDto.id,
-				socket.data.user.id,
-			);
+			const directMessageRoom =
+				await this.subscribeUsersToDirectMessageRoom(
+					userDto.id,
+					socket.data.user.id,
+				);
+			if (directMessageRoom) {
+				await this.roomService.setUserRole(
+					userToUnblock.id,
+					directMessageRoom.id,
+					UserRole.VISITOR,
+				);
+				await this.roomService.setUserRole(
+					socket.data.user.id,
+					directMessageRoom.id,
+					UserRole.VISITOR,
+				);
+			}
 			socket.emit('unblockUserResult', response);
 		}
 	}
@@ -441,7 +452,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		return dmRoom;
 	}
 
-	async subscribeUsersToDirectMessageRoom(user1Id: number, user2Id: number) {
+	async subscribeUsersToDirectMessageRoom(
+		user1Id: number,
+		user2Id: number,
+	): Promise<RoomEntity> {
 		const dmRoom = await this.roomService.findDMRoom(user1Id, user2Id);
 		if (dmRoom) {
 			this.server.socketsLeave(dmRoom.name);
@@ -450,6 +464,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				.in(user2Id.toString())
 				.socketsJoin(dmRoom.name);
 		}
+		return dmRoom;
 	}
 
 	@SubscribeMessage('banUserFromRoom')
