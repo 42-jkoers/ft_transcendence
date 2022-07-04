@@ -97,6 +97,7 @@ import { useConfirm } from "primevue/useconfirm";
 import ProgressSpinner from "primevue/progressspinner";
 import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";
+import { useToast } from "primevue/usetoast";
 
 const socket: Socket | undefined = inject("socketioInstance");
 const router = useRouter();
@@ -110,6 +111,7 @@ const store = useStore();
 onMounted(() => {
   if (!isRoomsListReady.value && store.state.roomsInfo.length > 0) {
     rooms.value = store.state.roomsInfo;
+    isRoomsListReady.value = true;
   }
 });
 
@@ -130,6 +132,16 @@ socket?.on("room deleted", (deletedRoomName) => {
     });
   }
   socket.emit("getPublicRoomsList");
+});
+
+const toast = useToast();
+socket?.on("CannotSendDirectMessage", (user) => {
+  toast.add({
+    severity: "error",
+    summary: "Error",
+    detail: `You cannot send messages to ${user.username}`,
+    life: 2000,
+  });
 });
 
 socket?.on("postPrivateChatRoom", (dMRoom) => {
@@ -171,7 +183,7 @@ const menuItems = ref([
   {
     label: "Leave chat",
     // icon: "pi pi-exclamation-circle",
-    visible: () => !isInRoom(selectedRoom.value.userRole),
+    visible: () => isInRoom(selectedRoom.value.userRole),
     disabled: () =>
       selectedRoom.value.name === "general" ||
       selectedRoom.value.isDirectMessage,
@@ -180,8 +192,8 @@ const menuItems = ref([
   {
     label: "Join chat",
     // icon: "pi pi-exclamation-circle",
-    visible: () => isInRoom(selectedRoom.value.userRole),
-    command: () => socket?.emit("addUserToRoom", selectedRoom.value.name),
+    visible: () => !isInRoom(selectedRoom.value.userRole),
+    command: () => handleAddToRoom(selectedRoom.value),
   },
 ]);
 
@@ -191,7 +203,7 @@ const onRowContextMenu = (event) => {
 const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
 const isInRoom = (userRole: UserRole | undefined) =>
-  userRole === undefined ? true : false;
+  userRole === undefined ? false : true;
 
 const confirm = useConfirm();
 
@@ -213,6 +225,15 @@ const confirmLeave = (room) => {
       }
     },
   });
+};
+
+const handleAddToRoom = (room) => {
+  if (room.protected && room.userRole === undefined) {
+    selectedRoomName.value = room.name;
+    displayPasswordDialog.value = true;
+  } else {
+    socket?.emit("addUserToRoom", room.name);
+  }
 };
 
 const editRoomPrivacy = () => {

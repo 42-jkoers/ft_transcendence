@@ -164,7 +164,6 @@ function saveNewRoom() {
   ) {
     newRoom.password = null;
   }
-  console.log("newRoom data sent from the client: ", newRoom);
   socket.emit("createRoom", newRoom);
   isValidRoomName.value = true;
 }
