@@ -70,6 +70,9 @@ export class User {
 	@ManyToMany(() => User)
 	@JoinTable({ joinColumn: { name: 'sender_id' } })
 	sentGameInvites: User[];
+
+	@Column({ default: false })
+	public isGaming: boolean;
 }
 
 export default User;

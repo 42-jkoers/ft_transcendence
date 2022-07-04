@@ -229,6 +229,7 @@ Tutorial:
 	- add sentGameInvites relation in User Entity
 	- add add/remove/get game invite in gameService
 	- build Game Invite component in frontend
+	- build reject/accept game invite logic
 	
 **************************
 **		Next To To				**

@@ -488,16 +488,16 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server.emit('getGameList', gameList);
 	}
 
-	@UseFilters(new WsExceptionFilter())
-	@UsePipes(new ValidationPipe({ transform: true }))
-	@SubscribeMessage('createGame')
-	async createGame(
-		@MessageBody() game: CreateGameDto,
-		@ConnectedSocket() client: Socket,
-	) {
-		await this.gameService.createGame(game, client.data.user);
-		await this.sendGameList();
-	}
+	// @UseFilters(new WsExceptionFilter())
+	// @UsePipes(new ValidationPipe({ transform: true }))
+	// @SubscribeMessage('createGame')
+	// async createGame(
+	// 	@MessageBody() game: CreateGameDto,
+	// 	@ConnectedSocket() client: Socket,
+	// ) {
+	// 	await this.gameService.createGame(game, client.data.user);
+	// 	await this.sendGameList();
+	// }
 
 	@SubscribeMessage('getGameList')
 	async getGameList() {
@@ -543,11 +543,43 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const receiver = await this.userService.getUserByID(
 			client.data.user.id,
 		);
-		// TODO: check error (if user doesn't exist);
-		const updateInviteList = await this.gameService.removeGameInvite(
-			sender,
-			receiver,
+		if (!sender || !receiver) {
+			client.emit('errorGameInvite', 'User does not exist.');
+		} else {
+			const updateInviteList = await this.gameService.removeGameInvite(
+				sender,
+				receiver,
+			);
+			client.emit('getReceivedGameInvites', updateInviteList);
+		}
+	}
+
+	@SubscribeMessage('acceptGameInvite')
+	async acceptGameInvite(
+		@MessageBody() senderId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const sender = await this.userService.getUserByID(senderId);
+		const receiver = await this.userService.getUserByID(
+			client.data.user.id,
 		);
-		client.emit('getReceivedGameInvites', updateInviteList);
+		// step 1: to check if any user is already in a game
+		if (!sender || !receiver) {
+			client.emit('errorGameInvite', 'User does not exist.');
+		} else if (sender.isGaming || receiver.isGaming) {
+			client.emit('errorGameInvite', 'User is already in a game.');
+		} else {
+			// step 2: create game
+			const createdGame = await this.gameService.createGame(
+				sender,
+				receiver,
+			);
+			// step 3: refresh WatchGame list (for all clients)
+			await this.sendGameList();
+			// step 4: refresh Invite list (for current client)
+			const updateInviteList =
+				await this.gameService.getReceivedGameInvites(receiver.id);
+			client.emit('getReceivedGameInvites', updateInviteList);
+		}
 	}
 }

@@ -18,15 +18,36 @@ export class GameService {
 		private userRepository: Repository<User>,
 	) {}
 
-	async createGame(
-		payload: CreateGameDto,
-		creator: User,
-	): Promise<GameEntity | null> {
-		const newGame: GameEntity = this.gameEntityRepository.create(payload);
-		newGame.name = payload.name;
-		newGame.players = [creator];
-		console.log('created game', newGame);
+	// async createGame(
+	// 	payload: CreateGameDto,
+	// 	creator: User,
+	// ): Promise<GameEntity | null> {
+	// 	const newGame: GameEntity = this.gameEntityRepository.create(payload);
+	// 	newGame.name = payload.name;
+	// 	newGame.players = [creator];
+	// 	console.log('created game', newGame);
+	// 	await this.gameEntityRepository.save(newGame);
+	// 	return newGame;
+	// }
+
+	async createGame(sender: User, receiver: User): Promise<GameEntity> {
+		// step 1: create game entity
+		const newGame = this.gameEntityRepository.create();
+		newGame.name = sender.username + ' vs ' + receiver.username;
+		newGame.players = [sender, receiver];
 		await this.gameEntityRepository.save(newGame);
+		// step 2: set both user isGaming = true
+		await this.userRepository.update(sender.id, {
+			isGaming: true,
+		});
+		await this.userRepository.update(receiver.id, {
+			isGaming: true,
+		});
+		await this.userRepository.save(sender);
+		// step 3: remove both user from game invite.
+		await this.removeGameInvite(sender, receiver);
+		await this.removeGameInvite(receiver, sender);
+		// TODO: step 4: remove both user from queue.
 		return newGame;
 	}
 

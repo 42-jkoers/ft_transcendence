@@ -43,7 +43,9 @@ import Column from "primevue/column";
 import Chip from "primevue/chip";
 import { Socket } from "socket.io-client";
 import storeUser from "@/store";
+import { useToast } from "primevue/usetoast";
 
+const toast = useToast();
 const socket: Socket = inject("socketioInstance");
 const receivedInviteList = ref();
 
@@ -55,11 +57,20 @@ socket.on("getReceivedGameInvites", (response) => {
   receivedInviteList.value = response;
 });
 
+socket.on("errorGameInvite", (response) => {
+  toast.add({
+    severity: "error",
+    summary: "Error",
+    detail: response,
+    life: 2000,
+  });
+});
+
 function rejectInvite(id: number) {
   socket.emit("removeGameInvite", id);
 }
 
 function acceptInvite(id: number) {
-  console.log(">> you accepted");
+  socket.emit("acceptGameInvite", id);
 }
 </script>
