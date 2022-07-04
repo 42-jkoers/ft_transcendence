@@ -88,26 +88,26 @@ import { useConfirm } from "primevue/useconfirm";
 import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";
 
-const socket: Socket = inject("socketioInstance");
+const socket: Socket | undefined = inject("socketioInstance");
 const router = useRouter();
 const route = useRoute();
 
 const rooms = ref();
 setTimeout(() => {
-  socket.emit("getPublicRoomsList");
+  socket?.emit("getPublicRoomsList");
 }, 120); // FIXME: find a better solution?
 
 const store = useStore();
-const updateRoomsList = (roomsList: Room[]) =>
-  store.commit("updateRoomsList", roomsList);
+const updateRoomsListInStore = (roomsList: Room[]) =>
+  store.commit("updateRoomsListInStore", roomsList);
 
-socket.on("postPublicRoomsList", (response) => {
+socket?.on("postPublicRoomsList", (response) => {
   console.log("rooms from server", response);
   rooms.value = response;
-  updateRoomsList(response);
+  updateRoomsListInStore(response);
 });
 
-socket.on("room deleted", (deletedRoomName) => {
+socket?.on("room deleted", (deletedRoomName) => {
   if (deletedRoomName === route.params.roomName) {
     router.push({
       name: "Chat",
@@ -116,7 +116,7 @@ socket.on("room deleted", (deletedRoomName) => {
   socket.emit("getPublicRoomsList");
 });
 
-socket.on("postPrivateChatRoom", (dMRoom) => {
+socket?.on("postPrivateChatRoom", (dMRoom) => {
   router.push({
     name: "ChatBox",
     params: { roomName: dMRoom.name },
@@ -165,7 +165,7 @@ const menuItems = ref([
     label: "Join chat",
     // icon: "pi pi-exclamation-circle",
     visible: () => isInRoom(selectedRoom.value.userRole),
-    command: () => socket.emit("addUserToRoom", selectedRoom.value.name),
+    command: () => socket?.emit("addUserToRoom", selectedRoom.value.name),
   },
 ]);
 
@@ -185,7 +185,7 @@ const confirmLeave = (room) => {
     header: "Leave Confirmation",
     icon: "pi pi-info-circle",
     accept: () => {
-      socket.emit("removeUserFromRoom", room.value.name);
+      socket?.emit("removeUserFromRoom", room.value.name);
       if (
         route.params.roomName === room.value.name &&
         (room.value.visibility === RoomVisibility.PRIVATE ||

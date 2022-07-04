@@ -37,6 +37,7 @@ const MenuItems = ref([
             },
             { label: "Settings", to: { name: "UserSetting" } },
             { label: "Friends", to: { name: "Friends" } },
+            { label: "Blocked", to: { name: "Blocked" } },
             { label: "Log Out", to: { name: "LogOut" } },
           ],
         },

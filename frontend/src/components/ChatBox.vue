@@ -53,8 +53,12 @@
       </div>
     </div>
     <div id="input-field" class="card col-12">
+      <UnblockUserButton
+        v-if="currentRoom && isUserBlocked"
+        :userId="currentRoom.secondParticipant[0]"
+      />
       <div
-        v-if="currentRoom && currentRoom.userRole !== undefined"
+        v-else-if="currentRoom && currentRoom.userRole !== undefined"
         class="flex justify-content-center align-items-strech flex-wrap card-container"
       >
         <InputText
@@ -102,6 +106,8 @@ import Panel from "primevue/panel";
 import Chip from "primevue/chip";
 import ContextMenu from "primevue/contextmenu";
 import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
+import UnblockUserButton from "./UnblockUserButton.vue";
 
 const socket: Socket = inject("socketioInstance");
 const messages = ref<Array<MessageI>>([]);
@@ -147,6 +153,10 @@ onUnmounted(() => {
   socket.off("messageAdded"); //to prevent multiple event binding in every rerender
 });
 
+socket.on("NoPermissionToAddMessage", () => {
+  console.log("No permission event caught");
+}); //TODO: do we need to handle this?
+
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   if (input.value) {
@@ -190,19 +200,70 @@ const ShowRoleChangeFailMessage = (newUserRole: UserRole, username: string) => {
   toast.add({
     severity: "error",
     summary: "Error",
-    detail: `${username} has left the room and cannot be ${userRoleMessage[newUserRole]}`,
+    detail: `${username} cannot be ${userRoleMessage[newUserRole]}`,
     life: 2000,
   });
 };
 
 socket.on("setUserRoleFail", (newUserRole: UserRole, username: string) => {
   ShowRoleChangeFailMessage(newUserRole, username);
-  console.log(`${username} is not in this chat room any more`);
 });
 
 socket.on("userRoleChanged", (newUserRole: UserRole, username: string) => {
   ShowSuccessfulRoleChangeMessage(newUserRole, username);
 });
+
+function isBlockedUser(roomDisplayName: string): boolean {
+  const isUserBlocked: boolean = store.state.blockedUsers.find(
+    (blockedUser: { id: number; username: string }) =>
+      blockedUser.username === roomDisplayName
+  );
+  return isUserBlocked ? true : false;
+}
+
+const isUserBlocked = ref<boolean>(false);
+
+const addBlockedUsersToStore = (response: { id: number; username: string }) =>
+  store.commit("addBlockedUsersToStore", response);
+
+const removeBlockedUsersFromStore = (response: {
+  id: number;
+  username: string;
+}) => store.commit("removeBlockedUsersFromStore", response);
+
+socket.on(
+  "blockUserResult",
+  (response: { id: number; username: string } | undefined) => {
+    if (!response) {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: `Error blocking the user`,
+        life: 2000,
+      });
+    } else {
+      addBlockedUsersToStore(response);
+      isUserBlocked.value = true;
+    }
+  }
+);
+
+socket?.on(
+  "unblockUserResult",
+  (response: { id: number; username: string } | undefined) => {
+    if (!response) {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: `Error unblocking user`,
+        life: 2000,
+      });
+    } else {
+      removeBlockedUsersFromStore(response);
+      isUserBlocked.value = false;
+    }
+  }
+);
 
 const addUserToRoom = () => {
   socket.emit("addUserToRoom", route.params.roomName);
@@ -221,6 +282,19 @@ function onChipRightClick(user: UserProfileI) {
   clickedUser.value = user;
   menu.value.show(event);
 } //shows ContextMenu when UserChip is right clicked and reassigns the ID value
+const confirm = useConfirm();
+
+const confirmBlockUser = () => {
+  confirm.require({
+    message: `Are you sure you want to block ${clickedUser.value.username}?`,
+    header: `Block ${clickedUser.value.username}?`,
+    icon: "pi pi-info-circle",
+    acceptClass: "p-button-danger",
+    accept: () => {
+      socket.emit("blockUser", { id: computedID.value });
+    },
+  });
+};
 
 const menu = ref();
 const items = ref([
@@ -274,6 +348,11 @@ const items = ref([
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value),
     command: () => muteUserInRoom(),
+  },
+  {
+    label: "Block",
+    visible: () => isNotYourself(computedID.value),
+    command: () => confirmBlockUser(),
   },
 ]);
 
