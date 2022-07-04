@@ -59,14 +59,6 @@ socket.on("getReceivedGameInvites", (response) => {
   receivedInviteList.value = response;
 });
 
-socket.on("startGame", (response) => {
-  // TODO: countdown?
-  router.push({
-    name: "Play",
-    params: { id: response },
-  });
-});
-
 socket.on("errorGameInvite", (response) => {
   toast.add({
     severity: "error",
