@@ -183,7 +183,7 @@ const menuItems = ref([
   {
     label: "Leave chat",
     // icon: "pi pi-exclamation-circle",
-    visible: () => !isInRoom(selectedRoom.value.userRole),
+    visible: () => isInRoom(selectedRoom.value.userRole),
     disabled: () =>
       selectedRoom.value.name === "general" ||
       selectedRoom.value.isDirectMessage,
@@ -192,7 +192,7 @@ const menuItems = ref([
   {
     label: "Join chat",
     // icon: "pi pi-exclamation-circle",
-    visible: () => isInRoom(selectedRoom.value.userRole),
+    visible: () => !isInRoom(selectedRoom.value.userRole),
     command: () => socket?.emit("addUserToRoom", selectedRoom.value.name),
   },
 ]);
@@ -203,7 +203,7 @@ const onRowContextMenu = (event) => {
 const isOwner = (userRole: UserRole | undefined) =>
   userRole === 0 ? true : false;
 const isInRoom = (userRole: UserRole | undefined) =>
-  userRole === undefined ? true : false;
+  userRole === undefined ? false : true;
 
 const confirm = useConfirm();
 
