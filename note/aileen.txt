@@ -230,6 +230,7 @@ Tutorial:
 	- add add/remove/get game invite in gameService
 	- build Game Invite component in frontend
 	- build reject/accept game invite logic
+	- set User Status 'Gaming' in ProfileCard
 	
 **************************
 **		Next To To				**

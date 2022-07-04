@@ -4,4 +4,5 @@ export default interface UserProfileI {
   avatar: string;
   socketCount: number;
   twoFactor: boolean;
+  isGaming: boolean;
 }

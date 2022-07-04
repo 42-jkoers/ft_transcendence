@@ -37,13 +37,10 @@ export class GameService {
 		newGame.players = [sender, receiver];
 		await this.gameEntityRepository.save(newGame);
 		// step 2: set both user isGaming = true
-		await this.userRepository.update(sender.id, {
-			isGaming: true,
-		});
-		await this.userRepository.update(receiver.id, {
-			isGaming: true,
-		});
+		sender.isGaming = true;
 		await this.userRepository.save(sender);
+		receiver.isGaming = true;
+		await this.userRepository.save(receiver);
 		// step 3: remove both user from game invite.
 		await this.removeGameInvite(sender, receiver);
 		await this.removeGameInvite(receiver, sender);
