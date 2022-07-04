@@ -187,16 +187,24 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server
 			.to(secondUserId.toString())
 			.emit('postPublicRoomsList', roomsList);
-		await this.getPublicRoomsList(client);
+		await this.handleGetPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
-	async getPublicRoomsList(client) {
+	async handleGetPublicRoomsList(socket) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+
 		const roomsList = await this.roomService.getPublicRoomsList(
-			client.data.user.id,
+			socket.data.user.id,
 		);
 		this.server
-			.to(client.data.user.id.toString())
+			.to(socket.data.user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
 	}
 
@@ -251,7 +259,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomToUpdate.name,
 		);
 		await this.roomService.updateRoomPassword(room, roomToUpdate.password);
-		await this.getPublicRoomsList(client);
+		await this.handleGetPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('addUserToRoom')
@@ -268,7 +276,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			UserRole.VISITOR,
 		);
 		client.join(room.name);
-		await this.getPublicRoomsList(client);
+		await this.handleGetPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('removeUserFromRoom')
@@ -294,7 +302,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				client.emit('room deleted', roomName);
 			}
 		} else {
-			await this.getPublicRoomsList(client);
+			await this.handleGetPublicRoomsList(client);
 		}
 	}
 
@@ -417,7 +425,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomAndUser,
 			client.data.user.id,
 		);
-		await this.getPublicRoomsList(client);
+		await this.handleGetPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('isUserBanned')
@@ -479,7 +487,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		for (const socket of sockets) {
 			socket.join(room.name); //joins each socket of the added user to this room
 			console.log(`${user.username} has been added to ${room.name}`);
-			await this.getPublicRoomsList(socket); //to refresh rooms in added users page
+			await this.handleGetPublicRoomsList(socket); //to refresh rooms in added users page
 		}
 	}
 
