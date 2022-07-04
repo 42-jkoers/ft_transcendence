@@ -44,10 +44,12 @@ import Chip from "primevue/chip";
 import { Socket } from "socket.io-client";
 import storeUser from "@/store";
 import { useToast } from "primevue/usetoast";
+import { useRouter } from "vue-router";
 
 const toast = useToast();
-const socket: Socket = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 const receivedInviteList = ref();
+const router = useRouter();
 
 setTimeout(() => {
   socket.emit("getReceivedGameInvites", storeUser.state.user.id);
@@ -55,6 +57,14 @@ setTimeout(() => {
 
 socket.on("getReceivedGameInvites", (response) => {
   receivedInviteList.value = response;
+});
+
+socket.on("startGame", (response) => {
+  // TODO: countdown?
+  router.push({
+    name: "Play",
+    params: { id: response },
+  });
 });
 
 socket.on("errorGameInvite", (response) => {
