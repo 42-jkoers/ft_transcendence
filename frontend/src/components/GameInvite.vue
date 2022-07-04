@@ -1,11 +1,6 @@
 <template>
   <div>
-    <DataTable
-      :value="receivedInviteList"
-      responsiveLayout="scroll"
-      :scrollable="true"
-      scrollHeight="60vh"
-    >
+    <DataTable :value="receivedInviteList" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
           <h3>Pending Invite List</h3>
@@ -17,6 +12,24 @@
             :label="slotProps.data.username"
             :image="slotProps.data.avatar"
           />
+        </template>
+      </Column>
+      <Column header="Action" headerStyle="width: 40%">
+        <template #body="slotProps">
+          <div>
+            <Button
+              class="p-button-rounded p-button-text p-button-outlined"
+              v-tooltip.top="'Reject invite'"
+              icon="pi pi-times"
+              @click="rejectInvite(slotProps.data.id)"
+            />
+            <Button
+              class="p-button-rounded p-button-text p-button-outlined"
+              v-tooltip.top="'Play Game'"
+              icon="pi pi-check"
+              @click="acceptInvite(slotProps.data.id)"
+            />
+          </div>
         </template>
       </Column>
     </DataTable>
@@ -42,8 +55,11 @@ socket.on("getReceivedGameInvites", (response) => {
   receivedInviteList.value = response;
 });
 
-function watchGame(gameId: number) {
-  // TODO: to add route to game
-  console.log(">> you will watch game: ", gameId);
+function rejectInvite(id: number) {
+  socket.emit("removeGameInvite", id);
+}
+
+function acceptInvite(id: number) {
+  console.log(">> you accepted");
 }
 </script>

@@ -54,7 +54,7 @@ export class GameService {
 		}
 		sender.sentGameInvites.push(receiver);
 		await this.userRepository.save(sender);
-		console.log('added invite: ', sender.sentGameInvites);
+		return sender.sentGameInvites;
 	}
 
 	async removeGameInvite(sender: UserI, receiver: UserI) {
@@ -64,11 +64,11 @@ export class GameService {
 				return request.id !== receiver.id;
 			});
 			await this.userRepository.save(sender);
+			return sender.sentGameInvites;
 		}
 	}
 
 	async getReceivedGameInvites(userId: number): Promise<UserI[]> {
-		console.log('>> in getReceivedGameInvites: id = ', userId);
 		const gameInvites = await this.userRepository
 			.createQueryBuilder('user')
 			.leftJoinAndSelect('user.sentGameInvites', 'invite')

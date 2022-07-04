@@ -522,6 +522,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const receiver = await this.userService.getUserByID(receiverId);
 		// TODO: check error (if user doesn't exist);
 		await this.gameService.addGameInvite(sender, receiver);
+		// TODO: to emit to receiver's update list?
 	}
 
 	@SubscribeMessage('getReceivedGameInvites')
@@ -529,9 +530,24 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() userId: number,
 		@ConnectedSocket() client: Socket,
 	) {
-		console.log('>> user id is: ', userId);
 		const response = await this.gameService.getReceivedGameInvites(userId);
 		client.emit('getReceivedGameInvites', response);
-		console.log('>> send list: ', response);
+	}
+
+	@SubscribeMessage('removeGameInvite')
+	async removeGameInvite(
+		@MessageBody() senderId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const sender = await this.userService.getUserByID(senderId);
+		const receiver = await this.userService.getUserByID(
+			client.data.user.id,
+		);
+		// TODO: check error (if user doesn't exist);
+		const updateInviteList = await this.gameService.removeGameInvite(
+			sender,
+			receiver,
+		);
+		client.emit('getReceivedGameInvites', updateInviteList);
 	}
 }

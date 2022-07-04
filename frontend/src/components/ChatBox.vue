@@ -312,8 +312,13 @@ const items = ref([
     visible: () => store.state.user.id !== computedID.value,
     command: () => {
       socket.emit("sendGameInvite", computedID.value);
+      toast.add({
+        severity: "info",
+        detail: "Game invitation sent.",
+        life: 2000,
+      });
     },
-  }, //TODO add a View to play game when we have it ready
+  },
   {
     separator: true,
   },
