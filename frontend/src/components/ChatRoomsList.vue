@@ -231,8 +231,9 @@ const handleAddToRoom = (room) => {
   if (room.protected && room.userRole === undefined) {
     selectedRoomName.value = room.name;
     displayPasswordDialog.value = true;
+  } else {
+    socket?.emit("addUserToRoom", room.name);
   }
-  socket?.emit("addUserToRoom", room.name);
 };
 
 const editRoomPrivacy = () => {
