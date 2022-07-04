@@ -193,7 +193,7 @@ const menuItems = ref([
     label: "Join chat",
     // icon: "pi pi-exclamation-circle",
     visible: () => !isInRoom(selectedRoom.value.userRole),
-    command: () => socket?.emit("addUserToRoom", selectedRoom.value.name),
+    command: () => handleAddToRoom(selectedRoom.value),
   },
 ]);
 
@@ -225,6 +225,14 @@ const confirmLeave = (room) => {
       }
     },
   });
+};
+
+const handleAddToRoom = (room) => {
+  if (room.protected && room.userRole === undefined) {
+    selectedRoomName.value = room.name;
+    displayPasswordDialog.value = true;
+  }
+  socket?.emit("addUserToRoom", room.name);
 };
 
 const editRoomPrivacy = () => {
