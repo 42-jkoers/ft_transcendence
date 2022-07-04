@@ -235,6 +235,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('getGame')
 	async getGame(client: Socket, id: number) {
 		const game = this.gameService.findInPlayByID(id);
+		if (!game) return;
 		client.emit('getGame', game);
 		client.join(game.socketRoomID); // TODO: remove from room afterwards
 		console.log('getGame', id, game.socketRoomID);

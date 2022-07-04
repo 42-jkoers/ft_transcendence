@@ -157,7 +157,7 @@ export class GameService {
 		});
 	}
 
-	findInPlayByID(id: number): GameInPlay | null {
+	findInPlayByID(id: number): GameInPlay | undefined {
 		return inPlays.find((p) => p.id === id);
 	}
 
