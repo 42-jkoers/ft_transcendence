@@ -8,6 +8,7 @@ import {
 	Column,
 } from 'typeorm';
 
+// TODO: rename to GameHistory, or show that this game has been completed, and rename gameInPlay to game
 @Entity()
 export class GameEntity {
 	@PrimaryGeneratedColumn()

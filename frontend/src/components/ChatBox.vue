@@ -327,7 +327,15 @@ const items = ref([
     label: "Play pong",
     icon: "pi pi-fw pi-caret-right",
     visible: () => store.state.user.id !== computedID.value,
-  }, //TODO add a View to play game when we have it ready
+    command: () => {
+      socket.emit("sendGameInvite", computedID.value);
+      toast.add({
+        severity: "info",
+        detail: "Game invitation sent.",
+        life: 2000,
+      });
+    },
+  },
   {
     separator: true,
   },

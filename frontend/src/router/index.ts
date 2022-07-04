@@ -15,6 +15,7 @@ import FriendsView from "@/views/FriendsView.vue";
 import BlockedUsersView from "@/views/BlockedUsersView.vue";
 import EnableTwoFactorView from "@/views/EnableTwoFactorView.vue";
 import GameView from "@/views/GameView.vue";
+import PlayView from "@/views/PlayView.vue";
 import TurnOnTwoFactorView from "@/views/TurnOnTwoFactorView.vue";
 
 const routes: Array<RouteRecordRaw> = [
@@ -103,6 +104,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/game",
     name: "Game",
     component: GameView,
+  },
+  {
+    path: "/play/:id",
+    name: "Play",
+    component: PlayView,
   },
 ];
 

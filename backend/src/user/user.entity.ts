@@ -66,6 +66,13 @@ export class User {
 	@ManyToMany(() => GameEntity, (game) => game.players)
 	@JoinTable() // the user is the owner of the game
 	games: GameEntity[];
+
+	@ManyToMany(() => User)
+	@JoinTable({ joinColumn: { name: 'sender_id' } })
+	sentGameInvites: User[];
+
+	@Column({ default: false })
+	public isGaming: boolean;
 }
 
 export default User;
