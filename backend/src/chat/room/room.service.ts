@@ -430,7 +430,7 @@ export class RoomService {
 		await this.roomEntityRepository.save(room);
 	}
 
-	async checIfkMutedAndMuteDeadlineAndRemoveMute(
+	async checkIfMutedAndMuteDeadlineAndRemoveMute(
 		userId: number,
 		roomName: string,
 	) {
