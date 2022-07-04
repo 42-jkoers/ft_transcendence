@@ -12,7 +12,6 @@ const storeUser = createStore({
       twoFactorEnabled: false,
     },
     roomsInfo: [],
-    blockedUsers: [] as { id: number; username: string }[],
   },
   getters: {
     isAuthenticated(state) {
@@ -40,18 +39,6 @@ const storeUser = createStore({
     },
     updateRoomsListInStore(state, updatedRoomsList) {
       state.roomsInfo = updatedRoomsList;
-    },
-    addBlockedUsersToStore(
-      state,
-      blockedUser: { id: number; username: string }
-    ) {
-      state.blockedUsers.push(blockedUser);
-    },
-    removeBlockedUsersFromStore(
-      state,
-      blockedUser: { id: number; username: string }
-    ) {
-      state.blockedUsers.filter((user) => user.id !== blockedUser.id);
     },
   },
   actions: {

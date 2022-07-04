@@ -138,10 +138,26 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('getMessagesForRoom')
-	async getMessagesForRoom(client: Socket, roomName: string) {
+	async getMessagesForRoom(socket: Socket, roomName: string) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+		if (
+			!(await this.roomService.isUserAllowedToViewContent(
+				socket.data.user.id,
+				roomName,
+			))
+		) {
+			socket.emit('noPermissionToViewContent');
+			return;
+		}
 		const response: MessageI[] =
 			await this.messageService.findMessagesForRoom(roomName);
-		client.emit('getMessagesForRoom', response);
+		socket.emit('getMessagesForRoom', response);
 	}
 
 	@UseFilters(new WsExceptionFilter())
@@ -163,18 +179,31 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('createPrivateChatRoom')
 	async handleCreatePrivateChatRoom(
 		@MessageBody() dMRoom: directMessageDto,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
+		if (
+			await this.blockedUsersService.isDirectMessagingBlocked(
+				socket.data.user.id,
+				dMRoom.userIds[0],
+			)
+		) {
+			const user = await this.userService.findByID(dMRoom.userIds[0]);
+			socket.emit('CannotSendDirectMessage', {
+				id: user.id,
+				username: user.username,
+			});
+			return;
+		}
 		const createdDMRoom = await this.roomService.createPrivateChatRoom(
 			dMRoom,
-			client.data.user.id,
+			socket.data.user.id,
 		);
-		client.emit('postPrivateChatRoom', createdDMRoom);
+		socket.emit('postPrivateChatRoom', createdDMRoom);
 
 		// fetching sockets of both users inside the private room
 		const secondUserId = dMRoom.userIds[0];
 		const sockets = await this.server
-			.in(client.data.user.id.toString())
+			.in(socket.data.user.id.toString())
 			.in(secondUserId.toString())
 			.fetchSockets();
 		for (const socket of sockets) {
@@ -187,17 +216,23 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server
 			.to(secondUserId.toString())
 			.emit('postPublicRoomsList', roomsList);
-		await this.getPublicRoomsList(client);
+		await this.handleGetPublicRoomsList(socket);
 	}
 
 	@SubscribeMessage('getPublicRoomsList')
-	async getPublicRoomsList(client) {
+	async handleGetPublicRoomsList(socket) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+
 		const roomsList = await this.roomService.getPublicRoomsList(
-			client.data.user.id,
+			socket.data.user.id,
 		);
-		this.server
-			.to(client.data.user.id.toString())
-			.emit('postPublicRoomsList', roomsList);
+		socket.emit('postPublicRoomsList', roomsList);
 	}
 
 	@UsePipes(new ValidationPipe({ transform: true }))
@@ -251,7 +286,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomToUpdate.name,
 		);
 		await this.roomService.updateRoomPassword(room, roomToUpdate.password);
-		await this.getPublicRoomsList(client);
+		await this.handleGetPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('addUserToRoom')
@@ -268,7 +303,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			UserRole.VISITOR,
 		);
 		client.join(room.name);
-		await this.getPublicRoomsList(client);
+		await this.handleGetPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('removeUserFromRoom')
@@ -294,7 +329,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				client.emit('room deleted', roomName);
 			}
 		} else {
-			await this.getPublicRoomsList(client);
+			await this.handleGetPublicRoomsList(client);
 		}
 	}
 
@@ -324,22 +359,47 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() userToBlockIdDto: UserIdDto,
 		@ConnectedSocket() socket: Socket,
 	) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+
 		const userToBlock: UserI = await this.userService.findByID(
 			userToBlockIdDto.id,
 		);
 		if (!userToBlock) {
 			socket.emit('blockUserResult', undefined);
 		}
+
 		const response = await this.blockedUsersService.blockUser(
 			userToBlock,
 			socket.data.user,
 		);
-		await this.unsubscribeUsersFromDirectMessageRoom(
-			userToBlockIdDto.id,
-			socket.data.user.id,
-		);
+		const directMessageRoom =
+			await this.unsubscribeUsersFromDirectMessageRoom(
+				userToBlockIdDto.id,
+				socket.data.user.id,
+			);
+		// if a user is blocked after dm room has been created it will live but users' roles will be reset for better UX
+		// if it hasn't been created before this step is skipped
+		if (directMessageRoom) {
+			await this.roomService.setUserRole(
+				userToBlock.id,
+				directMessageRoom.id,
+				UserRole.BLOCKED,
+			);
+			await this.roomService.setUserRole(
+				socket.data.user.id,
+				directMessageRoom.id,
+				UserRole.BLOCKING,
+			);
+		}
 		// response will be either with blocked user data or undefined if the user is already in the blocked list
 		socket.emit('blockUserResult', response);
+		await this.handleGetPublicRoomsList(socket);
 	}
 
 	@UsePipes(new ValidationPipe({ transform: true }))
@@ -360,10 +420,23 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		if (response) {
 			this.handleGetBlockedUsersList(socket);
-			await this.subscribeUsersToDirectMessageRoom(
-				userDto.id,
-				socket.data.user.id,
-			);
+			const directMessageRoom =
+				await this.subscribeUsersToDirectMessageRoom(
+					userDto.id,
+					socket.data.user.id,
+				);
+			if (directMessageRoom) {
+				await this.roomService.setUserRole(
+					userToUnblock.id,
+					directMessageRoom.id,
+					UserRole.VISITOR,
+				);
+				await this.roomService.setUserRole(
+					socket.data.user.id,
+					directMessageRoom.id,
+					UserRole.VISITOR,
+				);
+			}
 			socket.emit('unblockUserResult', response);
 		}
 	}
@@ -376,9 +449,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (dmRoom) {
 			this.server.socketsLeave(dmRoom.name);
 		}
+		return dmRoom;
 	}
 
-	async subscribeUsersToDirectMessageRoom(user1Id: number, user2Id: number) {
+	async subscribeUsersToDirectMessageRoom(
+		user1Id: number,
+		user2Id: number,
+	): Promise<RoomEntity> {
 		const dmRoom = await this.roomService.findDMRoom(user1Id, user2Id);
 		if (dmRoom) {
 			this.server.socketsLeave(dmRoom.name);
@@ -387,6 +464,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				.in(user2Id.toString())
 				.socketsJoin(dmRoom.name);
 		}
+		return dmRoom;
 	}
 
 	@SubscribeMessage('banUserFromRoom')
@@ -417,7 +495,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomAndUser,
 			client.data.user.id,
 		);
-		await this.getPublicRoomsList(client);
+		await this.handleGetPublicRoomsList(client);
 	}
 
 	@SubscribeMessage('isUserBanned')
@@ -479,7 +557,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		for (const socket of sockets) {
 			socket.join(room.name); //joins each socket of the added user to this room
 			console.log(`${user.username} has been added to ${room.name}`);
-			await this.getPublicRoomsList(socket); //to refresh rooms in added users page
+			await this.handleGetPublicRoomsList(socket); //to refresh rooms in added users page
 		}
 	}
 
