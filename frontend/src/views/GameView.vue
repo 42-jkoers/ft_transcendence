@@ -7,12 +7,12 @@
       <GameInvite />
     </div>
     <div class="col-4">
-      <JoinGameQueue />
+      <JoinGameQueueManual />
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import JoinGameQueue from "@/components/JoinGameQueue.vue";
+import JoinGameQueueManual from "@/components/JoinGameQueueManual.vue";
 import WatchGame from "@/components/WatchGame.vue";
 import GameInvite from "@/components/GameInvite.vue";
 </script>
