@@ -4,12 +4,22 @@
     <br />
     Please do not leave this page.
   </h3>
+  <div>
+    <Button
+      class="p-button-rounded p-button-text p-button-outlined"
+      label="Leave Match Making"
+      v-tooltip.top="'Once click, you will no long be matched.'"
+      icon="pi pi-sign-out"
+      @click="leaveRoom()"
+    />
+  </div>
 </template>
 <script setup lang="ts">
 import { Socket } from "socket.io-client";
-import { inject, onMounted } from "vue";
+import { inject, onBeforeUnmount, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "primevue/usetoast";
+import Button from "primevue/button";
 
 const toast = useToast();
 const router = useRouter();
@@ -25,12 +35,20 @@ onMounted(() => {
   socket.emit("matchPlayer");
 });
 
-socket.on("errorMatchPlayer", (response) => {
+socket.on("errorMatchMaking", (response) => {
   toast.add({
     severity: "error",
     summary: "Error",
     detail: response,
     life: 2000,
   });
+  leaveRoom();
 });
+
+function leaveRoom() {
+  socket.emit("quitQueue");
+  router.push({
+    name: "Game",
+  });
+}
 </script>

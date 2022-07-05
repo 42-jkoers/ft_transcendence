@@ -694,18 +694,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	@SubscribeMessage('joinPlayerInQueue')
-	async joinPlayerInQueue(
-		@MessageBody() playerId: number,
-		@ConnectedSocket() client: Socket,
-	) {
-		try {
-			this.createGame(client.data.user.id, playerId);
-		} catch (error) {
-			client.emit('errorGameQueue', error.message);
-		}
-	}
-
 	// TODO: ValidationPipe
 	@SubscribeMessage('getGame')
 	async getGame(client: Socket, id: number) {
@@ -732,59 +720,36 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.gameService.playerUpdate(socket.data.user.id, pos);
 	}
 
-	async broadcastGameQueue() {
-		const queue = await this.gameService.getGameQueue();
-		console.log('>> ', queue);
-		this.server.emit('getGameQueue', queue);
-	}
-
-	@SubscribeMessage('joinQueue')
-	async joinQueue(client: Socket) {
-		const user = await this.userService.getUserByID(client.data.user.id);
-		switch (user.gameStatus) {
-			case GameStatusType.IDEL:
-				await this.gameService.joinQueue(user.id);
-				await this.broadcastGameQueue();
-				client.emit('joinQueue');
-				return;
-			case GameStatusType.QUEUE:
-				client.emit('errorGameQueue', 'User is already in queue.');
-				return;
-			case GameStatusType.PLAYING:
-				client.emit('errorGameQueue', 'User is already in a game.');
-				return;
-		}
-	}
-
 	@SubscribeMessage('quitQueue')
 	async quitQueue(client: Socket) {
 		const user = await this.userService.getUserByID(client.data.user.id);
 		switch (user.gameStatus) {
 			case GameStatusType.IDEL:
-				client.emit('errorGameQueue', 'User is not in queue.');
+				client.emit('errorMatchMaking', 'User is not in queue.');
 				return;
 			case GameStatusType.QUEUE:
 				await this.gameService.quitQueue(user.id);
-				await this.broadcastGameQueue();
 				return;
 			case GameStatusType.PLAYING:
-				client.emit('errorGameQueue', 'User is already in a game.');
+				client.emit('errorMatchMaking', 'User is already in a game.');
 				return;
 		}
 	}
 
-	@SubscribeMessage('getGameQueue')
-	async getGameQueue(client: Socket) {
-		const queue = await this.gameService.getGameQueue();
-		client.emit('getGameQueue', queue);
-	}
-
 	@SubscribeMessage('matchPlayer')
 	async matchPlayer(client: Socket) {
+		// if user is already in queue
+		const user = await this.userService.getUserByID(client.data.user.id);
+		if (user.gameStatus === GameStatusType.QUEUE) {
+			return;
+		}
+		// if user is not in quee
 		const queue = await this.gameService.getGameQueue();
 		if (queue.length === 0) {
+			// if no one is waiting, user will join the queue
 			await this.gameService.joinQueue(client.data.user.id);
 		} else {
+			// if there is already someone waiting, pick the first player in queue
 			const component = queue[0];
 			try {
 				// step 1: create game
@@ -799,7 +764,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					.to(component.id.toString())
 					.emit('startGame', createdGame.id);
 			} catch (error) {
-				client.emit('errorMatchPlayer', error.message);
+				client.emit('errorMatchMaking', error.message);
 			}
 		}
 	}

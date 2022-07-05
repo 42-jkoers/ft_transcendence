@@ -242,6 +242,7 @@ Tutorial:
 	- add GameQueue data table in Game View
 	- in gateway, split createGame from 'acceptGameInvit', add 'joinPlayInQueue'
 	- fine-tune titles for game component
+	- change joinQueueManual to joinQueueAuto, add WaitingRoom
 	
 
 **************************

@@ -1,7 +1,7 @@
 <template>
   <div style="margin-top: 5%">
     <Button
-      label="Join Waiting Room"
+      label="Find A Match"
       class="p-button-rounded p-button-text p-button-outlined"
       @click="joinWaitingRoom"
     ></Button>

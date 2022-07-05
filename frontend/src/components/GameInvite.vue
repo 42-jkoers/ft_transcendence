@@ -81,5 +81,6 @@ function rejectInvite(id: number) {
 
 function acceptInvite(id: number) {
   socket.emit("acceptGameInvite", id);
+  router.push({ name: "GameWaitingRoom" });
 }
 </script>
