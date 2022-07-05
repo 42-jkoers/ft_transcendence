@@ -59,7 +59,9 @@ socket.on("errorMatchMaking", (response) => {
 });
 
 function leaveRoom() {
-  socket.emit("quitQueue");
+  if (matchType.value === "auto") {
+    socket.emit("quitQueue");
+  }
   router.push({
     name: "Game",
   });

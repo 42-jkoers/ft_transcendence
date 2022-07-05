@@ -80,7 +80,7 @@ Tutorial:
 (Fri) 2022-05-20
 	- Wrap Login to a component
 	- setup Menu bar 
-	- prote all route except for "/" and "/login"
+	- prote all route except for '/' and '/login'
 	- Remove router-link on app, add website title
 	- Improve un-authorized page
 
@@ -243,6 +243,7 @@ Tutorial:
 	- in gateway, split createGame from 'acceptGameInvit', add 'joinPlayInQueue'
 	- fine-tune titles for game component
 	- change joinQueueManual to joinQueueAuto, add WaitingRoom
+	- split GameWaitingRoom into 'invite' and 'auto', now 'startGame' will only be listend on GameWaitingRoom.
 
 TODO:
 	- improve invite process (now on GameInvite and WaitingRoom, there are duplicate 'startGame' event listener)

@@ -27,14 +27,17 @@ const isUserLogIn = computed(() => {
   return storeUser.state.isAuthenticated;
 });
 
-socket.on("readyToStartGame", (componentId, componentName) => {
+socket.on("matchGameInvite", (componentId, componentName) => {
   confirm.require({
     message: "Start game with " + componentName + " now?",
     header: "Confirmation",
     icon: "pi pi-exclamation-triangle",
     accept: () => {
-      socket.emit("matchGameInvite", componentId);
+      socket.emit("matchGameInviteSuccess", componentId);
       router.push({ name: "GameWaitingRoom", params: { type: "invite" } });
+    },
+    reject: () => {
+      socket.emit("matchGameInviteFail", componentId);
     },
   });
 });

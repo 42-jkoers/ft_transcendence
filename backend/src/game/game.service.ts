@@ -154,7 +154,6 @@ export class GameService {
 		const newGame = this.gameEntityRepository.create();
 		newGame.name = sender.username + ' vs ' + receiver.username;
 		newGame.players = [sender, receiver];
-
 		await this.gameEntityRepository.save(newGame);
 		const inPlay: GameInPlay = createGameInPlay(sender.id, newGame.id);
 		inPlays.push(inPlay);

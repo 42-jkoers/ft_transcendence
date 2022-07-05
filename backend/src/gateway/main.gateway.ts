@@ -677,17 +677,18 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() senderId: number,
 		@ConnectedSocket() client: Socket,
 	) {
+		this.removeGameInvite(senderId, client);
 		this.server
 			.to(senderId.toString())
 			.emit(
-				'readyToStartGame',
+				'matchGameInvite',
 				client.data.user.id,
 				client.data.user.username,
 			);
 	}
 
-	@SubscribeMessage('matchGameInvite')
-	async matchGameInvite(
+	@SubscribeMessage('matchGameInviteSuccess')
+	async matchGameInviteSuccess(
 		@MessageBody() receiverId: number,
 		@ConnectedSocket() client: Socket,
 	) {
@@ -703,7 +704,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server
 				.to(receiverId.toString())
 				.emit('getReceivedGameInvites', updateInviteList);
-			// step 4: notify the both user game is ready
+			// step 3: notify the both user game is ready
 			this.server
 				.to(receiverId.toString())
 				.to(client.data.user.id.toString())
@@ -711,6 +712,16 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		} catch (error) {
 			client.emit('errorMatchMaking', error.message);
 		}
+	}
+
+	@SubscribeMessage('matchGameInviteFail')
+	async matchGameInviteFail(
+		@MessageBody() receiverId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		this.server
+			.to(receiverId.toString())
+			.emit('errorMatchMaking', 'The other player quit the game.');
 	}
 
 	// TODO: ValidationPipe
