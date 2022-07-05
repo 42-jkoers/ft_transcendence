@@ -152,7 +152,6 @@ onMounted(() => {
 
   socket.on("noPermissionToViewContent", () => {
     allowedToViewContent.value = false;
-    console.log("No Permission To View Content event");
   });
 
   socket.on("getMessagesForRoom", (response) => {
@@ -164,10 +163,14 @@ onMounted(() => {
         case UserRole.BLOCKED:
           isBlocked.value = true;
           break;
+        case UserRole.BANNED:
+          allowedToViewContent.value = false;
+          break;
+        default:
+          allowedToViewContent.value = true;
+          messages.value = response;
       }
     }
-    allowedToViewContent.value = true;
-    messages.value = response;
   }); //recevies the existing messages from backend when room is first loaded
 
   socket.on("messageAdded", (message: MessageI) => {
@@ -175,7 +178,7 @@ onMounted(() => {
       messages.value.unshift(message);
   }); //place the new message on top of the messages arrayy
 
-  socket.on("isUserBanned", (response) => {
+  socket.on("userBanFromRoomResult", (response) => {
     isUserBanned.value = response;
   });
 });
@@ -209,16 +212,16 @@ const ShowSuccessfulRoleChangeMessage = (
   const userRoleMessage = {
     [UserRole.OWNER]: "is the chat room owner now",
     [UserRole.ADMIN]: "is the chat room administrator now",
-    [UserRole.VISITOR]: "is set as a chat room visitor",
-    [UserRole.BANNED]: "is banned from chat",
+    [UserRole.VISITOR]: "is added to the chat room",
+    [UserRole.BANNED]: `is banned from chat`,
     [UserRole.MUTED]: "is muted",
     [UserRole.BLOCKED]: "is blocked",
     [UserRole.BLOCKING]: "is blocking",
   };
 
   toast.add({
-    severity: "success",
-    summary: "Success",
+    severity: "info",
+    summary: "",
     detail: `${username} ${userRoleMessage[newUserRole]}`,
     life: 2000,
   });
@@ -387,24 +390,12 @@ const muteUserInRoom = () => {
     roomName: route.params.roomName,
     durationMinute: 1, //TODO change after discussing with teammates
   });
-  toast.add({
-    severity: "success",
-    summary: "Success",
-    detail: "User has been muted",
-    life: 1000,
-  });
 };
 
 const banUserFromRoom = () => {
   socket.emit("banUserFromRoom", {
     userId: computedID.value,
     roomName: route.params.roomName,
-  });
-  toast.add({
-    severity: "success",
-    summary: "Success",
-    detail: "User has been banned from room",
-    life: 1000,
   });
 };
 
@@ -414,8 +405,8 @@ const unBanUserFromRoom = () => {
     roomName: route.params.roomName,
   });
   toast.add({
-    severity: "success",
-    summary: "Success",
+    severity: "info",
+    summary: "",
     detail: "User has been unbanned",
     life: 1000,
   });
