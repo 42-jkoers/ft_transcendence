@@ -677,30 +677,39 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() senderId: number,
 		@ConnectedSocket() client: Socket,
 	) {
+		this.server
+			.to(senderId.toString())
+			.emit(
+				'readyToStartGame',
+				client.data.user.id,
+				client.data.user.username,
+			);
+	}
+
+	@SubscribeMessage('matchGameInvite')
+	async matchGameInvite(
+		@MessageBody() receiverId: number,
+		@ConnectedSocket() client: Socket,
+	) {
 		try {
 			// step 1: create game
 			const createdGame = await this.createGame(
 				client.data.user.id,
-				senderId,
+				receiverId,
 			);
-			// step 2: refresh Invite list (for current client)
+			// step 2: refresh Invite list (for receiver)
 			const updateInviteList =
-				await this.gameService.getReceivedGameInvites(
-					client.data.user.id,
-				);
-			client.emit('getReceivedGameInvites', updateInviteList);
-			// step 3: notify active user to start game
-			client.emit('startGame', createdGame.id);
-			// step 4: notify the other user game is ready
+				await this.gameService.getReceivedGameInvites(receiverId);
 			this.server
-				.to(senderId.toString())
-				.emit(
-					'readyToStartGame',
-					client.data.user.username,
-					createdGame.id,
-				);
+				.to(receiverId.toString())
+				.emit('getReceivedGameInvites', updateInviteList);
+			// step 4: notify the both user game is ready
+			this.server
+				.to(receiverId.toString())
+				.to(client.data.user.id.toString())
+				.emit('startGame', createdGame.id);
 		} catch (error) {
-			client.emit('errorGameInvite', error.message);
+			client.emit('errorMatchMaking', error.message);
 		}
 	}
 

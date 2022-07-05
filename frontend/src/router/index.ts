@@ -112,7 +112,7 @@ const routes: Array<RouteRecordRaw> = [
     component: PlayView,
   },
   {
-    path: "/game-waiting-room",
+    path: "/game-waiting-room/:type",
     name: "GameWaitingRoom",
     component: GameWaitingRoom,
   },

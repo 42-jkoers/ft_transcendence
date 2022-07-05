@@ -18,6 +18,6 @@ const router = useRouter();
 const socket: Socket = inject("socketioInstance") as Socket;
 
 function joinWaitingRoom() {
-  router.push({ name: "GameWaitingRoom" });
+  router.push({ name: "GameWaitingRoom", params: { type: "auto" } });
 }
 </script>
