@@ -707,20 +707,43 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async broadcastGameQueue() {
 		const queue = await this.gameService.getGameQueue();
+		console.log('>> ', queue);
 		this.server.emit('getGameQueue', queue);
 	}
 
 	@SubscribeMessage('joinQueue')
 	async joinQueue(client: Socket) {
-		await this.gameService.joinQueue(client.data.user.id);
-		client.emit('joinQueue');
-		this.broadcastGameQueue();
+		const user = await this.userService.getUserByID(client.data.user.id);
+		switch (user.gameStatus) {
+			case GameStatusType.IDEL:
+				await this.gameService.joinQueue(user.id);
+				await this.broadcastGameQueue();
+				client.emit('joinQueue');
+				return;
+			case GameStatusType.QUEUE:
+				client.emit('errorGameQueue', 'User is already in queue.');
+				return;
+			case GameStatusType.PLAYING:
+				client.emit('errorGameQueue', 'User is already in a game.');
+				return;
+		}
 	}
 
 	@SubscribeMessage('quitQueue')
 	async quitQueue(client: Socket) {
-		await this.gameService.quitQueue(client.data.user.id);
-		this.broadcastGameQueue();
+		const user = await this.userService.getUserByID(client.data.user.id);
+		switch (user.gameStatus) {
+			case GameStatusType.IDEL:
+				client.emit('errorGameQueue', 'User is not in queue.');
+				return;
+			case GameStatusType.QUEUE:
+				await this.gameService.quitQueue(user.id);
+				await this.broadcastGameQueue();
+				return;
+			case GameStatusType.PLAYING:
+				client.emit('errorGameQueue', 'User is already in a game.');
+				return;
+		}
 	}
 
 	@SubscribeMessage('getGameQueue')

@@ -57,12 +57,6 @@ import { useRouter } from "vue-router";
 const toast = useToast();
 const socket: Socket = inject("socketioInstance") as Socket;
 const gameQueue = ref();
-// toast.add({
-//   severity: "error",
-//   summary: "Error",
-//   detail: response,
-//   life: 2000,
-// });
 
 socket.on("joinQueue", () => {
   console.log("joined successfully!");
@@ -77,6 +71,15 @@ setTimeout(() => {
     });
   });
 }, 100);
+
+socket.on("errorGameQueue", (response) => {
+  toast.add({
+    severity: "error",
+    summary: "Error",
+    detail: response,
+    life: 2000,
+  });
+});
 
 function joinQueue() {
   socket.emit("joinQueue");
