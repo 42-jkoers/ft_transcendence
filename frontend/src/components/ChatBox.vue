@@ -355,7 +355,7 @@ const items = ref([
       }),
   },
   {
-    label: "Ban user",
+    label: "Ban from room",
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value) &&
@@ -363,7 +363,7 @@ const items = ref([
     command: () => banUserFromRoom(),
   },
   {
-    label: "Unban user",
+    label: "Unban",
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value) &&
@@ -371,7 +371,7 @@ const items = ref([
     command: () => unBanUserFromRoom(),
   },
   {
-    label: "Mute user",
+    label: "Mute for 1 hour",
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value),
@@ -388,7 +388,7 @@ const muteUserInRoom = () => {
   socket.emit("muteUserInRoom", {
     id: computedID.value,
     roomName: route.params.roomName,
-    durationMinute: 1, //TODO change after discussing with teammates
+    durationMinute: 60, //TODO change after discussing with teammates
   });
 };
 
