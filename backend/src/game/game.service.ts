@@ -16,6 +16,7 @@ import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
 import { UserI } from 'src/user/user.interface';
+import { GameStatusType } from './gamestatus.enum';
 
 // This is a in memory db of all the games in play
 // It is not in the postgres database because in a normal game there will be 60 updates per second
@@ -156,10 +157,10 @@ export class GameService {
 		await this.gameEntityRepository.save(newGame);
 		const inPlay: GameInPlay = createGameInPlay(sender.id, newGame.id);
 		inPlays.push(inPlay);
-		// step 2: set both user isGaming = true
-		sender.isGaming = true;
+		// step 2: set both user game status = playing
+		sender.gameStatus = GameStatusType.PLAYING;
 		await this.userRepository.save(sender);
-		receiver.isGaming = true;
+		receiver.gameStatus = GameStatusType.PLAYING;
 		await this.userRepository.save(receiver);
 		// step 3: remove both user from game invite.
 		await this.removeGameInvite(sender, receiver);

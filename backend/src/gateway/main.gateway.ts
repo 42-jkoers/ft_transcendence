@@ -32,6 +32,7 @@ import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
 import { UserIdDto } from 'src/user/dto';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
+import { GameStatusType } from 'src/game/gamestatus.enum';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -651,7 +652,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		// step 1: to check if any user is already in a game
 		if (!sender || !receiver) {
 			client.emit('errorGameInvite', 'User does not exist.');
-		} else if (sender.isGaming || receiver.isGaming) {
+		} else if (
+			sender.gameStatus === GameStatusType.PLAYING ||
+			receiver.gameStatus === GameStatusType.PLAYING
+		) {
 			client.emit('errorGameInvite', 'User is already in a game.');
 		} else {
 			// step 2: create game

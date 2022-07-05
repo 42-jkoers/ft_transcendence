@@ -19,7 +19,7 @@
           <div v-if="isSafe">
             <UserStatus
               :socketCount="user?.socketCount"
-              :isGaming="user?.isGaming"
+              :gameStatus="user?.gameStatus"
             />
             <h4>(to be add) game record</h4>
           </div>
