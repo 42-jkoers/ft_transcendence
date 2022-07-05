@@ -8,7 +8,7 @@
     >
       <template #header>
         <div class="flex justify-content-center align-items-center">
-          <h3>Game List</h3>
+          <h3>Ongoing Games</h3>
         </div>
       </template>
       <Column header="GameName" headerStyle="width: 40%">

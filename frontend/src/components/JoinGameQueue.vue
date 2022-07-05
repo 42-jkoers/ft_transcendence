@@ -3,7 +3,7 @@
     <DataTable :value="gameQueue" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
-          <h3>Players In Queue</h3>
+          <h3>Players Waiting To Start Game</h3>
         </div>
       </template>
       <Column header="Player" headerStyle="width: 40%">
@@ -19,7 +19,7 @@
           <div>
             <Button
               class="p-button-rounded p-button-text p-button-outlined"
-              v-tooltip.top="'Join Player'"
+              v-tooltip.top="'Start game with this player'"
               icon="pi pi-play"
               @click="joinPlayer(slotProps.data.id)"
             />
@@ -28,16 +28,16 @@
       </Column>
     </DataTable>
   </div>
-  <div>
+  <div style="margin-top: 5%">
     <Button
-      label="Join Queue"
+      label="Join Waiting Room"
       class="p-button-rounded p-button-text p-button-outlined"
       @click="joinQueue"
     ></Button>
   </div>
-  <div>
+  <div style="margin-top: 5%">
     <Button
-      label="Quit Queue"
+      label="Leave Waiting Room"
       class="p-button-rounded p-button-text p-button-outlined"
       @click="quitQueue"
     />
@@ -52,7 +52,6 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Chip from "primevue/chip";
 import storeUser from "@/store";
-import { useRouter } from "vue-router";
 
 const toast = useToast();
 const socket: Socket = inject("socketioInstance") as Socket;

@@ -3,7 +3,7 @@
     <DataTable :value="receivedInviteList" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
-          <h3>Pending Invite List</h3>
+          <h3>Pending Game Invites</h3>
         </div>
       </template>
       <Column header="Invite from" headerStyle="width: 40%">
