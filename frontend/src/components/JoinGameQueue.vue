@@ -59,7 +59,12 @@ const socket: Socket = inject("socketioInstance") as Socket;
 const gameQueue = ref();
 
 socket.on("joinQueue", () => {
-  console.log("joined successfully!");
+  toast.add({
+    severity: "info",
+    summary: "Please wait",
+    detail: "You are now in the queue. You will be matched soon.",
+    life: 2000,
+  });
 });
 
 socket.emit("getGameQueue");
