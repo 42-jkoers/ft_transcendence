@@ -72,7 +72,9 @@ socket.emit("getGameQueue");
 
 setTimeout(() => {
   socket.on("getGameQueue", (response) => {
-    gameQueue.value = response;
+    gameQueue.value = response.filter((user) => {
+      return user.id !== storeUser.state.user.id;
+    });
   });
 }, 100);
 

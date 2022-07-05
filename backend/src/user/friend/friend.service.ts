@@ -64,7 +64,7 @@ export class FriendService {
 	async removeFriend(user: UserI, friendToRemove: UserI) {
 		const friends = await this.getFriends(user.id);
 		if (friends) {
-			user.friends = friends.((friend) => {
+			user.friends = friends.filter((friend) => {
 				return friend.id !== friendToRemove.id;
 			});
 			await this.userRepository.save(user);

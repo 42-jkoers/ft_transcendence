@@ -704,15 +704,22 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.gameService.playerUpdate(socket.data.user.id, pos);
 	}
 
+	async broadcastGameQueue() {
+		const queue = await this.gameService.getGameQueue();
+		this.server.emit('getGameQueue', queue);
+	}
+
 	@SubscribeMessage('joinQueue')
 	async joinQueue(client: Socket) {
 		await this.gameService.joinQueue(client.data.user.id);
 		client.emit('joinQueue');
+		this.broadcastGameQueue();
 	}
 
 	@SubscribeMessage('quitQueue')
 	async quitQueue(client: Socket) {
 		await this.gameService.quitQueue(client.data.user.id);
+		this.broadcastGameQueue();
 	}
 
 	@SubscribeMessage('getGameQueue')
