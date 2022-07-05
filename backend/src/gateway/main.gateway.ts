@@ -569,7 +569,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	async sendGameList() {
+	async broadcastGameList() {
 		const gameList = await this.gameService.getGameList();
 		this.server.emit('getGameList', gameList);
 	}
@@ -582,12 +582,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	// 	@ConnectedSocket() client: Socket,
 	// ) {
 	// 	await this.gameService.createGame(game, client.data.user);
-	// 	await this.sendGameList();
+	// 	await this.broadcastGameList();
 	// }
 
 	@SubscribeMessage('getGameList')
-	async getGameList() {
-		await this.sendGameList();
+	async getGameList(@ConnectedSocket() client: Socket) {
+		const gameList = await this.gameService.getGameList();
+		client.emit('getGameList', gameList);
 	}
 
 	@SubscribeMessage('getUserProfile')
@@ -664,7 +665,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				receiver,
 			);
 			// step 3: refresh WatchGame list (for all clients)
-			await this.sendGameList();
+			await this.broadcastGameList();
 			// step 4: refresh Invite list (for current client)
 			const updateInviteList =
 				await this.gameService.getReceivedGameInvites(receiver.id);
