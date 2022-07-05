@@ -122,15 +122,6 @@ onMounted(() => {
     }
   });
 
-  socket.on("clientConnected", () => {
-    console.log("connected");
-    socket.emit("getGame", parseInt(route.params.id as string));
-
-    //   socket.emit("getUserType", route.params.id);
-    //   socket.on("getUserType", (type: string) => {
-    //     console.log("you are a", type);
-    //   });
-  });
-  socket.connect();
+  socket.emit("getGame", parseInt(route.params.id as string));
 });
 </script>

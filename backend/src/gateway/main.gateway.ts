@@ -687,6 +687,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const updateInviteList =
 				await this.gameService.getReceivedGameInvites(receiver.id);
 			client.emit('getReceivedGameInvites', updateInviteList);
+			// step 5: notify current user to start game
+			client.emit('startGame', createdGame.id);
+			// step 6: notify the other user game is ready
+			this.server
+				.to(senderId.toString())
+				.emit('readyToStartGame', receiver.username, createdGame.id);
 		}
 	}
 

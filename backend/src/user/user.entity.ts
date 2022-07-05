@@ -63,6 +63,7 @@ export class User {
 
 	@Column({ nullable: true })
 	public twoFactorAuthSecret?: string;
+
 	@ManyToMany(() => GameEntity, (game) => game.players)
 	@JoinTable() // the user is the owner of the game
 	games: GameEntity[];
