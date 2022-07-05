@@ -299,18 +299,27 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('addUserToRoom')
 	async handleAddUserToRoom(
 		@MessageBody() roomName: string,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
 		const room: RoomEntity = await this.roomService.findRoomByName(
 			roomName,
 		);
+		if (
+			await this.roomService.isUserBannedFromRoom(
+				socket.data.user.id,
+				room,
+			)
+		) {
+			socket.emit('noPermissionToViewContent');
+			return;
+		}
 		await this.roomService.addUserToRoom(
-			client.data.user.id,
+			socket.data.user.id,
 			room,
 			UserRole.VISITOR,
 		);
-		client.join(room.name);
-		await this.handleGetPublicRoomsList(client);
+		socket.join(room.name);
+		await this.handleGetPublicRoomsList(socket);
 	}
 
 	@SubscribeMessage('removeUserFromRoom')
@@ -501,31 +510,32 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() roomAndUser: RoomAndUserDTO,
 		@ConnectedSocket() socket: Socket,
 	) {
-		if (!socket.data.user) {
-			const user: UserI = await this.authService.getUserFromCookie(
-				socket.handshake.headers.cookie,
-			);
-			socket.data.user = user;
-		}
-		const user: UserI = await this.userService.findByID(
-			socket.data.user.id,
+		const user: UserI = await this.userService.findByID(roomAndUser.userId);
+		const room = await this.roomService.findRoomByName(
+			roomAndUser.roomName,
 		);
-		if (!user) {
+		if (!user || !room) {
 			socket.emit('banUserResult', undefined);
 		}
 		await this.roomService.banUserFromRoom(
-			roomAndUser,
+			user.id,
+			room,
 			socket.data.user.id,
 		);
+
 		// response will be either with blocked user data or undefined if the user is already in the blocked list
-		socket.emit('banFromRoomResult', roomAndUser);
+
+		const sockets = await this.server.in(user.id.toString()).fetchSockets(); //fetches all connected sockets for this specific user
+		for (const socket of sockets) {
+			socket.leave(room.name);
+		}
 		//update roomslist for the banned user:
-		const roomsList = await this.roomService.getPublicRoomsList(
-			roomAndUser.userId,
-		);
+		const roomsList = await this.roomService.getPublicRoomsList(user.id);
 		this.server
-			.to(roomAndUser.userId.toString())
+			.to(user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
+		this.server.to(user.id.toString()).emit('noPermissionToViewContent');
+		socket.emit('userRoleChanged', UserRole.BANNED, user.username); // event-confirmation emitted to the owner/admin
 	}
 
 	@SubscribeMessage('unBanUserFromRoom')
@@ -541,11 +551,9 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomAndUser,
 			socket.data.user.id,
 		);
-		const roomsList = await this.roomService.getPublicRoomsList(
-			roomAndUser.userId,
-		);
+		const roomsList = await this.roomService.getPublicRoomsList(user.id);
 		this.server
-			.to(roomAndUser.userId.toString())
+			.to(user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
 	}
 
@@ -554,9 +562,14 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() roomAndUser: RoomAndUserDTO,
 		@ConnectedSocket() client: Socket,
 	) {
-		const isUserBanned = await this.roomService.isUserBanned(roomAndUser);
-		console.log('is banned ', isUserBanned);
-		client.emit('isUserBanned', isUserBanned);
+		const room = await this.roomService.findRoomByName(
+			roomAndUser.roomName,
+		);
+		const isBanned = await this.roomService.isUserBannedFromRoom(
+			roomAndUser.userId,
+			room,
+		);
+		client.emit('userBanFromRoomResult', isBanned);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')

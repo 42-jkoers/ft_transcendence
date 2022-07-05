@@ -293,7 +293,6 @@ export class RoomService {
 			.from(RoomEntity)
 			.where('id = :roomId', { roomId: room.id })
 			.execute();
-		// await this.roomEntityRepository.save;
 	}
 
 	// this function returns only one user if at least one is there, needed for finding out if room is empty
@@ -336,12 +335,13 @@ export class RoomService {
 			.createQueryBuilder('room')
 			// conditional 'join'; joins userToRooms if the condition 'userToRooms.userId = :userId' is true
 			// if user is not in the room leftjoin returns null and [] is empty
-			.leftJoinAndSelect(
+			.innerJoinAndSelect(
 				'room.userToRooms',
 				'userToRooms',
-				'userToRooms.userId = :userId',
+				'(userToRooms.userId = :userId and userToRooms.role != :banned)',
 				{
 					userId,
+					banned: UserRole.BANNED,
 				},
 			)
 			.where(
@@ -486,47 +486,50 @@ export class RoomService {
 		return true;
 	}
 
-	async banUserFromRoom(roomAndUser: RoomAndUserDTO, mutingUserId: number) {
-		const room = await this.findRoomByName(roomAndUser.roomName);
-		await this.userService.isOwnerOrAdmin(mutingUserId, room.id);
-		const banIndex = room.bannedUserIds.findIndex(
-			(element) => element == roomAndUser.userId,
+	async banUserFromRoom(
+		userId: number,
+		room: RoomEntity,
+		banningUserId: number,
+	) {
+		await this.userService.isOwnerOrAdmin(banningUserId, room.id);
+		const bannedUser = room.bannedUserIds.find(
+			(element) => element == userId,
 		);
 		//check if user is already banned
-		if (banIndex == -1) {
-			//remove banned user from room and delete room from user
-			await this.deleteUserRoomRelationship(roomAndUser.userId, room);
+		if (!bannedUser) {
+			// setting user role as banned
+			await this.setUserRole(userId, room.id, UserRole.BANNED);
 			// add user's id to banned users
-			room.bannedUserIds.push(roomAndUser.userId);
+			room.bannedUserIds.push(userId);
 			await this.roomEntityRepository.save(room);
-			console.log(room); //TODO remove after PR
-			return false;
 		}
-		return true;
 	}
 
 	async unBanUserFromRoom(roomAndUser: RoomAndUserDTO, mutingUserId: number) {
 		const room = await this.findRoomByName(roomAndUser.roomName);
 		await this.userService.isOwnerOrAdmin(mutingUserId, room.id);
+		//check if user is already banned
 		const banIndex = room.bannedUserIds.findIndex(
 			(element) => element == roomAndUser.userId,
 		);
-		//check if user is already banned
 		if (banIndex) {
-			// add user's id to banned users
 			room.bannedUserIds.splice(banIndex, 1);
 			await this.roomEntityRepository.save(room);
-			console.log(room); //TODO remove after PR
+			//setting user a visitor if he has not left the room, otherwise no action taken
+			if (await this.isUserInRoom(roomAndUser.userId, room.id)) {
+				await this.setUserRole(
+					roomAndUser.userId,
+					room.id,
+					UserRole.VISITOR,
+				);
+			}
 		}
 	}
 
-	async isUserBanned(roomAndUser: RoomAndUserDTO) {
-		const room = await this.findRoomByName(roomAndUser.roomName);
+	async isUserBannedFromRoom(userId: number, room: RoomEntity) {
 		const banIndex = room.bannedUserIds.findIndex(
-			(element) => element == roomAndUser.userId,
+			(element) => element == userId,
 		);
-		//check if user is already banned
-		if (banIndex == -1) return false;
-		else return true;
+		return banIndex === -1 ? false : true;
 	}
 }
