@@ -43,6 +43,29 @@ export class RoomService {
 			where: { name: roomName },
 		});
 	}
+	async findUserToRoomRelationship(
+		currentUserId: number,
+		roomId: number,
+	): Promise<UserToRoomEntity> {
+		const userToRoomEntity =
+			await this.userToroomEntityRepository.findOneOrFail({
+				where: {
+					userId: currentUserId,
+					roomId: roomId,
+				},
+			});
+		return userToRoomEntity;
+	}
+
+	async findRoomAdmin(selectedRoomId: number): Promise<UserToRoomEntity> {
+		const adminInRoom = await this.userToroomEntityRepository.findOne({
+			where: {
+				roomId: selectedRoomId,
+				role: UserRole.ADMIN,
+			},
+		});
+		return adminInRoom;
+	}
 
 	async findDMRoom(user1Id: number, user2Id: number): Promise<RoomEntity> {
 		const dmRoom = await getRepository(RoomEntity)
@@ -221,6 +244,14 @@ export class RoomService {
 			})
 			.execute();
 		await this.roomEntityRepository.save(room);
+	}
+
+	async setAdminAsOwner(room: RoomEntity) {
+		const admin = await this.findRoomAdmin(room.id);
+		if (admin) {
+			await this.setUserRole(admin.userId, room.id, UserRole.OWNER);
+		}
+		return admin;
 	}
 
 	async IsUserEligibleToSetRole(
