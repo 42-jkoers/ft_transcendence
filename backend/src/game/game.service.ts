@@ -17,6 +17,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
 import { UserI } from 'src/user/user.interface';
 import { GameStatusType } from './gamestatus.enum';
+import { queue } from 'rxjs';
 
 // This is a in memory db of all the games in play
 // It is not in the postgres database because in a normal game there will be 60 updates per second
@@ -280,5 +281,14 @@ export class GameService {
 		await this.userRepository.update(userId, {
 			gameStatus: GameStatusType.IDEL,
 		});
+	}
+
+	async getGameQueue(): Promise<UserI[]> {
+		const gameStatus = GameStatusType.QUEUE;
+		const queue = await this.userRepository
+			.createQueryBuilder('user')
+			.where('user.gameStatus = :gameStatus', { gameStatus })
+			.getMany();
+		return queue;
 	}
 }
