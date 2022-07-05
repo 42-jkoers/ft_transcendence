@@ -241,6 +241,8 @@ Tutorial:
 	- Change isGaming to GameStatus (enum with IDEL/QUEUE/PLAYING)
 	- add GameQueue data table in Game View
 	- in gateway, split createGame from 'acceptGameInvit', add 'joinPlayInQueue'
+	- fine-tune titles for game component
+	
 
 **************************
 **		Next To To				**

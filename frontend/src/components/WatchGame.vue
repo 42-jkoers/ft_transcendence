@@ -33,11 +33,11 @@ import { ref, inject } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-// import { useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { Socket } from "socket.io-client";
 
-const socket: Socket = inject("socketioInstance");
-// const router = useRouter();
+const socket: Socket = inject("socketioInstance") as Socket;
+const router = useRouter();
 const gameList = ref();
 
 setTimeout(() => {
@@ -49,7 +49,10 @@ socket.on("getGameList", (response) => {
 });
 
 function watchGame(gameId: number) {
-  // TODO: to add route to game
-  console.log(">> you will watch game: ", gameId);
+  // TODO: fix issue of no connection without refresh
+  router.push({
+    name: "Play",
+    params: { id: gameId },
+  });
 }
 </script>
