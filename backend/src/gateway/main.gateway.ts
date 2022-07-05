@@ -297,7 +297,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('addUserToRoom')
-	async addUserToRoom(
+	async handleAddUserToRoom(
 		@MessageBody() roomName: string,
 		@ConnectedSocket() client: Socket,
 	) {
@@ -487,7 +487,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	): Promise<RoomEntity> {
 		const dmRoom = await this.roomService.findDMRoom(user1Id, user2Id);
 		if (dmRoom) {
-			this.server.socketsLeave(dmRoom.name);
+			// sockets that are subscribed th the channels having their id name will also subscribe to the new roomname
 			this.server
 				.in(user1Id.toString())
 				.in(user2Id.toString())
@@ -499,32 +499,54 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('banUserFromRoom')
 	async banUserFromRoom(
 		@MessageBody() roomAndUser: RoomAndUserDTO,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
+		if (!socket.data.user) {
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const user: UserI = await this.userService.findByID(
-			client.data.user.id,
+			socket.data.user.id,
 		);
-		if (!user) console.log('exception'); //TODO throw exception
+		if (!user) {
+			socket.emit('banUserResult', undefined);
+		}
 		await this.roomService.banUserFromRoom(
 			roomAndUser,
-			client.data.user.id,
+			socket.data.user.id,
 		);
+		// response will be either with blocked user data or undefined if the user is already in the blocked list
+		socket.emit('banFromRoomResult', roomAndUser);
+		//update roomslist for the banned user:
+		const roomsList = await this.roomService.getPublicRoomsList(
+			roomAndUser.userId,
+		);
+		this.server
+			.to(roomAndUser.userId.toString())
+			.emit('postPublicRoomsList', roomsList);
 	}
 
 	@SubscribeMessage('unBanUserFromRoom')
 	async unBanUserFromRoom(
 		@MessageBody() roomAndUser: RoomAndUserDTO,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
 		const user: UserI = await this.userService.findByID(
-			client.data.user.id,
+			socket.data.user.id,
 		);
 		if (!user) console.log('exception'); //TODO throw exception
 		await this.roomService.unBanUserFromRoom(
 			roomAndUser,
-			client.data.user.id,
+			socket.data.user.id,
 		);
-		await this.handleGetPublicRoomsList(client);
+		const roomsList = await this.roomService.getPublicRoomsList(
+			roomAndUser.userId,
+		);
+		this.server
+			.to(roomAndUser.userId.toString())
+			.emit('postPublicRoomsList', roomsList);
 	}
 
 	@SubscribeMessage('isUserBanned')
