@@ -166,8 +166,6 @@ export class GameService {
 		// step 3: remove both user from game invite.
 		await this.removeGameInvite(sender, receiver);
 		await this.removeGameInvite(receiver, sender);
-		// TODO: step 4: remove both user from queue.
-		console.log('created game', newGame, inPlay);
 		return newGame;
 	}
 
@@ -244,7 +242,7 @@ export class GameService {
 	}
 
 	async removeGameInvite(sender: UserI, receiver: UserI) {
-		const sentGameInvites = await this.getReceivedGameInvites(sender.id);
+		const sentGameInvites = await this.getSentGameInvites(sender.id);
 		if (sentGameInvites) {
 			sender.sentGameInvites = sentGameInvites.filter((request) => {
 				return request.id !== receiver.id;

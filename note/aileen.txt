@@ -243,6 +243,9 @@ Tutorial:
 	- in gateway, split createGame from 'acceptGameInvit', add 'joinPlayInQueue'
 	- fine-tune titles for game component
 	- change joinQueueManual to joinQueueAuto, add WaitingRoom
+
+TODO:
+	- improve invite process (now on GameInvite and WaitingRoom, there are duplicate 'startGame' event listener)
 	
 
 **************************
