@@ -104,7 +104,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.data.user.id,
 		);
 		const isNotMutedOrDeadlinePassed =
-			await this.roomService.checIfkMutedAndMuteDeadlineAndRemoveMute(
+			await this.roomService.checkIfMutedAndMuteDeadlineAndRemoveMute(
 				user.id,
 				selectedRoom.name,
 			);
