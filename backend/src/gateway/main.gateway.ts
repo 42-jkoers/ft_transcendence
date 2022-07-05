@@ -703,4 +703,14 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async paddleUpdate(socket: Socket, pos: PaddleUpdateDto) {
 		await this.gameService.playerUpdate(socket.data.user.id, pos);
 	}
+
+	@SubscribeMessage('joinQueue')
+	async joinQueue(client: Socket) {
+		await this.gameService.joinQueue(client.data.user.id);
+		client.emit('joinQueue');
+	}
+	@SubscribeMessage('quitQueue')
+	async quitQueue(client: Socket) {
+		await this.gameService.quitQueue(client.data.user.id);
+	}
 }

@@ -231,7 +231,16 @@ Tutorial:
 	- build Game Invite component in frontend
 	- build reject/accept game invite logic
 	- set User Status 'Gaming' in ProfileCard
-	
+	- [Branch - start-game]
+		setup connection with PlayView router
+
+******************************************
+**				Branch - 	game_queue					**
+******************************************
+(Tue) 2022-07-05
+	- Change isGaming to GameStatus (enum with IDEL/QUEUE/PLAYING)
+	- 
+
 **************************
 **		Next To To				**
 **************************

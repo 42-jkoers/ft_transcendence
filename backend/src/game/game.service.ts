@@ -270,4 +270,15 @@ export class GameService {
 			.getOne();
 		return user.sentGameInvites;
 	}
+
+	async joinQueue(userId: number) {
+		await this.userRepository.update(userId, {
+			gameStatus: GameStatusType.QUEUE,
+		});
+	}
+	async quitQueue(userId: number) {
+		await this.userRepository.update(userId, {
+			gameStatus: GameStatusType.IDEL,
+		});
+	}
 }
