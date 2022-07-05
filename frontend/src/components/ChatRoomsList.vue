@@ -209,7 +209,10 @@ const confirm = useConfirm();
 
 const confirmLeave = (room) => {
   confirm.require({
-    message: "Are you sure you want to leave?",
+    message:
+      room.value.userRole === UserRole.OWNER
+        ? "You are the owner of this chat room. This room will be owned by another user. Do you still want to leave?"
+        : "Are you sure you want to leave?",
     header: "Leave Confirmation",
     icon: "pi pi-info-circle",
     accept: () => {
