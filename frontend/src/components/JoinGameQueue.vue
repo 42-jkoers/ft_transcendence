@@ -47,7 +47,7 @@
 import Button from "primevue/button";
 import { Socket } from "socket.io-client";
 import { useToast } from "primevue/usetoast";
-import { ref, inject } from "vue";
+import { ref, inject, onMounted } from "vue";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Chip from "primevue/chip";
@@ -67,15 +67,11 @@ socket.on("joinQueue", () => {
   });
 });
 
-socket.emit("getGameQueue");
-
-setTimeout(() => {
-  socket.on("getGameQueue", (response) => {
-    gameQueue.value = response.filter((user) => {
-      return user.id !== storeUser.state.user.id;
-    });
+socket.on("getGameQueue", (response) => {
+  gameQueue.value = response.filter((user) => {
+    return user.id !== storeUser.state.user.id;
   });
-}, 100);
+});
 
 socket.on("errorGameQueue", (response) => {
   toast.add({
@@ -84,6 +80,12 @@ socket.on("errorGameQueue", (response) => {
     detail: response,
     life: 2000,
   });
+});
+
+onMounted(() => {
+  setTimeout(() => {
+    socket.emit("getGameQueue");
+  }, 100);
 });
 
 function joinQueue() {
@@ -95,6 +97,6 @@ function quitQueue() {
 }
 
 function joinPlayer(id: number) {
-  console.log("join player: ", id);
+  socket.emit("joinPlayerInQueue", id);
 }
 </script>

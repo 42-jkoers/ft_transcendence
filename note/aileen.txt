@@ -240,6 +240,7 @@ Tutorial:
 (Tue) 2022-07-05
 	- Change isGaming to GameStatus (enum with IDEL/QUEUE/PLAYING)
 	- add GameQueue data table in Game View
+	- in gateway, split createGame from 'acceptGameInvit', add 'joinPlayInQueue'
 
 **************************
 **		Next To To				**

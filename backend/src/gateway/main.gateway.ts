@@ -641,41 +641,59 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	async createGame(user1Id: number, user2Id: number, user1Socket: Socket) {
+		const user1 = await this.userService.getUserByID(user1Id);
+		const user2 = await this.userService.getUserByID(user2Id);
+		// step 1: to check if any user is already in a game
+		if (!user1 || !user2) {
+			throw new Error('User does not exist.');
+		} else if (
+			user1.gameStatus === GameStatusType.PLAYING ||
+			user2.gameStatus === GameStatusType.PLAYING
+		) {
+			throw new Error('User is already in a game.');
+		} else {
+			// step 2: create game
+			const createdGame = await this.gameService.createGame(user1, user2);
+			// step 3: refresh WatchGame list (for all clients)
+			await this.broadcastGameList();
+			// step 4: notify active user to start game
+			user1Socket.emit('startGame', createdGame.id);
+			// step 5: notify the other user game is ready
+			this.server
+				.to(user2Id.toString())
+				.emit('readyToStartGame', user1.username, createdGame.id);
+		}
+	}
+
 	@SubscribeMessage('acceptGameInvite')
 	async acceptGameInvite(
 		@MessageBody() senderId: number,
 		@ConnectedSocket() client: Socket,
 	) {
-		const sender = await this.userService.getUserByID(senderId);
-		const receiver = await this.userService.getUserByID(
-			client.data.user.id,
-		);
-		// step 1: to check if any user is already in a game
-		if (!sender || !receiver) {
-			client.emit('errorGameInvite', 'User does not exist.');
-		} else if (
-			sender.gameStatus === GameStatusType.PLAYING ||
-			receiver.gameStatus === GameStatusType.PLAYING
-		) {
-			client.emit('errorGameInvite', 'User is already in a game.');
-		} else {
-			// step 2: create game
-			const createdGame = await this.gameService.createGame(
-				sender,
-				receiver,
-			);
-			// step 3: refresh WatchGame list (for all clients)
-			await this.broadcastGameList();
-			// step 4: refresh Invite list (for current client)
+		try {
+			// step 1: create game
+			this.createGame(client.data.user.id, senderId, client);
+			// step 2: refresh Invite list (for current client)
 			const updateInviteList =
-				await this.gameService.getReceivedGameInvites(receiver.id);
+				await this.gameService.getReceivedGameInvites(
+					client.data.user.id,
+				);
 			client.emit('getReceivedGameInvites', updateInviteList);
-			// step 5: notify current user to start game
-			client.emit('startGame', createdGame.id);
-			// step 6: notify the other user game is ready
-			this.server
-				.to(senderId.toString())
-				.emit('readyToStartGame', receiver.username, createdGame.id);
+		} catch (error) {
+			client.emit('errorGameInvite', error.message);
+		}
+	}
+
+	@SubscribeMessage('joinPlayerInQueue')
+	async joinPlayerInQueue(
+		@MessageBody() playerId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		try {
+			this.createGame(client.data.user.id, playerId, client);
+		} catch (error) {
+			client.emit('errorGameQueue', error.message);
 		}
 	}
 
