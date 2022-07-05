@@ -238,7 +238,6 @@ export class GameService {
 		}
 		sender.sentGameInvites.push(receiver);
 		await this.userRepository.save(sender);
-		return sender.sentGameInvites;
 	}
 
 	async removeGameInvite(sender: UserI, receiver: UserI) {
@@ -248,7 +247,6 @@ export class GameService {
 				return request.id !== receiver.id;
 			});
 			await this.userRepository.save(sender);
-			return sender.sentGameInvites;
 		}
 	}
 

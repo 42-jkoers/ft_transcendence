@@ -608,9 +608,16 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	) {
 		const sender = await this.userService.getUserByID(client.data.user.id);
 		const receiver = await this.userService.getUserByID(receiverId);
-		// TODO: check error (if user doesn't exist);
-		await this.gameService.addGameInvite(sender, receiver);
-		// TODO: to emit to receiver's update list?
+		if (!sender || !receiver) {
+			client.emit('errorGameInvite', 'User does not exist.');
+		} else {
+			await this.gameService.addGameInvite(sender, receiver);
+			const updatedInviteList =
+				await this.gameService.getReceivedGameInvites(receiverId);
+			this.server
+				.to(receiverId.toString())
+				.emit('getReceivedGameInvites', updatedInviteList);
+		}
 	}
 
 	@SubscribeMessage('getReceivedGameInvites')
@@ -634,11 +641,14 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!sender || !receiver) {
 			client.emit('errorGameInvite', 'User does not exist.');
 		} else {
-			const updateInviteList = await this.gameService.removeGameInvite(
-				sender,
-				receiver,
-			);
-			client.emit('getReceivedGameInvites', updateInviteList);
+			await this.gameService.removeGameInvite(sender, receiver);
+			const updatedInviteList =
+				await this.gameService.getReceivedGameInvites(
+					client.data.user.id,
+				);
+			this.server
+				.to(client.data.user.id.toString())
+				.emit('getReceivedGameInvites', updatedInviteList);
 		}
 	}
 
