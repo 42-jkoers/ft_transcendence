@@ -314,29 +314,51 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('removeUserFromRoom')
-	async removeUserFromRoom(
+	async handleRemoveUserFromRoom(
 		@MessageBody() roomName: string,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
 		const room: RoomEntity = await this.roomService.findRoomByName(
 			roomName,
 		);
+		const userToRemove = await this.roomService.findUserToRoomRelationship(
+			socket.data.user.id,
+			room.id,
+		);
+		if (!userToRemove) {
+			return;
+		}
+		let potentialNewOwner;
+		// // if the leaving user is the owner of the room his the ownership will be reassigned to a room admin
+		if ((userToRemove.role = UserRole.OWNER)) {
+			const admin = await this.roomService.setAdminAsOwner(room);
+			potentialNewOwner = admin;
+		}
 		await this.roomService.deleteUserRoomRelationship(
-			client.data.user.id,
+			userToRemove.userId,
 			room,
 		);
 		const userLeftInRoom = await this.roomService.getOneUserLeftInRoom(
 			room,
 		);
+		// if the room is empty
 		if (!userLeftInRoom) {
 			await this.roomService.deleteRoom(room);
 			if (room.visibility === RoomVisibilityType.PUBLIC) {
-				this.server.sockets.emit('room deleted', roomName); // emitting to all the users that have public room in their list
+				this.server.sockets.emit('room deleted', roomName); // emitting to all the users that have public room in their list(they are not in the room themselves)
 			} else {
-				client.emit('room deleted', roomName);
+				socket.emit('room deleted', roomName);
 			}
 		} else {
-			await this.handleGetPublicRoomsList(client);
+			// if the owner has left the room and no admin has been found the random user in list will be assigned as a room owner
+			if (userToRemove.role === UserRole.OWNER && !potentialNewOwner) {
+				await this.roomService.setUserRole(
+					userLeftInRoom.userId,
+					room.id,
+					UserRole.OWNER,
+				);
+			}
+			await this.handleGetPublicRoomsList(socket);
 		}
 	}
 
