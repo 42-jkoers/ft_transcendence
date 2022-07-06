@@ -700,13 +700,21 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 	) {
 		this.removeGameInvite(senderId, client);
-		this.server
-			.to(senderId.toString())
-			.emit(
-				'matchGameInvite',
-				client.data.user.id,
-				client.data.user.username,
+		const sender = await this.userService.getUserByID(senderId);
+		if (sender.gameStatus === GameStatusType.PLAYING) {
+			client.emit(
+				'errorMatchMaking',
+				'The other player is already in a game.',
 			);
+		} else {
+			this.server
+				.to(senderId.toString())
+				.emit(
+					'matchGameInvite',
+					client.data.user.id,
+					client.data.user.username,
+				);
+		}
 	}
 
 	@SubscribeMessage('matchGameInviteSuccess')
