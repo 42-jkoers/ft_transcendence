@@ -151,6 +151,14 @@ socket?.on("postPrivateChatRoom", (dMRoom) => {
   });
 });
 
+socket?.on("bannedFromRoom", (roomName) => {
+  if (roomName === route.params.roomName) {
+    router.push({
+      name: "Chat",
+    });
+  }
+});
+
 const displayPasswordDialog = ref(false);
 const displayEditPrivacyDialog = ref(false);
 

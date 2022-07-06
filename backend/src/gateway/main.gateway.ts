@@ -534,7 +534,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server
 			.to(user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
-		this.server.to(user.id.toString()).emit('noPermissionToViewContent');
+		this.server.to(user.id.toString()).emit('bannedFromRoom', room.name);
 		socket.emit('userRoleChanged', UserRole.BANNED, user.username); // event-confirmation emitted to the owner/admin
 	}
 
