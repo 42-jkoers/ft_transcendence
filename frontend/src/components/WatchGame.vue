@@ -1,11 +1,6 @@
 <template>
   <div>
-    <DataTable
-      :value="gameList"
-      responsiveLayout="scroll"
-      :scrollable="true"
-      scrollHeight="60vh"
-    >
+    <DataTable :value="gameList" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
           <h3>Ongoing Games</h3>

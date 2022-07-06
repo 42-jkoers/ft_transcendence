@@ -2,7 +2,8 @@
   <div style="margin-top: 5%">
     <Button
       label="Find A Match"
-      class="p-button-rounded p-button-text p-button-outlined"
+      class="p-button-rounded"
+      v-tooltip.top="'You will be automatically matched by the system.'"
       @click="joinWaitingRoom"
     ></Button>
   </div>

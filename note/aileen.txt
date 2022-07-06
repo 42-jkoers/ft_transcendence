@@ -247,6 +247,7 @@ Tutorial:
 
 (Wed) 2022-07-06
 	- setup test deleteGame logic
+	- improve GameView frontend design
 TODO:
 	- test when user sent an invite then join another queue
 	
