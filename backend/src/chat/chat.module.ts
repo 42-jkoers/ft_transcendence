@@ -16,11 +16,13 @@ import { GameService } from 'src/game/game.service';
 import { GameEntity } from 'src/game/game.entity';
 import { MuteService } from './room/mute.service';
 import { MuteEntity } from './room/entities/mute.entity';
+import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 
 @Module({
 	providers: [
 		MainGateway,
 		RoomService,
+		BlockedUsersService,
 		ConnectedUserService,
 		MessageService,
 		GameService,

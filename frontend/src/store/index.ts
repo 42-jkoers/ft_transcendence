@@ -37,7 +37,7 @@ const storeUser = createStore({
     unsetAuthenticated(state) {
       state.isAuthenticated = false;
     },
-    updateRoomsList(state, updatedRoomsList) {
+    updateRoomsListInStore(state, updatedRoomsList) {
       state.roomsInfo = updatedRoomsList;
     },
   },

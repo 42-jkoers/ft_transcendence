@@ -43,10 +43,63 @@ export class RoomService {
 			where: { name: roomName },
 		});
 	}
+	async findUserToRoomRelationship(
+		currentUserId: number,
+		roomId: number,
+	): Promise<UserToRoomEntity> {
+		const userToRoomEntity =
+			await this.userToroomEntityRepository.findOneOrFail({
+				where: {
+					userId: currentUserId,
+					roomId: roomId,
+				},
+			});
+		return userToRoomEntity;
+	}
+
+	async findRoomAdmin(selectedRoomId: number): Promise<UserToRoomEntity> {
+		const adminInRoom = await this.userToroomEntityRepository.findOne({
+			where: {
+				roomId: selectedRoomId,
+				role: UserRole.ADMIN,
+			},
+		});
+		return adminInRoom;
+	}
+
+	async findDMRoom(user1Id: number, user2Id: number): Promise<RoomEntity> {
+		const dmRoom = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			.leftJoinAndSelect('room.userToRooms', 'userToRooms')
+			.where('userToRooms.userId = :userId', {
+				userId: user1Id,
+			})
+			.andWhere('userToRooms.userId = :userId', {
+				userId: user2Id,
+			})
+			.andWhere('room.isDirectMessage = :isDirectMessage', {
+				isDirectMessage: true,
+			})
+			.getOne();
+		return dmRoom;
+	}
+
+	async isUserInRoom(
+		selectedUserId: number,
+		selectedRoomId: number,
+	): Promise<boolean> {
+		const findResult = await this.userToroomEntityRepository.findOne({
+			where: {
+				userId: selectedUserId,
+				roomId: selectedRoomId,
+			},
+		});
+		return findResult ? true : false;
+	}
 
 	async createPrivateChatRoom(
 		dMRoom: directMessageDto,
-		userIdToAdd: number,
+		firstUserId: number,
 	): Promise<RoomForUserDto | undefined> {
 		const id: string = uuid();
 		const room: createRoomDto = {
@@ -57,9 +110,9 @@ export class RoomService {
 		};
 		const newRoom: RoomEntity = await this.createAndSaveNewRoom(
 			room,
-			userIdToAdd,
+			firstUserId,
 		);
-		await this.addUserToRoom(dMRoom.userIds[0], newRoom, UserRole.OWNER);
+		await this.addUserToRoom(dMRoom.userIds[0], newRoom, UserRole.VISITOR);
 		const response = plainToClass(RoomForUserDto, newRoom);
 		const secondUser = await this.userService.findByID(dMRoom.userIds[0]);
 		response.secondParticipant = [secondUser.id, secondUser.username];
@@ -87,7 +140,6 @@ export class RoomService {
 			roomPayload,
 			userIdToAdd,
 		);
-		console.log('owner id in create room:', userIdToAdd);
 		return { status: newRoom ? 'OK' : 'ERROR', data: `${newRoom.name}` };
 	}
 
@@ -103,10 +155,13 @@ export class RoomService {
 		try {
 			await this.roomEntityRepository.save(newRoom); // Saves a given entity in the database if the new room name doesn't exist.
 			// manyToOne and oneToMany with additional userToRoomEntity makes manyToMany relationship
+			const userRole = newRoom.isDirectMessage
+				? UserRole.VISITOR
+				: UserRole.OWNER;
 			await this.createManyToManyRelationship(
 				newRoom,
 				userIdToAdd,
-				UserRole.OWNER,
+				userRole,
 			);
 		} catch (err) {
 			// if promise rejects (in case the name is not unique,23505 - is the PostrgreSQL error code for unique constraint violation)
@@ -191,6 +246,14 @@ export class RoomService {
 		await this.roomEntityRepository.save(room);
 	}
 
+	async setAdminAsOwner(room: RoomEntity) {
+		const admin = await this.findRoomAdmin(room.id);
+		if (admin) {
+			await this.setUserRole(admin.userId, room.id, UserRole.OWNER);
+		}
+		return admin;
+	}
+
 	async IsUserEligibleToSetRole(
 		currentUserId: number,
 		roomId: number,
@@ -245,7 +308,7 @@ export class RoomService {
 		return userNumber;
 	}
 
-	async getNonCurrentUserInDMRoom(
+	async getSecondUserInDMRoom(
 		currentUserId: number,
 		dMRoomId: number,
 	): Promise<User> {
@@ -287,7 +350,7 @@ export class RoomService {
 					publicRoom: RoomVisibilityType.PUBLIC,
 				},
 			)
-			.orderBy('userToRooms.role')
+			.orderBy('room.visibility')
 			.addOrderBy('room.name')
 			.getMany();
 		return userRooms;
@@ -301,11 +364,10 @@ export class RoomService {
 			rooms.map(async (room) => {
 				const listedRoom = plainToClass(RoomForUserDto, room);
 				if (room.isDirectMessage) {
-					const secondParticipant =
-						await this.getNonCurrentUserInDMRoom(
-							currentUserId,
-							room.id,
-						);
+					const secondParticipant = await this.getSecondUserInDMRoom(
+						currentUserId,
+						room.id,
+					);
 					listedRoom.secondParticipant = secondParticipant
 						? [secondParticipant.id, secondParticipant.username]
 						: [];
@@ -360,6 +422,20 @@ export class RoomService {
 	): Promise<boolean> {
 		const isMatch = await bcrypt.compare(password, hash);
 		return isMatch;
+	}
+
+	async isUserAllowedToViewContent(
+		userId: number,
+		roomName: string,
+	): Promise<boolean> {
+		const room: RoomEntity = await this.findRoomByName(roomName);
+		if (room.visibility === RoomVisibilityType.PRIVATE || room.password) {
+			const isInRoom = await this.isUserInRoom(userId, room.id);
+			if (!isInRoom) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	async muteUserInRoom(muteUser: MuteUserDto, mutingUserId: number) {

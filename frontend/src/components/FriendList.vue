@@ -26,6 +26,7 @@
       <Column header="Profile" headerStyle="width: 10%">
         <template #body="slotProps">
           <Button
+            v-tooltip.top="'View profile'"
             icon="pi pi-user"
             class="p-button-rounded p-button-text p-button-outlined"
             @click="viewProfile(slotProps.data.id)"
@@ -36,6 +37,7 @@
         <template #body="slotProps">
           <div class="flex align-items-center flex-column sm:flex-row">
             <EditFriendButton
+              v-tooltip.top="'Remove friend'"
               :friendId="slotProps.data.id"
               buttonIcon="pi pi-user-minus"
               :action="EditFriendActionType.REMOVE_FRIEND"
