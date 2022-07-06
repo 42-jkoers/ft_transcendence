@@ -820,4 +820,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 		}
 	}
+
+	@SubscribeMessage('tempExitGame')
+	async tempExitGame(client: Socket) {
+		await this.gameService.setGameStatus(
+			client.data.user.id,
+			GameStatusType.IDEL,
+		);
+	}
 }

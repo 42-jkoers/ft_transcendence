@@ -272,6 +272,7 @@ export class GameService {
 			gameStatus: GameStatusType.QUEUE,
 		});
 	}
+
 	async quitQueue(userId: number) {
 		await this.userRepository.update(userId, {
 			gameStatus: GameStatusType.IDEL,
@@ -285,5 +286,11 @@ export class GameService {
 			.where('user.gameStatus = :gameStatus', { gameStatus })
 			.getMany();
 		return queue;
+	}
+
+	async setGameStatus(userId: number, status: GameStatusType) {
+		await this.userRepository.update(userId, {
+			gameStatus: status,
+		});
 	}
 }

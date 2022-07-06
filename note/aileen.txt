@@ -246,7 +246,7 @@ Tutorial:
 	- split GameWaitingRoom into 'invite' and 'auto', now 'startGame' will only be listend on GameWaitingRoom.
 
 TODO:
-	- improve invite process (now on GameInvite and WaitingRoom, there are duplicate 'startGame' event listener)
+	- test when user sent an invite then join another queue
 	
 
 **************************

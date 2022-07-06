@@ -6,6 +6,13 @@
       @click="joinWaitingRoom"
     ></Button>
   </div>
+  <div style="margin-top: 5%">
+    <Button
+      label="[Temp] Exit Game"
+      class="p-button-rounded p-button-help"
+      @click="temp"
+    ></Button>
+  </div>
 </template>
 <script setup lang="ts">
 import Button from "primevue/button";
@@ -16,6 +23,11 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 const socket: Socket = inject("socketioInstance") as Socket;
+
+// TODO: to delete
+function temp() {
+  socket.emit("tempExitGame");
+}
 
 function joinWaitingRoom() {
   router.push({ name: "GameWaitingRoom", params: { type: "auto" } });
