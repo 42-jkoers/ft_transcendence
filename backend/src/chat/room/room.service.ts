@@ -140,7 +140,10 @@ export class RoomService {
 			roomPayload,
 			userIdToAdd,
 		);
-		return { status: newRoom ? 'OK' : 'ERROR', data: `${newRoom.name}` };
+		return {
+			status: newRoom ? 'OK' : 'ERROR',
+			data: `${roomPayload.name}`,
+		};
 	}
 
 	async createAndSaveNewRoom(
@@ -330,18 +333,20 @@ export class RoomService {
 		return response;
 	}
 
+	// we are looking for all public rooms and also private room where user is part of that room
 	async getAllPublicRoomsWithUserRole(userId: number): Promise<RoomEntity[]> {
 		const userRooms = await getRepository(RoomEntity)
 			.createQueryBuilder('room')
 			// conditional 'join'; joins userToRooms if the condition 'userToRooms.userId = :userId' is true
 			// if user is not in the room leftjoin returns null and [] is empty
-			.innerJoinAndSelect(
+			.leftJoinAndSelect(
 				'room.userToRooms',
 				'userToRooms',
-				'(userToRooms.userId = :userId and userToRooms.role != :banned)',
+				'userToRooms.userId = :userId',
+				// '(userToRooms.userId = :userId and userToRooms.role != :banned)',
 				{
 					userId,
-					banned: UserRole.BANNED,
+					// banned: UserRole.BANNED,
 				},
 			)
 			.where(
@@ -353,7 +358,13 @@ export class RoomService {
 			.orderBy('room.visibility')
 			.addOrderBy('room.name')
 			.getMany();
-		return userRooms;
+
+		const filteredRooms = userRooms.filter((room) =>
+			room.userToRooms.find(
+				(relation) => relation.role != UserRole.BANNED,
+			),
+		);
+		return filteredRooms;
 	}
 
 	async transformDBDataToDtoForClient(
