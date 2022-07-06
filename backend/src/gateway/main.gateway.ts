@@ -821,11 +821,21 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	@SubscribeMessage('tempExitGame')
-	async tempExitGame(client: Socket) {
+	@SubscribeMessage('tempDeleteGame')
+	async tempExitGame(
+		@MessageBody() gameId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const players = await this.gameService.getGamePlayers(gameId);
 		await this.gameService.setGameStatus(
-			client.data.user.id,
+			players[0].id,
 			GameStatusType.IDEL,
 		);
+		await this.gameService.setGameStatus(
+			players[1].id,
+			GameStatusType.IDEL,
+		);
+		await this.gameService.deleteGame(gameId);
+		this.broadcastGameList();
 	}
 }

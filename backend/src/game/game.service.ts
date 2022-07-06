@@ -12,7 +12,7 @@ import {
 	Paddle,
 	Canvas,
 } from './game.dto';
-import { Repository, getRepository } from 'typeorm';
+import { Repository, getRepository, getConnection } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
 import { UserI } from 'src/user/user.interface';
@@ -188,7 +188,7 @@ export class GameService {
 		return games;
 	}
 
-	async findByID(id: string): Promise<GameEntity | undefined> {
+	async findByID(id: number): Promise<GameEntity | undefined> {
 		return await this.gameEntityRepository.findOne({
 			where: { id },
 		});
@@ -292,5 +292,19 @@ export class GameService {
 		await this.userRepository.update(userId, {
 			gameStatus: status,
 		});
+	}
+
+	async deleteGame(gameId: number) {
+		const game = await this.findByID(gameId);
+		await this.gameEntityRepository.remove(game);
+	}
+
+	async getGamePlayers(gameID: number): Promise<UserI[]> {
+		const game = await this.gameEntityRepository
+			.createQueryBuilder('game')
+			.leftJoinAndSelect('game.players', 'player')
+			.where('game.id = :gameID', { gameID })
+			.getOne();
+		return game.players;
 	}
 }

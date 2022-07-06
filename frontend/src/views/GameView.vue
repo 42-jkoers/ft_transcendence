@@ -4,10 +4,10 @@
       <WatchGame />
     </div>
     <div class="col-4">
-      <GameInvite />
+      <JoinGameQueueAuto />
     </div>
     <div class="col-4">
-      <JoinGameQueueAuto />
+      <GameInvite />
     </div>
   </div>
 </template>
