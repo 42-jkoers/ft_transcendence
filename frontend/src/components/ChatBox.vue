@@ -355,7 +355,7 @@ const items = ref([
       }),
   },
   {
-    label: "Ban from room",
+    label: "Ban from chat",
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value) &&
