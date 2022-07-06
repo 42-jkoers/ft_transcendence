@@ -245,6 +245,8 @@ Tutorial:
 	- change joinQueueManual to joinQueueAuto, add WaitingRoom
 	- split GameWaitingRoom into 'invite' and 'auto', now 'startGame' will only be listend on GameWaitingRoom.
 
+(Wed) 2022-07-06
+	- setup test deleteGame logic
 TODO:
 	- test when user sent an invite then join another queue
 	

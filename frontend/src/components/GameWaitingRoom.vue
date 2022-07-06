@@ -1,11 +1,23 @@
 <template>
-  <div v-if="matchType == 'auto'">
-    <h3>
-      Waiting to be matched.
-      <br />
-      Please do not leave this page.
-    </h3>
+  <div class="total">
+    <div v-if="matchType == 'auto'">
+      <h3>
+        Waiting to be matched.
+        <br />
+        Please do not leave this page.
+      </h3>
+    </div>
+    <div v-if="matchType == 'invite'">
+      <h3>
+        Waiting for the other player to join.
+        <br />
+        Please do not leave this page.
+      </h3>
+    </div>
     <div>
+      <img src="/llamaste.jpg" class="picture" />
+    </div>
+    <div v-if="matchType == 'auto'" style="margin-top: 2%">
       <Button
         class="p-button-rounded p-button-text p-button-outlined"
         label="Leave Match Making"
@@ -14,13 +26,6 @@
         @click="leaveRoom()"
       />
     </div>
-  </div>
-  <div v-if="matchType == 'invite'">
-    <h3>
-      Waiting for the other player to join.
-      <br />
-      Please do not leave this page.
-    </h3>
   </div>
 </template>
 <script setup lang="ts">
@@ -67,3 +72,13 @@ function leaveRoom() {
   });
 }
 </script>
+<style scoped>
+.total {
+  height: 100%;
+  width: auto;
+}
+.picture {
+  width: 50%;
+  height: auto;
+}
+</style>
