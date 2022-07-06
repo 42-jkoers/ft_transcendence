@@ -343,10 +343,8 @@ export class RoomService {
 				'room.userToRooms',
 				'userToRooms',
 				'userToRooms.userId = :userId',
-				// '(userToRooms.userId = :userId and userToRooms.role != :banned)',
 				{
 					userId,
-					// banned: UserRole.BANNED,
 				},
 			)
 			.where(
@@ -359,11 +357,12 @@ export class RoomService {
 			.addOrderBy('room.name')
 			.getMany();
 
-		const filteredRooms = userRooms.filter((room) =>
-			room.userToRooms.find(
-				(relation) => relation.role != UserRole.BANNED,
-			),
-		);
+		const filteredRooms = userRooms.filter((room) => {
+			const found = room.userToRooms.find(
+				(relation) => relation.role === UserRole.BANNED,
+			);
+			if (!found) return room;
+		});
 		return filteredRooms;
 	}
 
