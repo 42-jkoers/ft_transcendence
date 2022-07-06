@@ -620,7 +620,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const sockets = await this.server.in(user.id.toString()).fetchSockets(); //fetches all connected sockets for this specific user
 		for (const socket of sockets) {
 			socket.join(room.name); //joins each socket of the added user to this room
-			console.log(`${user.username} has been added to ${room.name}`);
 			await this.handleGetPublicRoomsList(socket); //to refresh rooms in added users page
 		}
 	}
