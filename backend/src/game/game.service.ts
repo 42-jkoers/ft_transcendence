@@ -12,10 +12,12 @@ import {
 	Paddle,
 	Canvas,
 } from './game.dto';
-import { Repository, getRepository } from 'typeorm';
+import { Repository, getRepository, getConnection } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
 import { UserI } from 'src/user/user.interface';
+import { GameStatusType } from './gamestatus.enum';
+import { queue } from 'rxjs';
 
 // This is a in memory db of all the games in play
 // It is not in the postgres database because in a normal game there will be 60 updates per second
@@ -152,20 +154,17 @@ export class GameService {
 		const newGame = this.gameEntityRepository.create();
 		newGame.name = sender.username + ' vs ' + receiver.username;
 		newGame.players = [sender, receiver];
-
 		await this.gameEntityRepository.save(newGame);
 		const inPlay: GameInPlay = createGameInPlay(sender.id, newGame.id);
 		inPlays.push(inPlay);
-		// step 2: set both user isGaming = true
-		sender.isGaming = true;
+		// step 2: set both user game status = playing
+		sender.gameStatus = GameStatusType.PLAYING;
 		await this.userRepository.save(sender);
-		receiver.isGaming = true;
+		receiver.gameStatus = GameStatusType.PLAYING;
 		await this.userRepository.save(receiver);
 		// step 3: remove both user from game invite.
 		await this.removeGameInvite(sender, receiver);
 		await this.removeGameInvite(receiver, sender);
-		// TODO: step 4: remove both user from queue.
-		console.log('created game', newGame, inPlay);
 		return newGame;
 	}
 
@@ -189,7 +188,7 @@ export class GameService {
 		return games;
 	}
 
-	async findByID(id: string): Promise<GameEntity | undefined> {
+	async findByID(id: number): Promise<GameEntity | undefined> {
 		return await this.gameEntityRepository.findOne({
 			where: { id },
 		});
@@ -238,17 +237,15 @@ export class GameService {
 		}
 		sender.sentGameInvites.push(receiver);
 		await this.userRepository.save(sender);
-		return sender.sentGameInvites;
 	}
 
 	async removeGameInvite(sender: UserI, receiver: UserI) {
-		const sentGameInvites = await this.getReceivedGameInvites(sender.id);
+		const sentGameInvites = await this.getSentGameInvites(sender.id);
 		if (sentGameInvites) {
 			sender.sentGameInvites = sentGameInvites.filter((request) => {
 				return request.id !== receiver.id;
 			});
 			await this.userRepository.save(sender);
-			return sender.sentGameInvites;
 		}
 	}
 
@@ -268,5 +265,46 @@ export class GameService {
 			.where('user.id = :userId', { userId })
 			.getOne();
 		return user.sentGameInvites;
+	}
+
+	async joinQueue(userId: number) {
+		await this.userRepository.update(userId, {
+			gameStatus: GameStatusType.QUEUE,
+		});
+	}
+
+	async quitQueue(userId: number) {
+		await this.userRepository.update(userId, {
+			gameStatus: GameStatusType.IDEL,
+		});
+	}
+
+	async getGameQueue(): Promise<UserI[]> {
+		const gameStatus = GameStatusType.QUEUE;
+		const queue = await this.userRepository
+			.createQueryBuilder('user')
+			.where('user.gameStatus = :gameStatus', { gameStatus })
+			.getMany();
+		return queue;
+	}
+
+	async setGameStatus(userId: number, status: GameStatusType) {
+		await this.userRepository.update(userId, {
+			gameStatus: status,
+		});
+	}
+
+	async deleteGame(gameId: number) {
+		const game = await this.findByID(gameId);
+		await this.gameEntityRepository.remove(game);
+	}
+
+	async getGamePlayers(gameID: number): Promise<UserI[]> {
+		const game = await this.gameEntityRepository
+			.createQueryBuilder('game')
+			.leftJoinAndSelect('game.players', 'player')
+			.where('game.id = :gameID', { gameID })
+			.getOne();
+		return game.players;
 	}
 }
