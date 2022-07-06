@@ -431,4 +431,25 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user = await this.userService.getUserByID(id);
 		client.emit('getUserProfile', user);
 	}
+
+	@SubscribeMessage('getLadder')
+	async getLadder(
+		@MessageBody() id: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		//TODO function this.userService.getMatchHistory();
+		//getMatchHistory return a joined table
+		// const ladder = this.userService.getLadder();
+		const ladder = 10;
+		client.emit('getLadder', ladder);
+	}
+
+	//TODO get match history from game entities?? check with Jopper
+	// @SubscribeMessage('getMatchHistory')
+	// async getMatchHistory(
+	// 	@MessageBody() id: number,
+	// 	@ConnectedSocket() client: Socket,
+	// ) {
+
+	// }
 }
