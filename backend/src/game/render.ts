@@ -19,8 +19,8 @@ export interface BallUpdate {
 }
 
 export interface PaddleUpdate {
-	y: number; // point is defined as center of ball
-	x: number; // point is defined as center of ball
+	y: number; // point is defined as top left
+	x: number; // point is defined as top left
 	height: number;
 	width: number; // defined as horizontal distance to end of paddle
 }
@@ -34,11 +34,11 @@ export interface Frame {
 class Paddle {
 	public readonly userID: number;
 	public readonly position: 'left' | 'right';
+	public y: number;
+	public x: number;
+	public height: number;
+	public width: number; // defined as horizontal distance to end of paddle
 
-	private y: number;
-	private x: number;
-	private height: number;
-	private width: number; // defined as horizontal distance to end of paddle
 	private speed: number;
 	private update: -1 | 0 | 1;
 	private canvas: Canvas;
@@ -63,7 +63,7 @@ class Paddle {
 	}
 
 	tick(): PaddleUpdate {
-		this.y += this.update * this.speed;
+		this.y -= this.update * this.speed;
 		// TODO bounce
 		this.update = 0;
 		return {
@@ -87,12 +87,12 @@ class Ball {
 		this.c = canvas;
 		this.x = canvas.width * 0.5;
 		this.y = canvas.height * 0.5;
-		this.dx = canvas.height * -0.002;
-		this.dy = canvas.height * -0.0025;
+		this.dx = canvas.height * -0.003;
+		this.dy = canvas.height * -0.005;
 		this.radius = canvas.grid;
 	}
 
-	tick(): BallUpdate {
+	tick(paddles: Paddle[]): BallUpdate {
 		this.x += this.dx;
 		this.y += this.dy;
 
@@ -109,13 +109,39 @@ class Ball {
 			this.dx *= -1;
 			this.x = this.c.width - this.radius - Number.EPSILON;
 		}
-		// todo Paddle
+
+		for (const paddle of paddles) this.tickPaddle(paddle);
 
 		return {
 			x: this.x,
 			y: this.y,
 			radius: this.radius,
 		};
+	}
+
+	private tickPaddle(paddle: Paddle) {
+		if (paddle.position == 'left') {
+			const collides =
+				this.x - this.radius < paddle.x + paddle.width &&
+				this.x + this.radius > paddle.x + paddle.width &&
+				this.y - this.radius > paddle.y &&
+				this.y + this.radius < paddle.y + paddle.height;
+			if (collides) {
+				this.dx *= -1;
+				this.x = paddle.x + paddle.width + this.radius + Number.EPSILON;
+			}
+		} //
+		else if (paddle.position == 'right') {
+			const collides2 =
+				this.x + this.radius > paddle.x - paddle.width &&
+				this.x - this.radius < paddle.x + paddle.width &&
+				this.y - this.radius >= paddle.y &&
+				this.y + this.radius <= paddle.y + paddle.height;
+			if (collides2) {
+				this.dx *= -1;
+				this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
+			}
+		}
 	}
 }
 
@@ -150,7 +176,7 @@ export class Game {
 	tick(): Frame {
 		this.status = GameStatus.PLAYING;
 		return {
-			ball: this.ball.tick(),
+			ball: this.ball.tick(this.paddles),
 			paddles: this.paddles.map((p) => p.tick()),
 			socketRoomID: this.socketRoomID,
 		};
