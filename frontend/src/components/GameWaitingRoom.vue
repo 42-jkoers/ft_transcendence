@@ -20,7 +20,7 @@
     <div v-if="matchType == 'auto'" style="margin-top: 2%">
       <Button
         class="p-button-rounded p-button-text p-button-outlined"
-        label="Leave Match Making"
+        label="Exit Match Making"
         v-tooltip.top="'Once click, you will no long be matched.'"
         icon="pi pi-sign-out"
         @click="leaveRoom()"
