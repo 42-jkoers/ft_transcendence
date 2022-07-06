@@ -17,6 +17,7 @@ import EnableTwoFactorView from "@/views/EnableTwoFactorView.vue";
 import GameView from "@/views/GameView.vue";
 import PlayView from "@/views/PlayView.vue";
 import TurnOnTwoFactorView from "@/views/TurnOnTwoFactorView.vue";
+import GameWaitingRoom from "@/components/GameWaitingRoom.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -109,6 +110,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/play/:id",
     name: "Play",
     component: PlayView,
+  },
+  {
+    path: "/game-waiting-room/:type",
+    name: "GameWaitingRoom",
+    component: GameWaitingRoom,
   },
 ];
 

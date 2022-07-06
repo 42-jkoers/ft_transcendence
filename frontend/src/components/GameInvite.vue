@@ -3,7 +3,7 @@
     <DataTable :value="receivedInviteList" responsiveLayout="scroll">
       <template #header>
         <div class="flex justify-content-center align-items-center">
-          <h3>Pending Invite List</h3>
+          <h3>Pending Game Invites</h3>
         </div>
       </template>
       <Column header="Invite from" headerStyle="width: 40%">
@@ -68,18 +68,12 @@ socket.on("errorGameInvite", (response) => {
   });
 });
 
-socket.on("startGame", (response) => {
-  router.push({
-    name: "Play",
-    params: { id: response },
-  });
-});
-
 function rejectInvite(id: number) {
   socket.emit("removeGameInvite", id);
 }
 
 function acceptInvite(id: number) {
   socket.emit("acceptGameInvite", id);
+  router.push({ name: "GameWaitingRoom", params: { type: "invite" } });
 }
 </script>

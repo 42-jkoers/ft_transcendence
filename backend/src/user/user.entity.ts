@@ -12,6 +12,7 @@ import {
 	PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GameEntity } from 'src/game/game.entity';
+import { GameStatusType } from 'src/game/gamestatus.enum';
 
 @Entity()
 export class User {
@@ -72,8 +73,8 @@ export class User {
 	@JoinTable({ joinColumn: { name: 'sender_id' } })
 	sentGameInvites: User[];
 
-	@Column({ default: false })
-	public isGaming: boolean;
+	@Column({ default: GameStatusType.IDEL })
+	public gameStatus: GameStatusType;
 }
 
 export default User;

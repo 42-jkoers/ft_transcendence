@@ -32,6 +32,8 @@ import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
 import { UserIdDto } from 'src/user/dto';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
+import { GameStatusType } from 'src/game/gamestatus.enum';
+import { GameEntity } from 'src/game/game.entity';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -624,7 +626,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	async sendGameList() {
+	async broadcastGameList() {
 		const gameList = await this.gameService.getGameList();
 		this.server.emit('getGameList', gameList);
 	}
@@ -637,12 +639,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	// 	@ConnectedSocket() client: Socket,
 	// ) {
 	// 	await this.gameService.createGame(game, client.data.user);
-	// 	await this.sendGameList();
+	// 	await this.broadcastGameList();
 	// }
 
 	@SubscribeMessage('getGameList')
-	async getGameList() {
-		await this.sendGameList();
+	async getGameList(@ConnectedSocket() client: Socket) {
+		const gameList = await this.gameService.getGameList();
+		client.emit('getGameList', gameList);
 	}
 
 	@SubscribeMessage('getUserProfile')
@@ -661,9 +664,16 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	) {
 		const sender = await this.userService.getUserByID(client.data.user.id);
 		const receiver = await this.userService.getUserByID(receiverId);
-		// TODO: check error (if user doesn't exist);
-		await this.gameService.addGameInvite(sender, receiver);
-		// TODO: to emit to receiver's update list?
+		if (!sender || !receiver) {
+			client.emit('errorGameInvite', 'User does not exist.');
+		} else {
+			await this.gameService.addGameInvite(sender, receiver);
+			const updatedInviteList =
+				await this.gameService.getReceivedGameInvites(receiverId);
+			this.server
+				.to(receiverId.toString())
+				.emit('getReceivedGameInvites', updatedInviteList);
+		}
 	}
 
 	@SubscribeMessage('getReceivedGameInvites')
@@ -687,11 +697,34 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!sender || !receiver) {
 			client.emit('errorGameInvite', 'User does not exist.');
 		} else {
-			const updateInviteList = await this.gameService.removeGameInvite(
-				sender,
-				receiver,
-			);
-			client.emit('getReceivedGameInvites', updateInviteList);
+			await this.gameService.removeGameInvite(sender, receiver);
+			const updatedInviteList =
+				await this.gameService.getReceivedGameInvites(
+					client.data.user.id,
+				);
+			this.server
+				.to(client.data.user.id.toString())
+				.emit('getReceivedGameInvites', updatedInviteList);
+		}
+	}
+
+	async createGame(user1Id: number, user2Id: number): Promise<GameEntity> {
+		const user1 = await this.userService.getUserByID(user1Id);
+		const user2 = await this.userService.getUserByID(user2Id);
+		// step 1: to check if any user is already in a game
+		if (!user1 || !user2) {
+			throw new Error('User does not exist.');
+		} else if (
+			user1.gameStatus === GameStatusType.PLAYING ||
+			user2.gameStatus === GameStatusType.PLAYING
+		) {
+			throw new Error('User is already in a game.');
+		} else {
+			// step 2: create game
+			const createdGame = await this.gameService.createGame(user1, user2);
+			// step 3: refresh WatchGame list (for all clients)
+			await this.broadcastGameList();
+			return createdGame;
 		}
 	}
 
@@ -700,34 +733,59 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() senderId: number,
 		@ConnectedSocket() client: Socket,
 	) {
+		this.removeGameInvite(senderId, client);
 		const sender = await this.userService.getUserByID(senderId);
-		const receiver = await this.userService.getUserByID(
-			client.data.user.id,
-		);
-		// step 1: to check if any user is already in a game
-		if (!sender || !receiver) {
-			client.emit('errorGameInvite', 'User does not exist.');
-		} else if (sender.isGaming || receiver.isGaming) {
-			client.emit('errorGameInvite', 'User is already in a game.');
-		} else {
-			// step 2: create game
-			const createdGame = await this.gameService.createGame(
-				sender,
-				receiver,
+		if (sender.gameStatus === GameStatusType.PLAYING) {
+			client.emit(
+				'errorMatchMaking',
+				'The other player is already in a game.',
 			);
-			// step 3: refresh WatchGame list (for all clients)
-			await this.sendGameList();
-			// step 4: refresh Invite list (for current client)
-			const updateInviteList =
-				await this.gameService.getReceivedGameInvites(receiver.id);
-			client.emit('getReceivedGameInvites', updateInviteList);
-			// step 5: notify current user to start game
-			client.emit('startGame', createdGame.id);
-			// step 6: notify the other user game is ready
+		} else {
 			this.server
 				.to(senderId.toString())
-				.emit('readyToStartGame', receiver.username, createdGame.id);
+				.emit(
+					'matchGameInvite',
+					client.data.user.id,
+					client.data.user.username,
+				);
 		}
+	}
+
+	@SubscribeMessage('matchGameInviteSuccess')
+	async matchGameInviteSuccess(
+		@MessageBody() receiverId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		try {
+			// step 1: create game
+			const createdGame = await this.createGame(
+				client.data.user.id,
+				receiverId,
+			);
+			// step 2: refresh Invite list (for receiver)
+			const updateInviteList =
+				await this.gameService.getReceivedGameInvites(receiverId);
+			this.server
+				.to(receiverId.toString())
+				.emit('getReceivedGameInvites', updateInviteList);
+			// step 3: notify the both user game is ready
+			this.server
+				.to(receiverId.toString())
+				.to(client.data.user.id.toString())
+				.emit('startGame', createdGame.id);
+		} catch (error) {
+			client.emit('errorMatchMaking', error.message);
+		}
+	}
+
+	@SubscribeMessage('matchGameInviteFail')
+	async matchGameInviteFail(
+		@MessageBody() receiverId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		this.server
+			.to(receiverId.toString())
+			.emit('errorMatchMaking', 'The other player quit the game.');
 	}
 
 	// TODO: ValidationPipe
@@ -754,5 +812,72 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('paddleUpdate')
 	async paddleUpdate(socket: Socket, pos: PaddleUpdateDto) {
 		await this.gameService.playerUpdate(socket.data.user.id, pos);
+	}
+
+	@SubscribeMessage('quitQueue')
+	async quitQueue(client: Socket) {
+		const user = await this.userService.getUserByID(client.data.user.id);
+		switch (user.gameStatus) {
+			case GameStatusType.IDEL:
+				client.emit('errorMatchMaking', 'User is not in queue.');
+				return;
+			case GameStatusType.QUEUE:
+				await this.gameService.quitQueue(user.id);
+				return;
+			case GameStatusType.PLAYING:
+				client.emit('errorMatchMaking', 'User is already in a game.');
+				return;
+		}
+	}
+
+	@SubscribeMessage('matchPlayer')
+	async matchPlayer(client: Socket) {
+		// if user is already in queue
+		const user = await this.userService.getUserByID(client.data.user.id);
+		if (user.gameStatus === GameStatusType.QUEUE) {
+			return;
+		}
+		// if user is not in quee
+		const queue = await this.gameService.getGameQueue();
+		if (queue.length === 0) {
+			// if no one is waiting, user will join the queue
+			await this.gameService.joinQueue(client.data.user.id);
+		} else {
+			// if there is already someone waiting, pick the first player in queue
+			const component = queue[0];
+			try {
+				// step 1: create game
+				const createdGame = await this.createGame(
+					client.data.user.id,
+					component.id,
+				);
+				// step 2: notify current user in waiting room
+				client.emit('startGame', createdGame.id);
+				// step 5: notify the other user in waiting room
+				this.server
+					.to(component.id.toString())
+					.emit('startGame', createdGame.id);
+			} catch (error) {
+				client.emit('errorMatchMaking', error.message);
+			}
+		}
+	}
+
+	@SubscribeMessage('tempDeleteGame')
+	async tempExitGame(
+		@MessageBody() gameId: number,
+		@ConnectedSocket() client: Socket,
+	) {
+		const players = await this.gameService.getGamePlayers(gameId);
+		await this.gameService.setGameStatus(
+			players[0].id,
+			GameStatusType.IDEL,
+		);
+		await this.gameService.setGameStatus(
+			players[1].id,
+			GameStatusType.IDEL,
+		);
+		await this.gameService.deleteGame(gameId);
+		this.broadcastGameList();
 	}
 }

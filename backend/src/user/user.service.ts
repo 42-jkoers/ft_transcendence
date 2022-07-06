@@ -10,6 +10,7 @@ import { UserToRoomEntity } from 'src/chat/room/entities/user.to.room.entity';
 import ConnectedUserEntity from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
+import { GameEntity } from 'src/game/game.entity';
 
 @Injectable()
 export class UserService {
@@ -134,6 +135,7 @@ export class UserService {
 	}
 
 	async deleteUser(userId: number) {
+		// TODO: to delete from Game relationship?
 		await getConnection()
 			.createQueryBuilder()
 			.delete()

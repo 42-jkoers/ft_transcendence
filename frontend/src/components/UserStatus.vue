@@ -4,12 +4,13 @@
 <script setup lang="ts">
 import { defineProps, onMounted, ref } from "vue";
 import Tag from "primevue/tag";
+import { GameStatusType } from "@/types/GameStatus.enum";
 
 type TagSeverityType = "success" | "info" | "warning" | "danger" | undefined;
 
 const props = defineProps({
   socketCount: Number,
-  isGaming: Boolean,
+  gameStatus: Number,
 });
 const status = ref<string>();
 const icon = ref<string>();
@@ -21,7 +22,7 @@ onMounted(() => {
     icon.value = "pi pi-power-off";
     style.value = undefined;
   } else {
-    if (props.isGaming) {
+    if (props.gameStatus === GameStatusType.PLAYING) {
       status.value = "Gaming";
       icon.value = "pi pi-discord";
       style.value = "info";
