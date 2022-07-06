@@ -49,12 +49,6 @@ const storeUser = createStore({
             withCredentials: true,
           })
           .then(async (response) => {
-            console.log(
-              "enable?",
-              response.data.isTwoFactorAuthEnabled,
-              "2f authenticated?",
-              response.data.isTwoFactorAuthenticated
-            );
             if (
               response.data.isTwoFactorAuthEnabled &&
               !response.data.isTwoFactorAuthenticated
