@@ -7,15 +7,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
 import { UserI } from 'src/user/user.interface';
 import { GameStatusType } from './gamestatus.enum';
-import { Game, Frame } from './render';
+import { Game } from './render';
 
 // This is a in memory db of all the games in play
 // It is not in the postgres database because in a normal game there will be 60 updates per second
 // a postgres cannot keep up with that
-const inPlays: Game[] = [new Game([2], 1)];
-export function tick(): Frame[] {
-	return inPlays.map((i) => i.tick());
-}
+export const inPlays: Game[] = [new Game([2], 1)];
 
 Injectable();
 export class GameService {

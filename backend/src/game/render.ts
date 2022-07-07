@@ -64,7 +64,7 @@ class Paddle {
 			this.position == 'left'
 				? this.canvas.grid / 2
 				: this.canvas.width - this.canvas.grid / 2;
-		this.y = this.canvas.height * 0.05;
+		this.y = this.canvas.height / 2 + this.height / 2;
 		this.update = 0;
 	}
 
@@ -138,7 +138,17 @@ class Ball {
 		};
 	}
 
-	private tickPaddle(paddle: Paddle) {
+	get _x() {
+		return this.x;
+	}
+	get _y() {
+		return this.y;
+	}
+	get _radius() {
+		return this.radius;
+	}
+
+	private tickPaddle(paddle: Readonly<Paddle>) {
 		if (paddle.position == 'left') {
 			const collides =
 				this.x - this.radius < paddle.x + paddle.width &&
@@ -160,15 +170,9 @@ class Ball {
 				this.dx *= -1;
 				this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
 			}
-		}
-
-		if (
-			(paddle.position == 'left' && this.x < this.radius) ||
-			(paddle.position == 'right' && this.x + this.radius > this.c.width)
-		) {
-			paddle.score++;
-			paddle.reset();
-			this.reset();
+		} //
+		else {
+			throw `unhandled paddle position "${paddle.position}"`;
 		}
 	}
 }
@@ -178,7 +182,7 @@ export class Game {
 	public readonly socketRoomID: string;
 	public status: GameStatus;
 
-	private paddles: Paddle[];
+	public paddles: Paddle[];
 	private canvas: Canvas;
 	private ball: Ball;
 
@@ -204,14 +208,36 @@ export class Game {
 	tick(): Frame {
 		this.status = GameStatus.PLAYING;
 
-		for (const paddle of this.paddles) paddle.tick();
 		this.ball.tick(this.paddles);
+		for (const paddle of this.paddles) {
+			paddle.tick();
+			if (
+				(paddle.position == 'left' &&
+					this.ball._x < this.ball._radius) ||
+				(paddle.position == 'right' &&
+					this.ball._x + this.ball._radius > this.canvas.width)
+			) {
+				paddle.score++;
+				paddle.reset();
+				this.ball.reset();
+			}
+		}
 
 		return {
 			ball: this.ball.export(),
 			paddles: this.paddles.map((p) => p.export()),
 			socketRoomID: this.socketRoomID,
 		};
+	}
+
+	winnerID(): number {
+		// TODO: more info
+		if (this.status !== GameStatus.COMPLETED) throw 'game not done yet';
+
+		for (const paddle of this.paddles) {
+			if (paddle.score > 5) return paddle.userID;
+		}
+		return undefined;
 	}
 
 	nPlayers(): number {

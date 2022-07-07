@@ -21,8 +21,8 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
-import { GameService, tick } from '../game/game.service';
-import { PaddleUpdateDto } from 'src/game/game.dto';
+import { GameService, inPlays } from '../game/game.service';
+import { GameStatus, PaddleUpdateDto } from 'src/game/game.dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
@@ -34,6 +34,19 @@ import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 import { GameStatusType } from 'src/game/gamestatus.enum';
 import { GameEntity } from 'src/game/game.entity';
+
+function gameLoop(server: Server) {
+	for (const game of inPlays) {
+		const frame = game.tick();
+		if (game.status == GameStatus.PLAYING) {
+			server.in(frame.socketRoomID).emit('gameFrame', frame);
+		} //
+		else if (game.status == GameStatus.COMPLETED) {
+			server.in(game.socketRoomID).emit('gameFinished', game.winnerID());
+			// TODO: save to database
+		}
+	}
+}
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -49,11 +62,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly gameService: GameService,
 	) {
 		// console.log('constructor');
-		setInterval(() => {
-			for (const update of tick()) {
-				this.server.in(update.socketRoomID).emit('gameFrame', update);
-			}
-		}, 1000 / 60); // TODO: something better than this, handling server lag
+		setInterval(() => gameLoop(this.server), 1000 / 60); // TODO: something better than this, handling server lag
 	}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
