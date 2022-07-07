@@ -515,23 +515,18 @@ export class RoomService {
 		}
 	}
 
-	async unBanUserFromRoom(roomAndUser: RoomAndUserDTO, mutingUserId: number) {
-		const room = await this.findRoomByName(roomAndUser.roomName);
-		await this.userService.isOwnerOrAdmin(mutingUserId, room.id);
+	async unBanUserFromRoom(userId: number, room: RoomEntity, adminId: number) {
+		await this.userService.isOwnerOrAdmin(adminId, room.id);
 		//check if user is already banned
 		const banIndex = room.bannedUserIds.findIndex(
-			(element) => element == roomAndUser.userId,
+			(element) => element == userId,
 		);
 		if (banIndex) {
 			room.bannedUserIds.splice(banIndex, 1);
 			await this.roomEntityRepository.save(room);
 			//setting user a visitor if he has not left the room, otherwise no action taken
-			if (await this.isUserInRoom(roomAndUser.userId, room.id)) {
-				await this.setUserRole(
-					roomAndUser.userId,
-					room.id,
-					UserRole.VISITOR,
-				);
+			if (await this.isUserInRoom(userId, room.id)) {
+				await this.setUserRole(userId, room.id, UserRole.VISITOR);
 			}
 		}
 	}

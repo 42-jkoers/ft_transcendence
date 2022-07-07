@@ -517,16 +517,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomAndUser.roomName,
 		);
 		if (!user || !room) {
-			socket.emit('banUserResult', undefined);
+			socket.emit('setUserRoleFail', UserRole.BANNED, user.username);
 		}
 		await this.roomService.banUserFromRoom(
 			user.id,
 			room,
 			socket.data.user.id,
 		);
-
-		// response will be either with blocked user data or undefined if the user is already in the blocked list
-
 		const sockets = await this.server.in(user.id.toString()).fetchSockets(); //fetches all connected sockets for this specific user
 		for (const socket of sockets) {
 			socket.leave(room.name);
@@ -548,15 +545,22 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user: UserI = await this.userService.findByID(
 			socket.data.user.id,
 		);
-		if (!user) console.log('exception'); //TODO throw exception
+		const room = await this.roomService.findRoomByName(
+			roomAndUser.roomName,
+		);
+
+		if (!user || !room)
+			socket.emit('setUserRoleFail', UserRole.VISITOR, user.username);
 		await this.roomService.unBanUserFromRoom(
-			roomAndUser,
+			user.id,
+			room,
 			socket.data.user.id,
 		);
 		const roomsList = await this.roomService.getPublicRoomsList(user.id);
 		this.server
 			.to(user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
+		socket.emit('userRoleChanged', UserRole.VISITOR, user.username); // event-confirmation emitted to the owner/admin
 	}
 
 	@SubscribeMessage('isUserBanned')
