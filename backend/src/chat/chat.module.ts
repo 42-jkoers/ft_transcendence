@@ -13,7 +13,7 @@ import { MessageService } from './message/message.service';
 import { MessageEntity } from './message/message.entity';
 import { UserModule } from 'src/user/user.module';
 import { GameService } from 'src/game/game.service';
-import { GameEntity } from 'src/game/game.entity';
+import { GameEntity, PlayerEntry } from 'src/game/game.entity';
 import { MuteService } from './room/mute.service';
 import { MuteEntity } from './room/entities/mute.entity';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
@@ -39,6 +39,8 @@ import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 			ConnectedUserEntity,
 			MessageEntity,
 			GameEntity,
+			//TODO checklater see if needed
+			PlayerEntry,
 			MuteEntity,
 		]),
 	],

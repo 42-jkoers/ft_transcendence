@@ -135,7 +135,7 @@ router.beforeEach(async (to) => {
   if (
     to.name !== "UnAuthorized" &&
     to.name !== "2fAuthenticate" &&
-    to.name !== "MatchHistoryView"
+    to.name !== "MatchHistoryView" //TODO this to be removed
   ) {
     await checkLogInState();
     if (to.name !== "Home" && storeUser.state.isAuthenticated === false) {

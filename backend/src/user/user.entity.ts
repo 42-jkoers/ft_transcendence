@@ -11,7 +11,7 @@ import {
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
-import { GameEntity } from 'src/game/game.entity';
+import { GameEntity, PlayerEntry } from 'src/game/game.entity';
 
 @Entity()
 export class User {
@@ -65,8 +65,12 @@ export class User {
 	public twoFactorAuthSecret?: string;
 
 	@ManyToMany(() => GameEntity, (game) => game.players)
-	@JoinTable() // the user is the owner of the game
+	@JoinTable({ joinColumn: { name: 'playerId' } }) // the user is the owner of the game
 	games: GameEntity[];
+
+	@OneToMany(() => PlayerEntry, (playEntry) => playEntry.player)
+	@JoinColumn()
+	playEntry: PlayerEntry[];
 
 	@ManyToMany(() => User)
 	@JoinTable({ joinColumn: { name: 'sender_id' } })

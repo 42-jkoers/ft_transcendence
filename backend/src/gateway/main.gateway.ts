@@ -629,6 +629,9 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		//getMatchHistory return a joined table
 		// const ladder = this.userService.getLadder();
 		const ladder = 10;
+		await this.gameService.getMatchHistory(3);
+		// const matchHistory = await this.gameService.getAllGames(3);
+		// console.log('matchHistory', matchHistory);
 		client.emit('getLadder', ladder);
 	}
 

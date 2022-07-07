@@ -24,6 +24,9 @@ WHITE='\033[0;37m'
 #COMMAND
 STOP_CONTAINERS="docker stop ft_transcendence_postgres ft_transcendence_pgadmin ft_transcendence_redis"
 
+#remove dist at the beginning
+rm -rf backend/dist
+
 # Build upload directory for avatar upload
 [ ! -d ./upload/ ] && mkdir ./upload/
 

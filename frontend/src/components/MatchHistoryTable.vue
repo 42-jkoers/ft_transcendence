@@ -25,11 +25,11 @@ import { watch, inject, ref, computed, onMounted } from "vue";
 import UserProfileI from "@/types/UserProfile.interface";
 
 const user = ref<UserProfileI>();
-const socket: Socket = inject("socketioInstance");
+// const socket: Socket = inject("socketioInstance");
 
-onMounted(async () => {
-  await findUser();
-  console.log("enter into the route matchhistory with id", id);
-  console.log("user name", user.value?.username);
-});
+// onMounted(async () => {
+//   await findUser();
+//   console.log("enter into the route matchhistory with id", id);
+//   console.log("user name", user.value?.username);
+// });
 </script>
