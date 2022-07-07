@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsPositive, IsString } from 'class-validator';
 
 export class MuteUserDto {
 	@IsNumber()
@@ -8,5 +8,6 @@ export class MuteUserDto {
 	roomName: string;
 
 	@IsNumber()
+	@IsPositive()
 	durationMinute: number;
 }

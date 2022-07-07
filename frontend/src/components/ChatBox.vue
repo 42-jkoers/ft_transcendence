@@ -119,8 +119,9 @@ import ContextMenu from "primevue/contextmenu";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import UnblockUserButton from "./UnblockUserButton.vue";
+import router from "@/router";
 
-const socket: Socket = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
@@ -143,7 +144,7 @@ const displayAddUsersDialogue = ref(false);
 
 const store = useStore();
 const currentRoom = computed(() =>
-  store.state.roomsInfo.find((room) => room.name === route.params.roomName)
+  store.state.roomsInfo.find((room: any) => room.name === route.params.roomName)
 );
 
 const allowedToViewContent = ref<boolean>(false);
@@ -152,7 +153,6 @@ onMounted(() => {
 
   socket.on("noPermissionToViewContent", () => {
     allowedToViewContent.value = false;
-    console.log("No Permission To View Content event");
   });
 
   socket.on("getMessagesForRoom", (response) => {
@@ -164,10 +164,14 @@ onMounted(() => {
         case UserRole.BLOCKED:
           isBlocked.value = true;
           break;
+        case UserRole.BANNED:
+          allowedToViewContent.value = false;
+          break;
+        default:
+          allowedToViewContent.value = true;
+          messages.value = response;
       }
     }
-    allowedToViewContent.value = true;
-    messages.value = response;
   }); //recevies the existing messages from backend when room is first loaded
 
   socket.on("messageAdded", (message: MessageI) => {
@@ -175,7 +179,7 @@ onMounted(() => {
       messages.value.unshift(message);
   }); //place the new message on top of the messages arrayy
 
-  socket.on("isUserBanned", (response) => {
+  socket.on("userBanFromRoomResult", (response) => {
     isUserBanned.value = response;
   });
 });
@@ -204,50 +208,82 @@ function sendMessage() {
 
 const ShowSuccessfulRoleChangeMessage = (
   newUserRole: UserRole,
-  username: string
+  username: string,
+  roomName: string
 ) => {
   const userRoleMessage = {
-    [UserRole.OWNER]: "is the chat room owner now",
-    [UserRole.ADMIN]: "is the chat room administrator now",
-    [UserRole.VISITOR]: "is set as a chat room visitor",
-    [UserRole.BANNED]: "is banned from chat",
-    [UserRole.MUTED]: "is muted",
+    [UserRole.OWNER]: `is the owner of ${roomName} now`,
+    [UserRole.ADMIN]: `is the administrator of ${roomName} now`,
+    [UserRole.VISITOR]: `is added to ${roomName}`,
+    [UserRole.BANNED]: `is banned from ${roomName}`,
+    [UserRole.MUTED]: `is muted in ${roomName}`,
     [UserRole.BLOCKED]: "is blocked",
     [UserRole.BLOCKING]: "is blocking",
   };
 
   toast.add({
-    severity: "success",
-    summary: "Success",
+    severity: "info",
+    summary: "",
     detail: `${username} ${userRoleMessage[newUserRole]}`,
     life: 2000,
   });
 };
-const ShowRoleChangeFailMessage = (newUserRole: UserRole, username: string) => {
+
+const ShowNewRoleMessage = (newUserRole: UserRole, roomName: string) => {
   const userRoleMessage = {
-    [UserRole.OWNER]: "set as the room owner",
+    [UserRole.OWNER]: `have been set as the owner of ${roomName}`,
+    [UserRole.ADMIN]: `have been set as the administrator of ${roomName}`,
+    [UserRole.VISITOR]: `are added to the ${roomName}`,
+    [UserRole.BANNED]: `have been banned from ${roomName}`,
+    [UserRole.MUTED]: `have been muted in ${roomName} for 1 hour`,
+    [UserRole.BLOCKED]: "have been blocked",
+    [UserRole.BLOCKING]: "are blocking",
+  };
+  toast.add({
+    severity: "info",
+    summary: "",
+    detail: `You ${userRoleMessage[newUserRole]}`,
+    life: 2000,
+  });
+};
+
+const ShowRoleChangeFailMessage = (newUserRole: UserRole, roomName: string) => {
+  const userRoleMessage = {
+    [UserRole.OWNER]: `set as the owner of ${roomName}`,
     [UserRole.ADMIN]: "set as the room administrator",
     [UserRole.VISITOR]: "set as the room visitor",
     [UserRole.BANNED]: "banned from chat",
     [UserRole.MUTED]: "muted",
     [UserRole.BLOCKED]: "blocked from chat",
-    [UserRole.BLOCKING]: "is blocking",
+    [UserRole.BLOCKING]: "blocking",
   };
 
   toast.add({
     severity: "error",
     summary: "Error",
-    detail: `${username} cannot be ${userRoleMessage[newUserRole]}`,
+    detail: `User cannot be ${userRoleMessage[newUserRole]}`,
     life: 2000,
   });
 };
 
-socket.on("setUserRoleFail", (newUserRole: UserRole, username: string) => {
-  ShowRoleChangeFailMessage(newUserRole, username);
+socket.on(
+  "userRoleChanged",
+  (newUserRole: UserRole, username: string, roomName: string) => {
+    ShowSuccessfulRoleChangeMessage(newUserRole, username, roomName);
+  }
+);
+
+socket.on("newRoleAcquired", (newRole: UserRole, roomName: string) => {
+  if (route.params.roomName === roomName && newRole === UserRole.BANNED) {
+    router.push({
+      name: "Chat",
+    });
+  }
+  ShowNewRoleMessage(newRole, roomName);
 });
 
-socket.on("userRoleChanged", (newUserRole: UserRole, username: string) => {
-  ShowSuccessfulRoleChangeMessage(newUserRole, username);
+socket.on("setUserRoleFail", (newUserRole: UserRole, roomName: string) => {
+  ShowRoleChangeFailMessage(newUserRole, roomName);
 });
 
 socket.on(
@@ -266,7 +302,7 @@ socket.on(
   }
 );
 
-socket?.on(
+socket.on(
   "unblockUserResult",
   (response: { id: number; username: string } | undefined) => {
     if (!response) {
@@ -352,7 +388,7 @@ const items = ref([
       }),
   },
   {
-    label: "Ban user",
+    label: "Ban from chat",
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value) &&
@@ -360,7 +396,7 @@ const items = ref([
     command: () => banUserFromRoom(),
   },
   {
-    label: "Unban user",
+    label: "Unban",
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value) &&
@@ -368,7 +404,7 @@ const items = ref([
     command: () => unBanUserFromRoom(),
   },
   {
-    label: "Mute user",
+    label: "Mute for 1 hour",
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value),
@@ -385,13 +421,7 @@ const muteUserInRoom = () => {
   socket.emit("muteUserInRoom", {
     id: computedID.value,
     roomName: route.params.roomName,
-    durationMinute: 1, //TODO change after discussing with teammates
-  });
-  toast.add({
-    severity: "success",
-    summary: "Success",
-    detail: "User has been muted",
-    life: 1000,
+    durationMinute: 60,
   });
 };
 
@@ -400,24 +430,12 @@ const banUserFromRoom = () => {
     userId: computedID.value,
     roomName: route.params.roomName,
   });
-  toast.add({
-    severity: "success",
-    summary: "Success",
-    detail: "User has been banned from room",
-    life: 1000,
-  });
 };
 
 const unBanUserFromRoom = () => {
   socket.emit("unBanUserFromRoom", {
     userId: computedID.value,
     roomName: route.params.roomName,
-  });
-  toast.add({
-    severity: "success",
-    summary: "Success",
-    detail: "User has been unbanned",
-    life: 1000,
   });
 };
 
