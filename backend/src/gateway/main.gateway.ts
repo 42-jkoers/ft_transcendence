@@ -406,7 +406,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		await this.roomService.muteUserInRoom(
 			userToBeMuted.id,
-			room,
+			room.name,
 			muteUser.durationMinute,
 			socket.data.user.id,
 		);
@@ -593,9 +593,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() roomAndUser: RoomAndUserDTO,
 		@ConnectedSocket() socket: Socket,
 	) {
-		const user: UserI = await this.userService.findByID(
-			socket.data.user.id,
-		);
+		const user: UserI = await this.userService.findByID(roomAndUser.userId);
 		const room = await this.roomService.findRoomByName(
 			roomAndUser.roomName,
 		);
