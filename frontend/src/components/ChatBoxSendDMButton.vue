@@ -22,8 +22,6 @@ const route = useRoute();
 const router = useRouter();
 
 const sendDM = () => {
-  console.log("props: ", props);
-
   const dMRoom = computed(() =>
     store.state.roomsInfo.find(
       (room) =>
@@ -31,7 +29,6 @@ const sendDM = () => {
         room.secondParticipant[0] === props.clickedUserId
     )
   );
-  console.log("dm room", dMRoom);
 
   if (dMRoom.value) {
     if (route.params.roomName === dMRoom.value.name) {

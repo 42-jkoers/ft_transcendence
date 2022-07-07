@@ -98,7 +98,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.data.user.id,
 		);
 		const isNotMutedOrDeadlinePassed =
-			await this.roomService.checIfkMutedAndMuteDeadlineAndRemoveMute(
+			await this.roomService.checkIfMutedAndMuteDeadlineAndRemoveMute(
 				user.id,
 				selectedRoom.name,
 			);
@@ -246,9 +246,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			setRoleDto.userToGetNewRoleId,
 		);
 		// getting username to notify the admin that setNewUserRole either failed or succedded
-		const username: string = user.username;
-		if (!room) {
-			socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+		if (!user || !room) {
+			socket.emit(
+				'setUserRoleFail',
+				setRoleDto.newRole,
+				setRoleDto.roomName,
+			);
 			return;
 		}
 		if (
@@ -265,7 +268,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			);
 
 			if (!userRoleUpdateResult) {
-				socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+				socket.emit(
+					'setUserRoleFail',
+					setRoleDto.newRole,
+					setRoleDto.roomName,
+				);
 				return;
 			}
 			const roomsList = await this.roomService.getPublicRoomsList(
@@ -275,7 +282,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				.to(setRoleDto.userToGetNewRoleId.toString())
 				.emit('postPublicRoomsList', roomsList);
 		}
-		socket.emit('userRoleChanged', setRoleDto.newRole, username);
+		socket.emit(
+			'userRoleChanged',
+			setRoleDto.newRole,
+			user.username,
+			room.name,
+		);
 	}
 
 	@SubscribeMessage('updateRoomPassword')
@@ -291,20 +303,29 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('addUserToRoom')
-	async addUserToRoom(
+	async handleAddUserToRoom(
 		@MessageBody() roomName: string,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
 		const room: RoomEntity = await this.roomService.findRoomByName(
 			roomName,
 		);
+		if (
+			await this.roomService.isUserBannedFromRoom(
+				socket.data.user.id,
+				room,
+			)
+		) {
+			socket.emit('noPermissionToViewContent');
+			return;
+		}
 		await this.roomService.addUserToRoom(
-			client.data.user.id,
+			socket.data.user.id,
 			room,
 			UserRole.VISITOR,
 		);
-		client.join(room.name);
-		await this.handleGetPublicRoomsList(client);
+		socket.join(room.name);
+		await this.handleGetPublicRoomsList(socket);
 	}
 
 	@SubscribeMessage('removeUserFromRoom')
@@ -359,13 +380,39 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('muteUserInRoom')
 	async muteUserInRoom(
 		@MessageBody() muteUser: MuteUserDto,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
-		const user: UserI = await this.userService.findByID(
-			client.data.user.id,
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+		const userToBeMuted: UserI = await this.userService.findByID(
+			muteUser.id,
 		);
-		if (!user) console.log('exception'); //TODO throw exception
-		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
+		const room = await this.roomService.findRoomByName(muteUser.roomName);
+		if (!userToBeMuted || !room) {
+			socket.emit('setUserRoleFail', UserRole.MUTED, muteUser.roomName);
+		}
+		await this.roomService.muteUserInRoom(
+			userToBeMuted.id,
+			room.name,
+			muteUser.durationMinute,
+			socket.data.user.id,
+		);
+		// event-notification emitted to the muted user:
+		this.server
+			.to(userToBeMuted.id.toString())
+			.emit('newRoleAcquired', UserRole.MUTED, room.name);
+		// event-confirmation emitted to the owner/admin:
+		socket.emit(
+			'userRoleChanged',
+			UserRole.MUTED,
+			userToBeMuted.username,
+			room.name,
+		);
 	}
 
 	@SubscribeMessage('getBlockedList')
@@ -481,7 +528,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	): Promise<RoomEntity> {
 		const dmRoom = await this.roomService.findDMRoom(user1Id, user2Id);
 		if (dmRoom) {
-			this.server.socketsLeave(dmRoom.name);
+			// sockets that are subscribed th the channels having their id name will also subscribe to the new roomname
 			this.server
 				.in(user1Id.toString())
 				.in(user2Id.toString())
@@ -493,32 +540,78 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('banUserFromRoom')
 	async banUserFromRoom(
 		@MessageBody() roomAndUser: RoomAndUserDTO,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
-		const user: UserI = await this.userService.findByID(
-			client.data.user.id,
+		const user: UserI = await this.userService.findByID(roomAndUser.userId);
+		const room = await this.roomService.findRoomByName(
+			roomAndUser.roomName,
 		);
-		if (!user) console.log('exception'); //TODO throw exception
+		if (!user || !room) {
+			socket.emit(
+				'setUserRoleFail',
+				UserRole.BANNED,
+				roomAndUser.roomName,
+			);
+		}
 		await this.roomService.banUserFromRoom(
-			roomAndUser,
-			client.data.user.id,
+			user.id,
+			room,
+			socket.data.user.id,
+		);
+		const sockets = await this.server.in(user.id.toString()).fetchSockets(); //fetches all connected sockets for this specific user
+		for (const socket of sockets) {
+			socket.leave(room.name);
+		}
+		//update roomslist for the banned user:
+		const roomsList = await this.roomService.getPublicRoomsList(user.id);
+		this.server
+			.to(user.id.toString())
+			.emit('postPublicRoomsList', roomsList);
+		// event-notification emitted to the banned user:
+		this.server
+			.to(user.id.toString())
+			.emit('newRoleAcquired', UserRole.BANNED, room.name);
+		// event-confirmation emitted to the owner/admin:
+		socket.emit(
+			'userRoleChanged',
+			UserRole.BANNED,
+			user.username,
+			room.name,
 		);
 	}
 
 	@SubscribeMessage('unBanUserFromRoom')
 	async unBanUserFromRoom(
 		@MessageBody() roomAndUser: RoomAndUserDTO,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
-		const user: UserI = await this.userService.findByID(
-			client.data.user.id,
+		const user: UserI = await this.userService.findByID(roomAndUser.userId);
+		const room = await this.roomService.findRoomByName(
+			roomAndUser.roomName,
 		);
-		if (!user) console.log('exception'); //TODO throw exception
+
+		if (!user || !room)
+			socket.emit(
+				'setUserRoleFail',
+				UserRole.VISITOR,
+				roomAndUser.roomName,
+			);
 		await this.roomService.unBanUserFromRoom(
-			roomAndUser,
-			client.data.user.id,
+			user.id,
+			room,
+			socket.data.user.id,
 		);
-		await this.handleGetPublicRoomsList(client);
+		const roomsList = await this.roomService.getPublicRoomsList(user.id);
+		this.server
+			.to(user.id.toString())
+			.emit('postPublicRoomsList', roomsList);
+		this.server.in(user.id.toString()).socketsJoin(room.name);
+		socket.emit(
+			'userRoleChanged',
+			UserRole.VISITOR,
+			user.username,
+			room.name,
+		); // event-confirmation emitted to the owner/admin
 	}
 
 	@SubscribeMessage('isUserBanned')
@@ -526,9 +619,14 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() roomAndUser: RoomAndUserDTO,
 		@ConnectedSocket() client: Socket,
 	) {
-		const isUserBanned = await this.roomService.isUserBanned(roomAndUser);
-		console.log('is banned ', isUserBanned);
-		client.emit('isUserBanned', isUserBanned);
+		const room = await this.roomService.findRoomByName(
+			roomAndUser.roomName,
+		);
+		const isBanned = await this.roomService.isUserBannedFromRoom(
+			roomAndUser.userId,
+			room,
+		);
+		client.emit('userBanFromRoomResult', isBanned);
 	}
 
 	@SubscribeMessage('checkRoomPasswordMatch')
@@ -579,7 +677,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const sockets = await this.server.in(user.id.toString()).fetchSockets(); //fetches all connected sockets for this specific user
 		for (const socket of sockets) {
 			socket.join(room.name); //joins each socket of the added user to this room
-			console.log(`${user.username} has been added to ${room.name}`);
 			await this.handleGetPublicRoomsList(socket); //to refresh rooms in added users page
 		}
 	}
