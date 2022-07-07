@@ -55,8 +55,6 @@ export class BlockedUsersService {
 		userToUnblock: UserI,
 		currentUser: UserI,
 	): Promise<{ id: number; username: string } | undefined> {
-		// console.log("current user ", currentUser,);
-
 		try {
 			await this.userRepository
 				.createQueryBuilder('user')
