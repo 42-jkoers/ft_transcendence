@@ -119,6 +119,7 @@ import ContextMenu from "primevue/contextmenu";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import UnblockUserButton from "./UnblockUserButton.vue";
+import router from "@/router";
 
 const socket: Socket = inject("socketioInstance") as Socket;
 const messages = ref<Array<MessageI>>([]);
@@ -273,6 +274,11 @@ socket.on(
 );
 
 socket.on("newRoleAcquired", (newRole: UserRole, roomName: string) => {
+  if (route.params.roomName === roomName && newRole === UserRole.BANNED) {
+    router.push({
+      name: "Chat",
+    });
+  }
   ShowNewRoleMessage(newRole, roomName);
 });
 

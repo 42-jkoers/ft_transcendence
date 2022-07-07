@@ -613,6 +613,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server
 			.to(user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
+		this.server.in(user.id.toString()).socketsJoin(room.name);
 		socket.emit(
 			'userRoleChanged',
 			UserRole.VISITOR,
