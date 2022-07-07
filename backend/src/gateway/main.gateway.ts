@@ -254,9 +254,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			setRoleDto.userToGetNewRoleId,
 		);
 		// getting username to notify the admin that setNewUserRole either failed or succedded
-		const username: string = user.username;
-		if (!room) {
-			socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+		if (!user || !room) {
+			socket.emit(
+				'setUserRoleFail',
+				setRoleDto.newRole,
+				setRoleDto.roomName,
+			);
 			return;
 		}
 		if (
@@ -273,7 +276,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			);
 
 			if (!userRoleUpdateResult) {
-				socket.emit('setUserRoleFail', setRoleDto.newRole, username);
+				socket.emit(
+					'setUserRoleFail',
+					setRoleDto.newRole,
+					setRoleDto.roomName,
+				);
 				return;
 			}
 			const roomsList = await this.roomService.getPublicRoomsList(
@@ -283,7 +290,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				.to(setRoleDto.userToGetNewRoleId.toString())
 				.emit('postPublicRoomsList', roomsList);
 		}
-		socket.emit('userRoleChanged', setRoleDto.newRole, username);
+		socket.emit(
+			'userRoleChanged',
+			setRoleDto.newRole,
+			user.username,
+			room.name,
+		);
 	}
 
 	@SubscribeMessage('updateRoomPassword')
@@ -376,13 +388,39 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('muteUserInRoom')
 	async muteUserInRoom(
 		@MessageBody() muteUser: MuteUserDto,
-		@ConnectedSocket() client: Socket,
+		@ConnectedSocket() socket: Socket,
 	) {
-		const user: UserI = await this.userService.findByID(
-			client.data.user.id,
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+		const userToBeMuted: UserI = await this.userService.findByID(
+			muteUser.id,
 		);
-		if (!user) console.log('exception'); //TODO throw exception
-		await this.roomService.muteUserInRoom(muteUser, client.data.user.id);
+		const room = await this.roomService.findRoomByName(muteUser.roomName);
+		if (!userToBeMuted || !room) {
+			socket.emit('setUserRoleFail', UserRole.MUTED, muteUser.roomName);
+		}
+		await this.roomService.muteUserInRoom(
+			userToBeMuted.id,
+			room,
+			muteUser.durationMinute,
+			socket.data.user.id,
+		);
+		// event-notification emitted to the muted user:
+		this.server
+			.to(userToBeMuted.id.toString())
+			.emit('newRoleAcquired', UserRole.MUTED, room.name);
+		// event-confirmation emitted to the owner/admin:
+		socket.emit(
+			'userRoleChanged',
+			UserRole.MUTED,
+			userToBeMuted.username,
+			room.name,
+		);
 	}
 
 	@SubscribeMessage('getBlockedList')
@@ -517,7 +555,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			roomAndUser.roomName,
 		);
 		if (!user || !room) {
-			socket.emit('setUserRoleFail', UserRole.BANNED, user.username);
+			socket.emit(
+				'setUserRoleFail',
+				UserRole.BANNED,
+				roomAndUser.roomName,
+			);
 		}
 		await this.roomService.banUserFromRoom(
 			user.id,
@@ -533,8 +575,17 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server
 			.to(user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
-		this.server.to(user.id.toString()).emit('bannedFromRoom', room.name);
-		socket.emit('userRoleChanged', UserRole.BANNED, user.username); // event-confirmation emitted to the owner/admin
+		// event-notification emitted to the banned user:
+		this.server
+			.to(user.id.toString())
+			.emit('newRoleAcquired', UserRole.BANNED, room.name);
+		// event-confirmation emitted to the owner/admin:
+		socket.emit(
+			'userRoleChanged',
+			UserRole.BANNED,
+			user.username,
+			room.name,
+		);
 	}
 
 	@SubscribeMessage('unBanUserFromRoom')
@@ -550,7 +601,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 
 		if (!user || !room)
-			socket.emit('setUserRoleFail', UserRole.VISITOR, user.username);
+			socket.emit(
+				'setUserRoleFail',
+				UserRole.VISITOR,
+				roomAndUser.roomName,
+			);
 		await this.roomService.unBanUserFromRoom(
 			user.id,
 			room,
@@ -560,7 +615,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server
 			.to(user.id.toString())
 			.emit('postPublicRoomsList', roomsList);
-		socket.emit('userRoleChanged', UserRole.VISITOR, user.username); // event-confirmation emitted to the owner/admin
+		socket.emit(
+			'userRoleChanged',
+			UserRole.VISITOR,
+			user.username,
+			room.name,
+		); // event-confirmation emitted to the owner/admin
 	}
 
 	@SubscribeMessage('isUserBanned')

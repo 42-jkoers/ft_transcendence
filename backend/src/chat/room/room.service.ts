@@ -12,10 +12,8 @@ import { createRoomDto, RoomForUserDto } from './dto';
 import { directMessageDto } from './dto';
 import { UserToRoomEntity } from './entities/user.to.room.entity';
 import { UserRole } from './enums/user.role.enum';
-import { MuteUserDto } from './dto/mute.user.dto';
 import { MuteEntity } from './entities/mute.entity';
 import { MuteService } from './mute.service';
-import { RoomAndUserDTO } from './dto/room.and.user.dto';
 
 @Injectable()
 export class RoomService {
@@ -448,27 +446,33 @@ export class RoomService {
 		return true;
 	}
 
-	async muteUserInRoom(muteUser: MuteUserDto, mutingUserId: number) {
-		const roomName = muteUser.roomName;
-		const room = await getRepository(RoomEntity)
-			.createQueryBuilder('room')
-			.where('room.name = :roomName', { roomName })
-			.leftJoinAndSelect('room.mutes', 'mutes')
-			.getOne();
+	async muteUserInRoom(
+		userId: number,
+		room: RoomEntity,
+		durationInMinutes: number,
+		adminId: number,
+	) {
+		// const roomName = muteUser.roomName;
+		// const room = await getRepository(RoomEntity)
+		// 	.createQueryBuilder('room')
+		// 	.where('room.name = :roomName', { roomName })
+		// 	.leftJoinAndSelect('room.mutes', 'mutes')
+		// 	.getOne();
 
-		await this.userService.isOwnerOrAdmin(mutingUserId, room.id);
+		await this.userService.isOwnerOrAdmin(adminId, room.id);
 
 		const currentDate = new Date();
 		const muteLimitEnd = new Date(
-			currentDate.getTime() + muteUser.durationMinute * 60000,
+			currentDate.getTime() + durationInMinutes * 60000,
 		);
 		const newMute: MuteEntity = await this.muteService.create(
-			muteUser.id,
+			userId,
 			muteLimitEnd,
 			room,
 		);
 		room.mutes.push(newMute);
 		await this.roomEntityRepository.save(room);
+		await this.setUserRole(userId, room.id, UserRole.MUTED);
 	}
 
 	async checkIfMutedAndMuteDeadlineAndRemoveMute(
@@ -490,6 +494,7 @@ export class RoomService {
 			} else {
 				room.mutes.splice(muteIndex, 1);
 				await this.roomEntityRepository.save(room);
+				await this.setUserRole(userId, room.id, UserRole.VISITOR);
 				return true;
 			}
 		}
