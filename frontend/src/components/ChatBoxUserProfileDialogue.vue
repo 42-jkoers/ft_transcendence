@@ -6,8 +6,10 @@
   >
     <template #header>
       <h3 icon="pi pi-times">{{ clickedUserObject.username }}</h3>
-      <p v-if="isOnline">online</p>
-      <p v-else>offline</p>
+      <UserStatus
+        :userId="clickedUserObject.id"
+        :gameStatus="clickedUserObject.gameStatus"
+      />
     </template>
     <Image
       :src="clickedUserObject.avatar"
@@ -39,8 +41,8 @@ import Button from "primevue/button";
 import Image from "primevue/image"; //TODO style img width
 import { useStore } from "vuex";
 import ChatBoxSendDMButton from "./ChatBoxSendDMButton.vue";
+import UserStatus from "./UserStatus.vue";
 
-const isOnline = ref(true); //FIXME change this when we have onlin/offline info in user
 const props = defineProps(["isDialogVisible", "clickedUserObject"]);
 
 const emit = defineEmits(["update:isDialogVisible"]);

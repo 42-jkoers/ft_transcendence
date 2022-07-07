@@ -709,9 +709,17 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 	) {
 		const user = await this.userService.getUserByID(id);
+		client.emit('getUserProfile', user);
+	}
+
+	@SubscribeMessage('getUserConnectedSocketCount')
+	async getUserConnectedSocketCount(
+		@MessageBody() id: number,
+		@ConnectedSocket() client: Socket,
+	) {
 		const socketCount = (await this.server.in(id.toString()).fetchSockets())
 			.length;
-		client.emit('getUserProfile', user, socketCount);
+		client.emit('getUserConnectedSocketCount', socketCount);
 	}
 
 	@SubscribeMessage('sendGameInvite')
