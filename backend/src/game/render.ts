@@ -22,7 +22,8 @@ export interface PaddleUpdate {
 	y: number; // point is defined as top left
 	x: number; // point is defined as top left
 	height: number;
-	width: number; // defined as horizontal distance to end of paddle
+	width: number;
+	score: number;
 }
 
 export interface Frame {
@@ -36,41 +37,54 @@ class Paddle {
 	public readonly position: 'left' | 'right';
 	public y: number;
 	public x: number;
-	public height: number;
-	public width: number; // defined as horizontal distance to end of paddle
+	public readonly height: number;
+	public readonly width: number;
+	public score: number;
 
-	private speed: number;
+	private readonly speed: number;
 	private update: -1 | 0 | 1;
-	private canvas: Canvas;
+	private readonly canvas: Canvas;
 
 	constructor(userID: number, canvas: Canvas, position: 'left' | 'right') {
 		this.userID = userID;
-		this.x =
-			position == 'left'
-				? canvas.grid / 2
-				: canvas.width - canvas.grid / 2;
-		this.y = canvas.height * 0.05;
+
 		this.speed = canvas.width * 0.01;
 		this.height = canvas.height * 0.2;
 		this.width = canvas.grid / 2;
+		this.score = 0;
+
 		this.position = position;
-		this.update = 0;
 		this.canvas = canvas;
+
+		this.reset();
+	}
+
+	reset() {
+		this.x =
+			this.position == 'left'
+				? this.canvas.grid / 2
+				: this.canvas.width - this.canvas.grid / 2;
+		this.y = this.canvas.height * 0.05;
+		this.update = 0;
 	}
 
 	addUpdate(update: -1 | 1) {
 		this.update = update;
 	}
 
-	tick(): PaddleUpdate {
+	tick() {
 		this.y -= this.update * this.speed;
 		// TODO bounce
 		this.update = 0;
+	}
+
+	export(): PaddleUpdate {
 		return {
 			x: this.x,
 			y: this.y,
 			height: this.height,
 			width: this.width,
+			score: this.score,
 		};
 	}
 }
@@ -85,14 +99,18 @@ class Ball {
 
 	constructor(canvas: Canvas) {
 		this.c = canvas;
-		this.x = canvas.width * 0.5;
-		this.y = canvas.height * 0.5;
-		this.dx = canvas.height * -0.003;
-		this.dy = canvas.height * -0.005;
-		this.radius = canvas.grid;
+		this.reset();
 	}
 
-	tick(paddles: Paddle[]): BallUpdate {
+	reset() {
+		this.x = this.c.width * 0.5;
+		this.y = this.c.height * 0.5;
+		this.dx = this.c.height * -0.003;
+		this.dy = this.c.height * -0.005;
+		this.radius = this.c.grid;
+	}
+
+	tick(paddles: Paddle[]) {
 		this.x += this.dx;
 		this.y += this.dy;
 
@@ -109,9 +127,10 @@ class Ball {
 			this.dx *= -1;
 			this.x = this.c.width - this.radius - Number.EPSILON;
 		}
-
 		for (const paddle of paddles) this.tickPaddle(paddle);
+	}
 
+	export(): BallUpdate {
 		return {
 			x: this.x,
 			y: this.y,
@@ -141,6 +160,15 @@ class Ball {
 				this.dx *= -1;
 				this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
 			}
+		}
+
+		if (
+			(paddle.position == 'left' && this.x < this.radius) ||
+			(paddle.position == 'right' && this.x + this.radius > this.c.width)
+		) {
+			paddle.score++;
+			paddle.reset();
+			this.reset();
 		}
 	}
 }
@@ -175,9 +203,13 @@ export class Game {
 
 	tick(): Frame {
 		this.status = GameStatus.PLAYING;
+
+		for (const paddle of this.paddles) paddle.tick();
+		this.ball.tick(this.paddles);
+
 		return {
-			ball: this.ball.tick(this.paddles),
-			paddles: this.paddles.map((p) => p.tick()),
+			ball: this.ball.export(),
+			paddles: this.paddles.map((p) => p.export()),
 			socketRoomID: this.socketRoomID,
 		};
 	}
