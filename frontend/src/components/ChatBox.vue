@@ -207,14 +207,15 @@ function sendMessage() {
 
 const ShowSuccessfulRoleChangeMessage = (
   newUserRole: UserRole,
-  username: string
+  username: string,
+  roomName: string
 ) => {
   const userRoleMessage = {
-    [UserRole.OWNER]: "is the chat room owner now",
-    [UserRole.ADMIN]: "is the chat room administrator now",
-    [UserRole.VISITOR]: "is added to the chat room",
-    [UserRole.BANNED]: `is banned from chat`,
-    [UserRole.MUTED]: "is muted",
+    [UserRole.OWNER]: `is the owner of ${roomName} now`,
+    [UserRole.ADMIN]: `is the administrator of ${roomName} now`,
+    [UserRole.VISITOR]: `is added to ${roomName}`,
+    [UserRole.BANNED]: `is banned from ${roomName}`,
+    [UserRole.MUTED]: `is muted in ${roomName}`,
     [UserRole.BLOCKED]: "is blocked",
     [UserRole.BLOCKING]: "is blocking",
   };
@@ -226,31 +227,57 @@ const ShowSuccessfulRoleChangeMessage = (
     life: 2000,
   });
 };
-const ShowRoleChangeFailMessage = (newUserRole: UserRole, username: string) => {
+
+const ShowNewRoleMessage = (newUserRole: UserRole, roomName: string) => {
   const userRoleMessage = {
-    [UserRole.OWNER]: "set as the room owner",
+    [UserRole.OWNER]: `have been set as the owner of ${roomName}`,
+    [UserRole.ADMIN]: `have been set as the administrator of ${roomName}`,
+    [UserRole.VISITOR]: `are added to the ${roomName}`,
+    [UserRole.BANNED]: `have been banned from ${roomName}`,
+    [UserRole.MUTED]: `have been muted in ${roomName} for 1 hour`,
+    [UserRole.BLOCKED]: "have been blocked",
+    [UserRole.BLOCKING]: "are blocking",
+  };
+  toast.add({
+    severity: "info",
+    summary: "",
+    detail: `You ${userRoleMessage[newUserRole]}`,
+    life: 2000,
+  });
+};
+
+const ShowRoleChangeFailMessage = (newUserRole: UserRole, roomName: string) => {
+  const userRoleMessage = {
+    [UserRole.OWNER]: `set as the owner of ${roomName}`,
     [UserRole.ADMIN]: "set as the room administrator",
     [UserRole.VISITOR]: "set as the room visitor",
     [UserRole.BANNED]: "banned from chat",
     [UserRole.MUTED]: "muted",
     [UserRole.BLOCKED]: "blocked from chat",
-    [UserRole.BLOCKING]: "is blocking",
+    [UserRole.BLOCKING]: "blocking",
   };
 
   toast.add({
     severity: "error",
     summary: "Error",
-    detail: `${username} cannot be ${userRoleMessage[newUserRole]}`,
+    detail: `User cannot be ${userRoleMessage[newUserRole]}`,
     life: 2000,
   });
 };
 
-socket.on("setUserRoleFail", (newUserRole: UserRole, username: string) => {
-  ShowRoleChangeFailMessage(newUserRole, username);
+socket.on(
+  "userRoleChanged",
+  (newUserRole: UserRole, username: string, roomName: string) => {
+    ShowSuccessfulRoleChangeMessage(newUserRole, username, roomName);
+  }
+);
+
+socket.on("newRoleAcquired", (newRole: UserRole, roomName: string) => {
+  ShowNewRoleMessage(newRole, roomName);
 });
 
-socket.on("userRoleChanged", (newUserRole: UserRole, username: string) => {
-  ShowSuccessfulRoleChangeMessage(newUserRole, username);
+socket.on("setUserRoleFail", (newUserRole: UserRole, roomName: string) => {
+  ShowRoleChangeFailMessage(newUserRole, roomName);
 });
 
 socket.on(
