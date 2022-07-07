@@ -448,18 +448,17 @@ export class RoomService {
 
 	async muteUserInRoom(
 		userId: number,
-		room: RoomEntity,
+		roomName,
 		durationInMinutes: number,
 		adminId: number,
 	) {
-		// const roomName = muteUser.roomName;
-		// const room = await getRepository(RoomEntity)
-		// 	.createQueryBuilder('room')
-		// 	.where('room.name = :roomName', { roomName })
-		// 	.leftJoinAndSelect('room.mutes', 'mutes')
-		// 	.getOne();
+		const roomWithMutes = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			.where('room.name = :roomName', { roomName })
+			.leftJoinAndSelect('room.mutes', 'mutes')
+			.getOne();
 
-		await this.userService.isOwnerOrAdmin(adminId, room.id);
+		await this.userService.isOwnerOrAdmin(adminId, roomWithMutes.id);
 
 		const currentDate = new Date();
 		const muteLimitEnd = new Date(
@@ -468,11 +467,11 @@ export class RoomService {
 		const newMute: MuteEntity = await this.muteService.create(
 			userId,
 			muteLimitEnd,
-			room,
+			roomWithMutes,
 		);
-		room.mutes.push(newMute);
-		await this.roomEntityRepository.save(room);
-		await this.setUserRole(userId, room.id, UserRole.MUTED);
+		roomWithMutes.mutes.push(newMute);
+		await this.roomEntityRepository.save(roomWithMutes);
+		await this.setUserRole(userId, roomWithMutes.id, UserRole.MUTED);
 	}
 
 	async checkIfMutedAndMuteDeadlineAndRemoveMute(
