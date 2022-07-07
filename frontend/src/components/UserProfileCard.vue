@@ -116,7 +116,6 @@ async function findUser() {
   socket.emit("getUserProfile", id.value);
   socket.on("getUserProfile", (response) => {
     if (response) {
-      console.log(">> socket count is: ", response.socketCount);
       user.value = response;
       isUserExist.value = true;
       isSelf.value = id.value === String(storeUser.state.user.id);

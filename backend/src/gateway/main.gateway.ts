@@ -64,7 +64,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.handshake.headers.cookie,
 		);
 		if (user) {
-			user = await this.userService.increaseSocketCount(user.id);
 			console.log(user);
 			const roomEntities: RoomEntity[] =
 				await this.roomService.getRoomsForUser(user.id); //TODO get only room names from room service
@@ -85,13 +84,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async handleDisconnect(client: Socket) {
-		const userId = client.data?.user?.id;
-		if (userId) {
-			const user = await this.userService.findByID(userId);
-			if (user) {
-				await this.userService.decreaseSocketCount(client.data.user.id);
-			}
-		}
 		this.connectedUserService.deleteBySocketId(client.id);
 		client.disconnect(); //manually disconnects the socket
 		this.logger.log('Client disconnected');

@@ -116,24 +116,6 @@ export class UserService {
 		}
 	}
 
-	async increaseSocketCount(userId: number): Promise<UserI> {
-		const currentSocketCount = await this.getSocketCount(userId);
-		await this.userRepository.update(userId, {
-			socketCount: currentSocketCount + 1,
-		});
-		return await this.getUserByID(userId);
-	}
-
-	async decreaseSocketCount(userId: number): Promise<UserI> {
-		const currentSocketCount = await this.getSocketCount(userId);
-		if (currentSocketCount > 0) {
-			await this.userRepository.update(userId, {
-				socketCount: currentSocketCount - 1,
-			});
-		}
-		return await this.getUserByID(userId);
-	}
-
 	async deleteUser(userId: number) {
 		// TODO: to delete from Game relationship?
 		await getConnection()
