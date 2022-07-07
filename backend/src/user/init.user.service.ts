@@ -7,7 +7,6 @@ import { UserService } from './user.service';
 export class InitUsersService implements OnModuleInit {
 	constructor(private readonly userService: UserService) {}
 	onModuleInit() {
-		// TODO: to delete
-		// this.userService.resetAllSocketCount();
+		// for potential use.
 	}
 }

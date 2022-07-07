@@ -18,7 +18,7 @@
         <template #content>
           <div v-if="isSafe">
             <UserStatus
-              :socketCount="user?.socketCount"
+              :socketCount="userConnectedSocketCount"
               :gameStatus="user?.gameStatus"
             />
             <h4>(to be add) game record</h4>
@@ -89,6 +89,7 @@ const toast = useToast();
 const route = useRoute();
 const id = computed(() => route.params.id);
 const user = ref<UserProfileI>();
+const userConnectedSocketCount = ref<number>(0);
 const isSelf = ref<boolean>();
 const isFriend = ref<boolean>();
 const isSafe = ref<boolean>();
@@ -114,9 +115,10 @@ async function updateProfile() {
 
 async function findUser() {
   socket.emit("getUserProfile", id.value);
-  socket.on("getUserProfile", (response) => {
-    if (response) {
-      user.value = response;
+  socket.on("getUserProfile", (userData, socketCount) => {
+    if (userData) {
+      user.value = userData;
+      userConnectedSocketCount.value = socketCount;
       isUserExist.value = true;
       isSelf.value = id.value === String(storeUser.state.user.id);
     } else {

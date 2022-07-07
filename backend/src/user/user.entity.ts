@@ -28,9 +28,6 @@ export class User {
 	@Column()
 	public avatar: string;
 
-	@Column()
-	public socketCount: number;
-
 	@ManyToMany(() => User)
 	@JoinTable({ joinColumn: { name: 'sender_id' } })
 	requestedFriends: User[];

@@ -611,11 +611,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() id: number,
 		@ConnectedSocket() client: Socket,
 	) {
-		let user = await this.userService.getUserByID(id);
-		user.socketCount = (
-			await this.server.in(id.toString()).fetchSockets()
-		).length;
-		client.emit('getUserProfile', user);
+		const user = await this.userService.getUserByID(id);
+		const socketCount = (await this.server.in(id.toString()).fetchSockets())
+			.length;
+		client.emit('getUserProfile', user, socketCount);
 	}
 
 	@SubscribeMessage('sendGameInvite')
