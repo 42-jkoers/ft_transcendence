@@ -431,12 +431,6 @@ const unBanUserFromRoom = () => {
     userId: computedID.value,
     roomName: route.params.roomName,
   });
-  toast.add({
-    severity: "info",
-    summary: "",
-    detail: "User has been unbanned",
-    life: 1000,
-  });
 };
 
 const isOwner = (userRole: UserRole | undefined) =>
