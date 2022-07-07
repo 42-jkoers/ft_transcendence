@@ -120,7 +120,7 @@ import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import UnblockUserButton from "./UnblockUserButton.vue";
 
-const socket: Socket = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 const messages = ref<Array<MessageI>>([]);
 const input = ref<string>("");
 const route = useRoute();
@@ -143,7 +143,7 @@ const displayAddUsersDialogue = ref(false);
 
 const store = useStore();
 const currentRoom = computed(() =>
-  store.state.roomsInfo.find((room) => room.name === route.params.roomName)
+  store.state.roomsInfo.find((room: any) => room.name === route.params.roomName)
 );
 
 const allowedToViewContent = ref<boolean>(false);
@@ -296,7 +296,7 @@ socket.on(
   }
 );
 
-socket?.on(
+socket.on(
   "unblockUserResult",
   (response: { id: number; username: string } | undefined) => {
     if (!response) {
@@ -415,7 +415,7 @@ const muteUserInRoom = () => {
   socket.emit("muteUserInRoom", {
     id: computedID.value,
     roomName: route.params.roomName,
-    durationMinute: 60, //TODO change after discussing with teammates
+    durationMinute: 60,
   });
 };
 
