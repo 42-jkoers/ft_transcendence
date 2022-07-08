@@ -76,7 +76,6 @@ export class UserService {
 			intraID: '00000',
 			username: 'admin',
 			avatar: '/default_avatar.png',
-			socketCount: 0,
 		};
 		const defaultUser = this.userRepository.create(defaultUserData);
 		await this.userRepository.save(defaultUser);
@@ -97,41 +96,6 @@ export class UserService {
 			return undefined;
 		}
 		return await this.findByID(userData.id);
-	}
-
-	async getSocketCount(userId: number): Promise<number> {
-		const user = await this.findByID(userId);
-		return user.socketCount;
-	}
-
-	async resetAllSocketCount() {
-		const userIdList = await this.userRepository
-			.createQueryBuilder('user')
-			.select(['user.id'])
-			.getMany();
-		for (let i = 0; i < userIdList.length; ++i) {
-			await this.userRepository.update(userIdList[i], {
-				socketCount: 0,
-			});
-		}
-	}
-
-	async increaseSocketCount(userId: number): Promise<UserI> {
-		const currentSocketCount = await this.getSocketCount(userId);
-		await this.userRepository.update(userId, {
-			socketCount: currentSocketCount + 1,
-		});
-		return await this.getUserByID(userId);
-	}
-
-	async decreaseSocketCount(userId: number): Promise<UserI> {
-		const currentSocketCount = await this.getSocketCount(userId);
-		if (currentSocketCount > 0) {
-			await this.userRepository.update(userId, {
-				socketCount: currentSocketCount - 1,
-			});
-		}
-		return await this.getUserByID(userId);
 	}
 
 	async deleteUser(userId: number) {

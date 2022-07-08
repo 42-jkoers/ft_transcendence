@@ -17,10 +17,7 @@
         </template>
         <template #content>
           <div v-if="isSafe">
-            <UserStatus
-              :socketCount="user?.socketCount"
-              :gameStatus="user?.gameStatus"
-            />
+            <UserStatus :userId="user?.id" :gameStatus="user?.gameStatus" />
             <h4>(to be add) game record</h4>
           </div>
         </template>
@@ -83,7 +80,7 @@ import UserStatus from "./UserStatus.vue";
 import { Socket } from "socket.io-client";
 import ChatBoxSendDMButton from "./ChatBoxSendDMButton.vue";
 
-const socket: Socket = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 
 const toast = useToast();
 const route = useRoute();
@@ -114,9 +111,9 @@ async function updateProfile() {
 
 async function findUser() {
   socket.emit("getUserProfile", id.value);
-  socket.on("getUserProfile", (response) => {
-    if (response) {
-      user.value = response;
+  socket.on("getUserProfile", (userData) => {
+    if (userData) {
+      user.value = userData;
       isUserExist.value = true;
       isSelf.value = id.value === String(storeUser.state.user.id);
     } else {

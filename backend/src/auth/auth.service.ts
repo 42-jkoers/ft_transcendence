@@ -34,8 +34,7 @@ export class AuthService {
 		const intraID = userDto.intraID;
 		const username = userDto.username;
 		const avatar = '/default_avatar.png';
-		const socketCount = 0;
-		const createUserDto = { intraID, username, avatar, socketCount };
+		const createUserDto = { intraID, username, avatar };
 		return await this.userService.createUser(createUserDto);
 	}
 
