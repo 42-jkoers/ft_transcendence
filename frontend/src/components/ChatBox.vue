@@ -159,9 +159,11 @@ onMounted(() => {
     if (currentRoom.value) {
       switch (currentRoom.value.userRole) {
         case UserRole.BLOCKING:
+          allowedToViewContent.value = true;
           isBlockingSecondUser.value = true;
           break;
         case UserRole.BLOCKED:
+          allowedToViewContent.value = true;
           isBlocked.value = true;
           break;
         case UserRole.BANNED:
@@ -206,6 +208,7 @@ function sendMessage() {
   input.value = "";
 }
 
+// messages for the user who IS changing the role of the other user
 const ShowSuccessfulRoleChangeMessage = (
   newUserRole: UserRole,
   username: string,
@@ -217,7 +220,8 @@ const ShowSuccessfulRoleChangeMessage = (
     [UserRole.VISITOR]: `is added to ${roomName}`,
     [UserRole.BANNED]: `is banned from ${roomName}`,
     [UserRole.MUTED]: `is muted in ${roomName}`,
-    [UserRole.BLOCKED]: "is blocked",
+    [UserRole.BLOCKED]:
+      "is blocked and won't be able to send you direct messages",
     [UserRole.BLOCKING]: "is blocking",
   };
 
@@ -229,6 +233,7 @@ const ShowSuccessfulRoleChangeMessage = (
   });
 };
 
+// messages for the user WHOSE role has been changed by another user
 const ShowNewRoleMessage = (newUserRole: UserRole, roomName: string) => {
   const userRoleMessage = {
     [UserRole.OWNER]: `have been set as the owner of ${roomName}`,
@@ -236,7 +241,7 @@ const ShowNewRoleMessage = (newUserRole: UserRole, roomName: string) => {
     [UserRole.VISITOR]: `are added to the ${roomName}`,
     [UserRole.BANNED]: `have been banned from ${roomName}`,
     [UserRole.MUTED]: `have been muted in ${roomName} for 1 hour`,
-    [UserRole.BLOCKED]: "have been blocked",
+    [UserRole.BLOCKED]: "has been blocked",
     [UserRole.BLOCKING]: "are blocking",
   };
   toast.add({
@@ -249,19 +254,19 @@ const ShowNewRoleMessage = (newUserRole: UserRole, roomName: string) => {
 
 const ShowRoleChangeFailMessage = (newUserRole: UserRole, roomName: string) => {
   const userRoleMessage = {
-    [UserRole.OWNER]: `set as the owner of ${roomName}`,
-    [UserRole.ADMIN]: "set as the room administrator",
-    [UserRole.VISITOR]: "set as the room visitor",
-    [UserRole.BANNED]: "banned from chat",
-    [UserRole.MUTED]: "muted",
-    [UserRole.BLOCKED]: "blocked from chat",
-    [UserRole.BLOCKING]: "blocking",
+    [UserRole.OWNER]: `setting the user as the owner of ${roomName}`,
+    [UserRole.ADMIN]: "setting the user as the room administrator",
+    [UserRole.VISITOR]: "adding the user to the chat room",
+    [UserRole.BANNED]: "banning user from chat",
+    [UserRole.MUTED]: "muting the user",
+    [UserRole.BLOCKED]: "blocking the user",
+    [UserRole.BLOCKING]: "blocking", // will be probably never user
   };
 
   toast.add({
     severity: "error",
     summary: "Error",
-    detail: `User cannot be ${userRoleMessage[newUserRole]}`,
+    detail: `Error ${userRoleMessage[newUserRole]}`,
     life: 2000,
   });
 };
@@ -290,14 +295,16 @@ socket.on(
   "blockUserResult",
   (response: { id: number; username: string } | undefined) => {
     if (!response) {
-      toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: `Error blocking the user`,
-        life: 2000,
-      });
+      ShowRoleChangeFailMessage(UserRole.BLOCKED, ""); // the second argument will be empty as we don't need it to be displayed for the blocked user message
     } else {
       isBlockingSecondUser.value = true;
+      if (currentRoom.value.displayName !== response.username) {
+        ShowSuccessfulRoleChangeMessage(
+          UserRole.BLOCKED,
+          response.username,
+          response.username
+        ); // the last argument stands for the room name, but the DMRooms names atre uuid, so we're passing display name, but this argument is not needed fr the block user message
+      }
     }
   }
 );
