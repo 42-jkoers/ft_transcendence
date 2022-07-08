@@ -12,9 +12,9 @@ import { RoomVisibilityType } from '../enums/room.visibility.enum';
 
 export class createRoomDto {
 	@IsNotEmpty()
-	@Matches(/^[A-Za-z0-9][A-Za-z0-9 ]*[A-Za-z0-9]$/, {
+	@Matches(/^[A-Za-z][A-Za-z\d_]*$/, {
 		message: () => {
-			return 'The name can contain letters of Latin alphabet, digits or whitespace. It cannot start or end with a whitespace.';
+			return 'The name must start with a Latin letter. It can also contain digits and undescores("_")';
 		},
 	})
 	@MinLength(1, {

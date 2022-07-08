@@ -30,11 +30,13 @@
           <div>
             <i
               v-if="slotProps.data.protected"
+              v-tooltip.right="'Protected'"
               class="pi pi-shield"
               style="font-size: 0.8rem"
             ></i>
             <i
               v-else-if="slotProps.data.isDirectMessage"
+              v-tooltip.right="'Direct message'"
               class="pi pi-user"
               style="font-size: 0.8rem"
             ></i>
@@ -44,9 +46,15 @@
                 !slotProps.data.isDirectMessage
               "
               class="pi pi-lock"
+              v-tooltip.right="'Private'"
               style="font-size: 0.8rem"
             ></i>
-            <i v-else class="pi pi-hashtag" style="font-size: 0.8rem"></i>
+            <i
+              v-else
+              class="pi pi-hashtag"
+              v-tooltip.right="'Public'"
+              style="font-size: 0.8rem"
+            ></i>
           </div>
         </template>
       </Column>
@@ -62,6 +70,7 @@
             <i
               v-if="slotProps.data.userRole !== undefined"
               class="pi pi-check-circle"
+              v-tooltip.top="'You\'ve joined this chat'"
               style="font-size: 0.8rem"
             ></i>
           </div>
