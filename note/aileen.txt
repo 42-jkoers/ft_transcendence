@@ -250,12 +250,19 @@ Tutorial:
 	- improve GameView frontend design
 	- fix bug: when user sent an invite then join another queue, upon accept invite the other user receive error notification
 	
+******************************************
+**				Finalizing Branches						**
+******************************************
+(Thu) 2022-07-07
+	- [improve online status]
+(Fri) 2022-07-08
+	- [remove connected users]
+	- [fix Aileen to do]
 
 **************************
 **		Next To To				**
 **************************
-- key change event - force render
-	https://michaelnthiessen.com/force-re-render/
+- add integer dto (validation) to all socket message body 
 
 ******************************
 **			General To To				**

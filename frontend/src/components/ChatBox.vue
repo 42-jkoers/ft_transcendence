@@ -393,7 +393,7 @@ const items = ref([
     icon: "pi pi-fw pi-caret-right",
     visible: () => store.state.user.id !== computedID.value,
     command: () => {
-      socket.emit("sendGameInvite", computedID.value);
+      socket.emit("sendGameInvite", { data: computedID.value });
       toast.add({
         severity: "info",
         detail: "Game invitation sent.",

@@ -1,4 +1,4 @@
-import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Logger, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
 	ConnectedSocket,
 	MessageBody,
@@ -34,6 +34,7 @@ import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 import { GameStatusType } from 'src/game/gamestatus.enum';
 import { GameEntity } from 'src/game/game.entity';
 import { FriendService } from 'src/user/friend/friend.service';
+import { IntegerDto } from './util/integer.dto';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -698,63 +699,74 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.emit('getGameList', gameList);
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('getUserProfile')
 	async getUser(
-		@MessageBody() id: number,
+		@MessageBody() id: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
-		const user = await this.userService.getUserByID(id);
+		const user = await this.userService.getUserByID(id.data);
 		client.emit('getUserProfile', user);
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('getUserConnectedSocketCount')
 	async getUserConnectedSocketCount(
-		@MessageBody() id: number,
+		@MessageBody() id: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
 		const isSafe: boolean =
-			id === client.data.user.id
+			id.data === client.data.user.id
 				? true
-				: await this.friendService.isFriends(id, client.data.user.id);
-		const socketCount = (await this.server.in(id.toString()).fetchSockets())
-			.length;
+				: await this.friendService.isFriends(
+						id.data,
+						client.data.user.id,
+				  );
+		const socketCount = (
+			await this.server.in(id.data.toString()).fetchSockets()
+		).length;
 		client.emit('getUserConnectedSocketCount', socketCount, isSafe);
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('sendGameInvite')
 	async sendGameInvite(
-		@MessageBody() receiverId: number,
+		@MessageBody() receiverId: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
 		const sender = await this.userService.getUserByID(client.data.user.id);
-		const receiver = await this.userService.getUserByID(receiverId);
+		const receiver = await this.userService.getUserByID(receiverId.data);
 		if (!sender || !receiver) {
 			client.emit('errorGameInvite', 'User does not exist.');
 		} else {
 			await this.gameService.addGameInvite(sender, receiver);
 			const updatedInviteList =
-				await this.gameService.getReceivedGameInvites(receiverId);
+				await this.gameService.getReceivedGameInvites(receiverId.data);
 			this.server
 				.to(receiverId.toString())
 				.emit('getReceivedGameInvites', updatedInviteList);
 		}
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('getReceivedGameInvites')
 	async getReceivedGameInvites(
-		@MessageBody() userId: number,
+		@MessageBody() userId: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
-		const response = await this.gameService.getReceivedGameInvites(userId);
+		const response = await this.gameService.getReceivedGameInvites(
+			userId.data,
+		);
 		client.emit('getReceivedGameInvites', response);
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('removeGameInvite')
 	async removeGameInvite(
-		@MessageBody() senderId: number,
+		@MessageBody() senderId: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
-		const sender = await this.userService.getUserByID(senderId);
+		const sender = await this.userService.getUserByID(senderId.data);
 		const receiver = await this.userService.getUserByID(
 			client.data.user.id,
 		);
@@ -792,13 +804,14 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('acceptGameInvite')
 	async acceptGameInvite(
-		@MessageBody() senderId: number,
+		@MessageBody() senderId: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
 		this.removeGameInvite(senderId, client);
-		const sender = await this.userService.getUserByID(senderId);
+		const sender = await this.userService.getUserByID(senderId.data);
 		if (sender.gameStatus === GameStatusType.PLAYING) {
 			client.emit(
 				'errorMatchMaking',
@@ -806,7 +819,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			);
 		} else {
 			this.server
-				.to(senderId.toString())
+				.to(senderId.data.toString())
 				.emit(
 					'matchGameInvite',
 					client.data.user.id,
@@ -815,26 +828,27 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('matchGameInviteSuccess')
 	async matchGameInviteSuccess(
-		@MessageBody() receiverId: number,
+		@MessageBody() receiverId: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
 		try {
 			// step 1: create game
 			const createdGame = await this.createGame(
 				client.data.user.id,
-				receiverId,
+				receiverId.data,
 			);
 			// step 2: refresh Invite list (for receiver)
 			const updateInviteList =
-				await this.gameService.getReceivedGameInvites(receiverId);
+				await this.gameService.getReceivedGameInvites(receiverId.data);
 			this.server
-				.to(receiverId.toString())
+				.to(receiverId.data.toString())
 				.emit('getReceivedGameInvites', updateInviteList);
 			// step 3: notify the both user game is ready
 			this.server
-				.to(receiverId.toString())
+				.to(receiverId.data.toString())
 				.to(client.data.user.id.toString())
 				.emit('startGame', createdGame.id);
 		} catch (error) {
@@ -842,24 +856,22 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('matchGameInviteFail')
-	async matchGameInviteFail(
-		@MessageBody() receiverId: number,
-		@ConnectedSocket() client: Socket,
-	) {
+	async matchGameInviteFail(@MessageBody() receiverId: IntegerDto) {
 		this.server
-			.to(receiverId.toString())
+			.to(receiverId.data.toString())
 			.emit('errorMatchMaking', 'The other player quit the game.');
 	}
 
-	// TODO: ValidationPipe
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('getGame')
-	async getGame(client: Socket, id: number) {
-		const game = this.gameService.findInPlayByID(id);
+	async getGame(client: Socket, id: IntegerDto) {
+		const game = this.gameService.findInPlayByID(id.data);
 		if (!game) return;
 		client.emit('getGame', game);
 		client.join(game.socketRoomID); // TODO: remove from room afterwards
-		console.log('getGame', id, game.socketRoomID);
+		console.log('getGame', id.data, game.socketRoomID);
 	}
 
 	// @SubscribeMessage('getUserType')
@@ -871,6 +883,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	// 	client.emit('getUserType', type);
 	// }
 
+	// TODO: to uncomment the valiadation?
 	// @UseFilters(new WsExceptionFilter())
 	// @UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('paddleUpdate')
@@ -927,12 +940,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('tempDeleteGame')
-	async tempExitGame(
-		@MessageBody() gameId: number,
-		@ConnectedSocket() client: Socket,
-	) {
-		const players = await this.gameService.getGamePlayers(gameId);
+	async tempExitGame(@MessageBody() gameId: IntegerDto) {
+		const players = await this.gameService.getGamePlayers(gameId.data);
 		await this.gameService.setGameStatus(
 			players[0].id,
 			GameStatusType.IDEL,
@@ -941,7 +952,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			players[1].id,
 			GameStatusType.IDEL,
 		);
-		await this.gameService.deleteGame(gameId);
+		await this.gameService.deleteGame(gameId.data);
 		this.broadcastGameList();
 	}
 }

@@ -33,11 +33,11 @@ socket.on("matchGameInvite", (componentId, componentName) => {
     header: "Confirmation",
     icon: "pi pi-exclamation-triangle",
     accept: () => {
-      socket.emit("matchGameInviteSuccess", componentId);
+      socket.emit("matchGameInviteSuccess", { data: componentId });
       router.push({ name: "GameWaitingRoom", params: { type: "invite" } });
     },
     reject: () => {
-      socket.emit("matchGameInviteFail", componentId);
+      socket.emit("matchGameInviteFail", { data: componentId });
     },
   });
 });

@@ -52,7 +52,7 @@ const receivedInviteList = ref();
 const router = useRouter();
 
 setTimeout(() => {
-  socket.emit("getReceivedGameInvites", storeUser.state.user.id);
+  socket.emit("getReceivedGameInvites", { data: storeUser.state.user.id });
 }, 100);
 
 socket.on("getReceivedGameInvites", (response) => {
@@ -69,11 +69,11 @@ socket.on("errorGameInvite", (response) => {
 });
 
 function rejectInvite(id: number) {
-  socket.emit("removeGameInvite", id);
+  socket.emit("removeGameInvite", { data: id });
 }
 
 function acceptInvite(id: number) {
-  socket.emit("acceptGameInvite", id);
+  socket.emit("acceptGameInvite", { data: id });
   router.push({ name: "GameWaitingRoom", params: { type: "invite" } });
 }
 </script>

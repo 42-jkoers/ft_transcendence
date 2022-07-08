@@ -110,7 +110,7 @@ async function updateProfile() {
 }
 
 async function findUser() {
-  socket.emit("getUserProfile", id.value);
+  socket.emit("getUserProfile", { data: id.value });
   socket.on("getUserProfile", (userData) => {
     if (userData) {
       user.value = userData;
