@@ -1,8 +1,11 @@
-import { IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class RoomAndUserDTO {
 	@IsNumber()
-	userId: number;
+	@IsOptional()
+	userId?: number;
 
+	@IsString()
+	@IsNotEmpty()
 	roomName: string;
 }

@@ -156,7 +156,7 @@ const currentRoom = computed(() =>
 
 const allowedToViewContent = ref<boolean>(false);
 onMounted(() => {
-  socket.emit("getMessagesForRoom", route.params.roomName); //emit to load once it's mounted
+  socket.emit("getMessagesForRoom", { roomName: route.params.roomName }); //emit to load once it's mounted
 
   socket.on("noPermissionToViewContent", () => {
     allowedToViewContent.value = false;
@@ -261,7 +261,7 @@ function sendMessage() {
   if (input.value) {
     socket.emit("addMessage", {
       text: input.value,
-      room: { name: route.params.roomName },
+      roomName: route.params.roomName,
       secondUserId: currentRoom.value.secondParticipant
         ? currentRoom.value.secondParticipant[0]
         : undefined,
@@ -348,7 +348,7 @@ onUnmounted(() => {
 });
 
 const addUserToRoom = () => {
-  socket.emit("addUserToRoom", route.params.roomName);
+  socket.emit("addUserToRoom", { roomName: route.params.roomName });
 };
 
 function onAddUserClick() {

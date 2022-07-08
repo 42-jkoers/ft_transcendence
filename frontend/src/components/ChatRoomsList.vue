@@ -108,12 +108,12 @@ import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";
 import { useToast } from "primevue/usetoast";
 
-const socket: Socket | undefined = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 const router = useRouter();
 const route = useRoute();
 
 const rooms = ref();
-socket?.emit("getPublicRoomsList");
+socket.emit("getPublicRoomsList");
 
 const isRoomsListReady = ref<boolean>(false);
 const store = useStore();
@@ -127,14 +127,14 @@ onMounted(() => {
 const updateRoomsListInStore = (roomsList: Room[]) =>
   store.commit("updateRoomsListInStore", roomsList);
 
-socket?.on("postPublicRoomsList", (response) => {
+socket.on("postPublicRoomsList", (response) => {
   isRoomsListReady.value = true;
   console.log("rooms from server", response);
   rooms.value = response;
   updateRoomsListInStore(response);
 });
 
-socket?.on("room deleted", (deletedRoomName) => {
+socket.on("room deleted", (deletedRoomName) => {
   if (deletedRoomName === route.params.roomName) {
     router.push({
       name: "Chat",
@@ -144,7 +144,7 @@ socket?.on("room deleted", (deletedRoomName) => {
 });
 
 const toast = useToast();
-socket?.on("CannotSendDirectMessage", (user) => {
+socket.on("CannotSendDirectMessage", (user) => {
   toast.add({
     severity: "error",
     summary: "Error",
@@ -153,7 +153,7 @@ socket?.on("CannotSendDirectMessage", (user) => {
   });
 });
 
-socket?.on("postPrivateChatRoom", (dMRoom) => {
+socket.on("postPrivateChatRoom", (dMRoom) => {
   router.push({
     name: "ChatBox",
     params: { roomName: dMRoom.name },
@@ -225,7 +225,7 @@ const confirmLeave = (room) => {
     header: "Leave Confirmation",
     icon: "pi pi-info-circle",
     accept: () => {
-      socket?.emit("removeUserFromRoom", room.value.name);
+      socket.emit("removeUserFromRoom", { roomName: room.value.name });
       if (
         route.params.roomName === room.value.name &&
         (room.value.visibility === RoomVisibility.PRIVATE ||
@@ -244,7 +244,7 @@ const handleAddToRoom = (room) => {
     selectedRoomName.value = room.name;
     displayPasswordDialog.value = true;
   } else {
-    socket?.emit("addUserToRoom", room.name);
+    socket.emit("addUserToRoom", { roomName: room.name });
   }
 };
 

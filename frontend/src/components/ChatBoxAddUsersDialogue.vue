@@ -36,7 +36,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import { useToast } from "primevue/usetoast";
 
-const socket: Socket = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 const route = useRoute();
 defineProps(["isDialogVisible"]);
 const emit = defineEmits(["update:isDialogVisible"]);
@@ -55,7 +55,9 @@ socket.on("getAllRegisteredUsersExceptYourselfAndAdmin", (response) => {
   userList.value = response;
 });
 
-socket.emit("getOneRoomWithUserToRoomRelations", route.params.roomName);
+socket.emit("getOneRoomWithUserToRoomRelations", {
+  roomName: route.params.roomName,
+});
 socket.on("getOneRoomWithUserToRoomRelations", (response) => {
   roomWithUserRelations.value = response;
 });
@@ -74,7 +76,9 @@ const onRow = (event) => {
       userId: user.id,
       roomName: route.params.roomName,
     });
-    socket.emit("getOneRoomWithUserToRoomRelations", route.params.roomName);
+    socket.emit("getOneRoomWithUserToRoomRelations", {
+      roomName: route.params.roomName,
+    });
   }
 };
 
