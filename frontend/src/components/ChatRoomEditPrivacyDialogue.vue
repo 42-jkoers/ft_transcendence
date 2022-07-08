@@ -90,7 +90,7 @@ const updateRoomPassword = () => {
     passwordValue.value = null;
   }
   socket.emit("updateRoomPassword", {
-    name: props.room.name,
+    roomName: props.room.name,
     password: passwordValue.value,
   });
   closePasswordDialog();
