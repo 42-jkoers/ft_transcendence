@@ -94,22 +94,30 @@
     </div>
   </div>
   <div v-else>
-    <Panel> </Panel>
+    <!-- <Panel> </Panel> -->
+    <ProgressSpinner
+      class="flex align-items-center justify-content-center"
+      style="width: 50px; height: 50px"
+      strokeWidth="6"
+      animationDuration=".5s"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, inject, onMounted, onUnmounted, computed } from "vue";
 import { Socket } from "socket.io-client";
-import MessageI from "../types/Message.interface";
+import router from "@/router";
 import { useRoute } from "vue-router";
 import moment from "moment";
 import { useStore } from "vuex";
-import UserProfileI from "../types/UserProfile.interface";
 import storeUser from "@/store";
 import ChatBoxUserProfileDialogue from "./ChatBoxUserProfileDialogue.vue";
+import MessageI from "../types/Message.interface";
 import { UserRole } from "@/types/UserRole.Enum";
+import UserProfileI from "../types/UserProfile.interface";
 import ChatBoxAddUsersDialogue from "./ChatBoxAddUsersDialogue.vue";
+import UnblockUserButton from "./UnblockUserButton.vue";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import PrimeVueButton from "primevue/button";
@@ -118,8 +126,7 @@ import Chip from "primevue/chip";
 import ContextMenu from "primevue/contextmenu";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
-import UnblockUserButton from "./UnblockUserButton.vue";
-import router from "@/router";
+import ProgressSpinner from "primevue/progressspinner";
 
 const socket: Socket = inject("socketioInstance") as Socket;
 const messages = ref<Array<MessageI>>([]);
@@ -184,10 +191,65 @@ onMounted(() => {
   socket.on("userBanFromRoomResult", (response) => {
     isUserBanned.value = response;
   });
+
+  socket.on(
+    "userRoleChanged",
+    (newUserRole: UserRole, username: string, roomName: string) => {
+      showSuccessfulRoleChangeMessage(newUserRole, username, roomName);
+    }
+  );
+
+  socket.on("newRoleAcquired", (newRole: UserRole, roomName: string) => {
+    if (route.params.roomName === roomName && newRole === UserRole.BANNED) {
+      router.push({
+        name: "Chat",
+      });
+    }
+    showNewRoleAcquiredMessage(newRole, roomName);
+  });
+
+  socket.on("setUserRoleFail", (newUserRole: UserRole, roomName: string) => {
+    showRoleChangeFailMessage(newUserRole, roomName);
+  });
+
+  socket.on(
+    "blockUserResult",
+    (response: { id: number; username: string } | undefined) => {
+      if (!response) {
+        showRoleChangeFailMessage(UserRole.BLOCKED, ""); // the second argument will be empty as we don't need it to be displayed for the blocked user message
+      } else {
+        isBlockingSecondUser.value = true;
+        if (currentRoom.value.displayName !== response.username) {
+          showSuccessfulRoleChangeMessage(
+            UserRole.BLOCKED,
+            response.username,
+            response.username
+          ); // the last argument stands for the room name, but the DMRooms names atre uuid, so we're passing display name, but this argument is not needed fr the block user message
+        }
+      }
+    }
+  );
+
+  socket.on(
+    "unblockUserResult",
+    (response: { id: number; username: string } | undefined) => {
+      if (!response) {
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: `Error unblocking user`,
+          life: 2000,
+        });
+      } else {
+        isBlockingSecondUser.value = false;
+      }
+    }
+  );
 });
 
-onUnmounted(() => {
-  socket.off("messageAdded"); //to prevent multiple event binding in every rerender
+// when the page is reloaded
+socket.on("connect", () => {
+  socket.sendBuffer = [];
 });
 
 socket.on("NoPermissionToAddMessage", () => {
@@ -209,7 +271,7 @@ function sendMessage() {
 }
 
 // messages for the user who IS changing the role of the other user
-const ShowSuccessfulRoleChangeMessage = (
+const showSuccessfulRoleChangeMessage = (
   newUserRole: UserRole,
   username: string,
   roomName: string
@@ -234,7 +296,10 @@ const ShowSuccessfulRoleChangeMessage = (
 };
 
 // messages for the user WHOSE role has been changed by another user
-const ShowNewRoleMessage = (newUserRole: UserRole, roomName: string) => {
+const showNewRoleAcquiredMessage = (
+  newUserRole: UserRole,
+  roomName: string
+) => {
   const userRoleMessage = {
     [UserRole.OWNER]: `have been set as the owner of ${roomName}`,
     [UserRole.ADMIN]: `have been set as the administrator of ${roomName}`,
@@ -252,7 +317,7 @@ const ShowNewRoleMessage = (newUserRole: UserRole, roomName: string) => {
   });
 };
 
-const ShowRoleChangeFailMessage = (newUserRole: UserRole, roomName: string) => {
+const showRoleChangeFailMessage = (newUserRole: UserRole, roomName: string) => {
   const userRoleMessage = {
     [UserRole.OWNER]: `setting the user as the owner of ${roomName}`,
     [UserRole.ADMIN]: "setting the user as the room administrator",
@@ -271,59 +336,16 @@ const ShowRoleChangeFailMessage = (newUserRole: UserRole, roomName: string) => {
   });
 };
 
-socket.on(
-  "userRoleChanged",
-  (newUserRole: UserRole, username: string, roomName: string) => {
-    ShowSuccessfulRoleChangeMessage(newUserRole, username, roomName);
-  }
-);
-
-socket.on("newRoleAcquired", (newRole: UserRole, roomName: string) => {
-  if (route.params.roomName === roomName && newRole === UserRole.BANNED) {
-    router.push({
-      name: "Chat",
-    });
-  }
-  ShowNewRoleMessage(newRole, roomName);
+onUnmounted(() => {
+  socket.off("messageAdded"); //to prevent multiple event binding in every rerender
+  socket.off("noPermissionToViewContent");
+  socket.off("userBanFromRoomResult");
+  socket.off("newRoleAcquired");
+  socket.off("userRoleChanged");
+  socket.off("setUserRoleFail");
+  socket.off("blockUserResult");
+  socket.off("unBlockUserResult");
 });
-
-socket.on("setUserRoleFail", (newUserRole: UserRole, roomName: string) => {
-  ShowRoleChangeFailMessage(newUserRole, roomName);
-});
-
-socket.on(
-  "blockUserResult",
-  (response: { id: number; username: string } | undefined) => {
-    if (!response) {
-      ShowRoleChangeFailMessage(UserRole.BLOCKED, ""); // the second argument will be empty as we don't need it to be displayed for the blocked user message
-    } else {
-      isBlockingSecondUser.value = true;
-      if (currentRoom.value.displayName !== response.username) {
-        ShowSuccessfulRoleChangeMessage(
-          UserRole.BLOCKED,
-          response.username,
-          response.username
-        ); // the last argument stands for the room name, but the DMRooms names atre uuid, so we're passing display name, but this argument is not needed fr the block user message
-      }
-    }
-  }
-);
-
-socket.on(
-  "unblockUserResult",
-  (response: { id: number; username: string } | undefined) => {
-    if (!response) {
-      toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: `Error unblocking user`,
-        life: 2000,
-      });
-    } else {
-      isBlockingSecondUser.value = false;
-    }
-  }
-);
 
 const addUserToRoom = () => {
   socket.emit("addUserToRoom", route.params.roomName);
@@ -403,7 +425,7 @@ const items = ref([
     command: () => banUserFromRoom(),
   },
   {
-    label: "Unban",
+    label: "Revoke ban",
     visible: () =>
       isOwnerOrAdmin(currentRoom.value.userRole) &&
       isNotYourself(computedID.value) &&
@@ -433,14 +455,14 @@ const muteUserInRoom = () => {
 };
 
 const banUserFromRoom = () => {
-  socket.emit("banUserFromRoom", {
+  socket.volatile.emit("banUserFromRoom", {
     userId: computedID.value,
     roomName: route.params.roomName,
   });
 };
 
 const unBanUserFromRoom = () => {
-  socket.emit("unBanUserFromRoom", {
+  socket.volatile.emit("unBanUserFromRoom", {
     userId: computedID.value,
     roomName: route.params.roomName,
   });
