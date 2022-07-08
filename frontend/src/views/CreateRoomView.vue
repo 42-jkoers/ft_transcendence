@@ -20,7 +20,10 @@
             required="true"
             maxlength="64"
           />
-          <label for="room-name">Select a unique name for your room</label>
+          <label for="room-name"
+            >The name must start with a Latin letter. It can contain digits and
+            '_'</label
+          >
           <small v-if="!isValidRoomName" id="room-name" class="p-error">{{
             invalidRoomNameResponseMessage
           }}</small>
@@ -46,7 +49,7 @@
               <span class="p-float-label">
                 <Password
                   id="password"
-                  v-model="passwordValue"
+                  :v-model="passwordValue"
                   toggleMask
                   maxlength="64"
                 />
@@ -128,11 +131,12 @@ function pushToNewRoom(newRoomName: string) {
 }
 
 // enjecting the socketIO instance  for catching incoming events
-const socket: Socket = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 
 // reactive state for showing error message for invalid room name
 const isValidRoomName = ref<boolean>(true);
 const invalidRoomNameResponseMessage = ref<string>("");
+
 socket.on("BadRequestException", (response) => {
   isValidRoomName.value = false;
   invalidRoomNameResponseMessage.value = response.message[0];
@@ -185,9 +189,3 @@ function closeCreateRoomView() {
   margin-top: 2rem;
 }
 </style>
-
-<!-- <div v-if="!isValidRoomName">
-        <InlineMessage severity="error">{{
-          invalidRoomNameResponseMessage
-        }}</InlineMessage>
-      </div> -->
