@@ -1,4 +1,3 @@
-import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
 import { UserToRoomEntity } from '../chat/room/entities/user.to.room.entity';
 
@@ -40,10 +39,6 @@ export class User {
 	@ManyToMany(() => User, { cascade: true })
 	@JoinTable({ joinColumn: { name: 'userId_1' } })
 	blocked: User[];
-
-	@JoinColumn()
-	@OneToMany(() => ConnectedUserEntity, (connection) => connection.user)
-	connections: ConnectedUserEntity[];
 
 	@OneToMany(() => UserToRoomEntity, (userToRoom) => userToRoom.user, {
 		cascade: true,

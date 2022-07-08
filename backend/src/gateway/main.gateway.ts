@@ -11,7 +11,6 @@ import {
 import { Socket, Server } from 'socket.io';
 import { UserI } from 'src/user/user.interface';
 import { AuthService } from '../auth/auth.service';
-import { ConnectedUserService } from '../chat/connected-user/connected-user.service';
 import { RoomService } from '../chat/room/room.service';
 import { MessageI } from '../chat/message/message.interface';
 import { MessageService } from '../chat/message/message.service';
@@ -43,7 +42,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private readonly authService: AuthService,
 		private readonly roomService: RoomService,
-		private readonly connectedUserService: ConnectedUserService,
 		private readonly messageService: MessageService,
 		private readonly userService: UserService,
 		private readonly blockedUsersService: BlockedUsersService,
@@ -78,15 +76,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		client.data.user = user;
 
-		await this.connectedUserService.createConnectedUser({
-			socketID: client.id,
-			user,
-		}); // save connection to DB
 		client.emit('clientConnected'); // this event needed to prevent rendering frontend components before connection is set
 	}
 
 	async handleDisconnect(client: Socket) {
-		this.connectedUserService.deleteBySocketId(client.id);
 		client.disconnect(); //manually disconnects the socket
 		this.logger.log('Client disconnected');
 	}

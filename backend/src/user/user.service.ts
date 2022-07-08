@@ -7,7 +7,6 @@ import { UserI } from './user.interface';
 import { RoomService } from '../chat/room/room.service';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { UserToRoomEntity } from 'src/chat/room/entities/user.to.room.entity';
-import ConnectedUserEntity from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { GameEntity } from 'src/game/game.entity';
@@ -100,12 +99,6 @@ export class UserService {
 
 	async deleteUser(userId: number) {
 		// TODO: to delete from Game relationship?
-		await getConnection()
-			.createQueryBuilder()
-			.delete()
-			.from(ConnectedUserEntity)
-			.where('userId = :userId', { userId })
-			.execute();
 		await getConnection()
 			.createQueryBuilder()
 			.delete()
