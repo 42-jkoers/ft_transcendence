@@ -5,4 +5,5 @@ export default interface UserProfileI {
   socketCount: number;
   twoFactor: boolean;
   isGaming: boolean;
+  ladder: number;
 }

@@ -1,6 +1,7 @@
 import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
 import { UserToRoomEntity } from '../chat/room/entities/user.to.room.entity';
+import { GameResultI } from './util/gameResult.interface';
 
 import {
 	Column,
@@ -78,6 +79,16 @@ export class User {
 
 	@Column({ default: false })
 	public isGaming: boolean;
+
+	//TODO how to set the gameresult all zero?
+	@Column({ default: 0 })
+	public ladder: number;
+
+	@Column({ default: 0 })
+	public wins: number;
+
+	@Column({ default: 0 })
+	public loses: number;
 }
 
 export default User;

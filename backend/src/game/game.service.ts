@@ -16,8 +16,6 @@ import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
 import { UserI } from 'src/user/user.interface';
-import { MatchHistoryI } from './matchHistory.interface';
-import { UserIdDto } from 'src/user/dto/userId.dto';
 
 // This is a in memory db of all the games in play
 // It is not in the postgres database because in a normal game there will be 60 updates per second
@@ -158,14 +156,14 @@ export class GameService {
 			// id: 10,
 			username: 'Aileen',
 			intraID: '20',
-			avatar: 'lemon',
+			avatar: '/default_avatar.png',
 			socketCount: 1,
 		});
 		const player2 = this.userRepository.create({
 			// id: 11,
 			username: 'Olga',
 			intraID: '30',
-			avatar: 'lemon',
+			avatar: '/default_avatar.png',
 			socketCount: 1,
 		});
 		await this.userRepository.save(player1);
@@ -192,14 +190,14 @@ export class GameService {
 			// id: 13,
 			username: 'Xiaojing',
 			intraID: '40',
-			avatar: 'lemon',
+			avatar: '/default_avatar.png',
 			socketCount: 1,
 		});
 		const player4 = this.userRepository.create({
 			// id: 14,
 			username: 'Irem',
 			intraID: '50',
-			avatar: 'lemon',
+			avatar: '/default_avatar.png',
 			socketCount: 1,
 		});
 		await this.userRepository.save(player3);
@@ -240,44 +238,32 @@ export class GameService {
 		await this.gameEntityRepository.save(game3);
 	}
 
-	// async getMatchHistory(id: number): Promise<MatchHistoryI> {
 	async getMatchHistory(UserId: number) {
 		// await this.seed(); //TODO this is for testing query purpose only, should be removed later
-		//query to get the match history table
-		//find player[0] and player[1] which contains the id, list the couter player, the updated_at, score(need to switch sequence depends on the searched player index)
-		// can I populate a result column? depends on the score
-
-		//one approach: search gameEntities with players with the same ID
-		// GameEntity.find({
-		// 	where: {
-		// 		playerId
-		// 	}
-		// })
-		//second: search Users with the id, then find all the gameEntities this player involved in
-		// const matchHistory = await this.userRepository.findOne(id, {
-		// 	relations: ['games'],
-		// });
-		// const matchHistory = await this.getAllGames(id);
-
-		const matchHistory = await getRepository(GameEntity)
+		const matchHistories = await getRepository(GameEntity)
 			.createQueryBuilder('game')
 			.leftJoin('game.players', 'player')
 			.select(['game.id', 'game.updated_at'])
-			// .addGroupBy('game.id')
 			.leftJoin('game.playerEntry', 'entry')
 			.addSelect(['entry.score', 'entry.result'])
 			.leftJoin('entry.player', 'gamer')
-			.addSelect(['gamer.username'])
+			.addSelect(['gamer.username', 'gamer.avatar'])
 			.where('player.id = :id', { id: UserId })
-			.getRawMany();
+			.getMany();
+		return matchHistories;
+	}
 
-		console.log('match history', matchHistory);
-		// console.log(this.gameEntityRepository);
-		// return this.userRepository
-		// 	.createQueryBuilder('User')
-		// 	.leftJoinAndSelect('User.games', 'games')
-		// 	.where('user.id = :players[].id', { GameEntity: id })
-		// 	.getMany();
+	flattenData(data: GameEntity) {
+		return [
+			data.id,
+			data.playerEntry[0].player.avatar,
+			data.playerEntry[0].player.username,
+			data.playerEntry[0].score + ':' + data.playerEntry[1].score,
+			data.playerEntry[1].player.avatar,
+			data.playerEntry[1].player.username,
+			data.playerEntry[0].result,
+			data.updated_at,
+		];
 	}
 
 	async createGame(sender: User, receiver: User): Promise<GameEntity> {

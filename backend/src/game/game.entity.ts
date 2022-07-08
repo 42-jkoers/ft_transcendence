@@ -1,3 +1,5 @@
+import { Type } from 'class-transformer';
+import { maxLength, ValidateNested } from 'class-validator';
 import User from 'src/user/user.entity';
 import {
 	CreateDateColumn,
@@ -36,6 +38,8 @@ export class GameEntity {
 	@ManyToMany(() => User, (user) => user.games)
 	players?: User[];
 
+	@ValidateNested({ each: true })
+	@Type(() => PlayerEntry)
 	@OneToMany(() => PlayerEntry, (playerEntry) => playerEntry.game)
 	@JoinColumn()
 	playerEntry: PlayerEntry[];

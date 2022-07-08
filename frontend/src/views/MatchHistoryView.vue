@@ -12,8 +12,8 @@
         <div class="col">
           <br />
           <br />
-          <h3 align="left">{{ user?.username }}</h3>
-          <h3 align="left">ladder (to be updated)</h3>
+          <h2 align="left">{{ user?.username }}</h2>
+          <h3 align="left">ladder: {{ user?.ladder }}</h3>
         </div>
       </div>
     </div>
@@ -39,11 +39,11 @@ const socket: Socket = inject("socketioInstance");
 const user = ref<UserProfileI>();
 const router = useRoute();
 const id = computed(() => router.params.id); //this is to get the id passed in as parameter from the router
-const toast = useToast();
+const toast = useToast(); //TODO check if we need it later
 
 onMounted(async () => {
   await findUser();
-  console.log("enter into the route matchhistory with id", id);
+  console.log("in view enter into the route matchhistory with id", id);
   console.log("user name", user.value?.username);
 });
 

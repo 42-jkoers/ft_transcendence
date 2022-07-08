@@ -21,7 +21,7 @@
               :socketCount="user?.socketCount"
               :isGaming="user?.isGaming"
             />
-            <h4>ladder: {{ ladder }}</h4>
+            <h4>ladder: {{ user?.ladder }}</h4>
           </div>
         </template>
         <template #footer>
@@ -93,7 +93,6 @@ const isSelf = ref<boolean>();
 const isFriend = ref<boolean>();
 const isSafe = ref<boolean>();
 const isUserExist = ref<boolean>(false);
-const ladder = ref<number>(0);
 
 watch(id, async () => {
   if (id.value) {
@@ -110,7 +109,7 @@ onMounted(async () => {
 async function updateProfile() {
   await findUser();
   await checkRelationship();
-  await getLadder();
+  // await getLadder();
   evaluateIsSafe();
 }
 
@@ -146,12 +145,12 @@ async function checkRelationship() {
   }
 }
 
-async function getLadder() {
-  socket.emit("getLadder", id.value);
-  socket.on("getLadder", (response) => {
-    ladder.value = response;
-  });
-}
+// async function getLadder() {
+//   socket.emit("getLadder", id.value);
+//   socket.on("getLadder", (response) => {
+//     ladder.value = response;
+//   });
+// }
 
 function evaluateIsSafe() {
   isSafe.value = isSelf.value || isFriend.value;
