@@ -1,5 +1,7 @@
 <template>
-  <Tag class="mr-2" :severity="style" :value="status" rounded :icon="icon" />
+  <div v-if="isVisible">
+    <Tag class="mr-2" :severity="style" :value="status" rounded :icon="icon" />
+  </div>
 </template>
 <script setup lang="ts">
 import { defineProps, ref, inject } from "vue";
@@ -16,29 +18,33 @@ const props = defineProps({
 });
 const icon = ref<string>();
 const style = ref<TagSeverityType>();
+const status = ref<string>();
 const userConnectedSocketCount = ref<number>(0);
+const isSafe = ref<boolean>(true);
 
 const socket: Socket = inject("socketioInstance") as Socket;
-socket.on("getUserConnectedSocketCount", (response) => {
-  userConnectedSocketCount.value = response;
+socket.on("getUserConnectedSocketCount", (socketCount, isSafeResponse) => {
+  userConnectedSocketCount.value = socketCount;
+  isSafe.value = isSafeResponse;
 });
 
-const status = computed(() => {
+const isVisible = computed(() => {
   socket.emit("getUserConnectedSocketCount", props.userId);
   if (userConnectedSocketCount.value === 0) {
     icon.value = "pi pi-power-off";
     style.value = undefined;
-    return "Offline";
+    status.value = "Offline";
   } else {
     if (props.gameStatus === GameStatusType.PLAYING) {
       icon.value = "pi pi-discord";
       style.value = "info";
-      return "Gaming";
+      status.value = "Gaming";
     } else {
       icon.value = "pi pi-user";
       style.value = "success";
-      return "Online";
+      status.value = "Online";
     }
   }
+  return isSafe.value;
 });
 </script>

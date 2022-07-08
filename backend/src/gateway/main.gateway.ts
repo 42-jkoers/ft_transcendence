@@ -34,6 +34,7 @@ import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 import { GameStatusType } from 'src/game/gamestatus.enum';
 import { GameEntity } from 'src/game/game.entity';
+import { FriendService } from 'src/user/friend/friend.service';
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -47,6 +48,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly userService: UserService,
 		private readonly blockedUsersService: BlockedUsersService,
 		private readonly gameService: GameService,
+		private readonly friendService: FriendService,
 	) {
 		// console.log('constructor');
 		setInterval(() => {
@@ -717,9 +719,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() id: number,
 		@ConnectedSocket() client: Socket,
 	) {
+		const isSafe: boolean =
+			id === client.data.user.id
+				? true
+				: await this.friendService.isFriends(id, client.data.user.id);
 		const socketCount = (await this.server.in(id.toString()).fetchSockets())
 			.length;
-		client.emit('getUserConnectedSocketCount', socketCount);
+		client.emit('getUserConnectedSocketCount', socketCount, isSafe);
 	}
 
 	@SubscribeMessage('sendGameInvite')

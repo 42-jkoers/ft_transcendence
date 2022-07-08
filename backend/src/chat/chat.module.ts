@@ -17,6 +17,7 @@ import { GameEntity } from 'src/game/game.entity';
 import { MuteService } from './room/mute.service';
 import { MuteEntity } from './room/entities/mute.entity';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
+import { FriendService } from 'src/user/friend/friend.service';
 
 @Module({
 	providers: [
@@ -27,6 +28,7 @@ import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 		MessageService,
 		GameService,
 		MuteService,
+		FriendService,
 	],
 	imports: [
 		forwardRef(() => AuthModule),
