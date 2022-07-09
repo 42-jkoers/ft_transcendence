@@ -65,8 +65,7 @@
 </template>
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { onMounted, ref, computed, watch, inject } from "vue";
-import axios from "axios";
+import { onMounted, ref, computed, watch, inject, onUnmounted } from "vue";
 import Card from "primevue/card";
 import Button from "primevue/button";
 import UserProfileI from "@/types/UserProfile.interface";
@@ -75,7 +74,6 @@ import { useRouter } from "vue-router";
 import EditFriendButton from "./EditFriendButton.vue";
 import { EditFriendActionType } from "@/types/editFriendAction";
 import { useToast } from "primevue/usetoast";
-import { ErrorType, errorMessage } from "@/types/errorManagement";
 import UserStatus from "./UserStatus.vue";
 import { Socket } from "socket.io-client";
 import ChatBoxSendDMButton from "./ChatBoxSendDMButton.vue";
@@ -92,52 +90,38 @@ const isSafe = ref<boolean>();
 const isUserExist = ref<boolean>(false);
 
 watch(id, async () => {
-  if (id.value) {
-    await updateProfile();
-  }
+  await updateProfile();
 });
 
 onMounted(async () => {
-  setTimeout(async () => {
-    await updateProfile();
-  }, 100); // wait till socket connection finished (to get correct socketCount)
+  await updateProfile();
+  socket.on("getUserProfile", (userData, isFriendResult) => {
+    console.log(">> receive");
+    user.value = userData;
+    isUserExist.value = true;
+    isSelf.value = id.value === String(storeUser.state.user.id);
+    isFriend.value = isFriendResult;
+    evaluateIsSafe();
+  });
+
+  socket.on("errorGetUserProfile", (errorMessage) => {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: errorMessage,
+      life: 3000,
+    });
+  });
+});
+
+onUnmounted(() => {
+  socket.off("getUserProfile");
+  socket.off("errorGetUserProfile");
 });
 
 async function updateProfile() {
-  await findUser();
-  await checkRelationship();
-  evaluateIsSafe();
-}
-
-async function findUser() {
-  socket.emit("getUserProfile", { data: id.value });
-  socket.on("getUserProfile", (userData) => {
-    if (userData) {
-      user.value = userData;
-      isUserExist.value = true;
-      isSelf.value = id.value === String(storeUser.state.user.id);
-    } else {
-      toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: errorMessage(ErrorType.USER_NOT_EXIST),
-        life: 3000,
-      });
-    }
-  });
-}
-
-async function checkRelationship() {
-  if (!isSelf.value) {
-    await axios(
-      "http://localhost:3000/friend/is-friend?id1=" +
-        storeUser.state.user.id +
-        "&id2=" +
-        id.value,
-      { withCredentials: true }
-    ).then((response) => {
-      isFriend.value = response.data;
-    });
+  if (id.value) {
+    socket.emit("getUserProfile", { data: parseInt(id.value[0]) });
   }
 }
 

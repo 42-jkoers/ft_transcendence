@@ -1,4 +1,4 @@
-import { Logger, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
 	ConnectedSocket,
 	MessageBody,
@@ -682,17 +682,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server.emit('getGameList', gameList);
 	}
 
-	// @UseFilters(new WsExceptionFilter())
-	// @UsePipes(new ValidationPipe({ transform: true }))
-	// @SubscribeMessage('createGame')
-	// async createGame(
-	// 	@MessageBody() game: CreateGameDto,
-	// 	@ConnectedSocket() client: Socket,
-	// ) {
-	// 	await this.gameService.createGame(game, client.data.user);
-	// 	await this.broadcastGameList();
-	// }
-
 	@SubscribeMessage('getGameList')
 	async getGameList(@ConnectedSocket() client: Socket) {
 		const gameList = await this.gameService.getGameList();
@@ -706,7 +695,15 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 	) {
 		const user = await this.userService.getUserByID(id.data);
-		client.emit('getUserProfile', user);
+		if (!user) {
+			client.emit('errorGetUserProfile', 'User does not exist.');
+		} else {
+			const isFriend = await this.friendService.isFriends(
+				id.data,
+				client.data.user.id,
+			);
+			client.emit('getUserProfile', user, isFriend);
+		}
 	}
 
 	@UsePipes(new ValidationPipe({ transform: true }))

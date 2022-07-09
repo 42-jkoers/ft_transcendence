@@ -258,11 +258,14 @@ Tutorial:
 (Fri) 2022-07-08
 	- [remove connected users]
 	- [fix Aileen to do]
+		- add integer dto (validation) to all socket message body
+		- change UserProfileCard to pass validation pipe and implement socket
 
 **************************
 **		Next To To				**
 **************************
-- add integer dto (validation) to all socket message body 
+- check why game invite is not prompt to the receiver
+- fix todos
 
 ******************************
 **			General To To				**
