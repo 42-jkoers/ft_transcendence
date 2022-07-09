@@ -45,7 +45,7 @@ import Dialog from "primevue/dialog";
 import Password from "primevue/password";
 import Button from "primevue/button";
 
-const socket: Socket = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 
 const props = defineProps(["isDialogVisible", "roomName"]);
 
@@ -64,13 +64,13 @@ const matchingPasswordError = ref(false);
 
 const validatePassword = () => {
   socket.emit("checkRoomPasswordMatch", {
-    name: props.roomName,
+    roomName: props.roomName,
     password: passwordValue.value,
   });
   socket.on("isRoomPasswordMatched", (isMatched: boolean) => {
     if (isMatched) {
       closePasswordDialog();
-      socket.emit("addUserToRoom", props.roomName);
+      socket.emit("addUserToRoom", { roomName: props.roomName });
       router.push({
         name: "ChatBox",
         params: { roomName: props.roomName },
