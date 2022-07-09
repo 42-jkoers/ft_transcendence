@@ -34,11 +34,8 @@ import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 import { GameStatusType } from 'src/game/gamestatus.enum';
 import { GameEntity } from 'src/game/game.entity';
 import { FriendService } from 'src/user/friend/friend.service';
-<<<<<<< HEAD
 import { IntegerDto } from './util/integer.dto';
-=======
 import { RoomPasswordDto } from 'src/chat/room/dto/room.password.dto';
->>>>>>> server_side_data_validation
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
