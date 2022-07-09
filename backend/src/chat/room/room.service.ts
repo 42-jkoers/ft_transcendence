@@ -30,6 +30,8 @@ export class RoomService {
 		private readonly muteService: MuteService,
 	) {}
 
+	/***** Find rooms *****/
+
 	async findRoomById(roomId: number): Promise<RoomEntity> {
 		return await this.roomEntityRepository.findOne({
 			where: { id: roomId },
@@ -95,41 +97,8 @@ export class RoomService {
 		return findResult ? true : false;
 	}
 
-	async createPrivateChatRoom(
-		dMRoom: directMessageDto,
-		firstUserId: number,
-	): Promise<RoomForUserDto | undefined> {
-		const id: string = uuid();
-		const room: createRoomDto = {
-			name: `${id}`,
-			isDirectMessage: true,
-			visibility: RoomVisibilityType.PRIVATE,
-			password: null,
-		};
-		const newRoom: RoomEntity = await this.createAndSaveNewRoom(
-			room,
-			firstUserId,
-		);
-		await this.addUserToRoom(dMRoom.userIds[0], newRoom, UserRole.VISITOR);
-		const response = plainToClass(RoomForUserDto, newRoom);
-		const secondUser = await this.userService.findByID(dMRoom.userIds[0]);
-		response.secondParticipant = [secondUser.id, secondUser.username];
-		return response;
-	}
+	/***** Create rooms *****/
 
-	async getSpecificRoomWithUserToRoomRelations(
-		roomName: string,
-	): Promise<RoomEntity> {
-		const specificRoom = await getRepository(RoomEntity)
-			.createQueryBuilder('room')
-			.where('room.name = :roomName', { roomName })
-			.leftJoinAndSelect('room.userToRooms', 'userToRooms')
-			.leftJoinAndSelect('userToRooms.user', 'user')
-			.getOne();
-		return specificRoom;
-	}
-
-	// emit
 	async createRoom(
 		roomPayload: createRoomDto,
 		userIdToAdd: number,
@@ -173,6 +142,53 @@ export class RoomService {
 		return newRoom;
 	}
 
+	async createDirectMessageRoom(
+		dMRoom: directMessageDto,
+		firstUserId: number,
+	): Promise<RoomForUserDto | undefined> {
+		const id: string = uuid();
+		const room: createRoomDto = {
+			name: `${id}`,
+			isDirectMessage: true,
+			visibility: RoomVisibilityType.PRIVATE,
+			password: null,
+		};
+		const newRoom: RoomEntity = await this.createAndSaveNewRoom(
+			room,
+			firstUserId,
+		);
+		await this.addUserToRoom(dMRoom.userIds[0], newRoom, UserRole.VISITOR);
+		const response = plainToClass(RoomForUserDto, newRoom);
+		const secondUser = await this.userService.findByID(dMRoom.userIds[0]);
+		response.secondParticipant = [secondUser.id, secondUser.username];
+		return response;
+	}
+
+	async createDefaultRoom() {
+		const defaultUser = await this.userService.createDefaultUser();
+		const defaultRoom: RoomEntity = await this.createAndSaveNewRoom(
+			{
+				name: 'general',
+				isDirectMessage: false,
+				visibility: RoomVisibilityType.PUBLIC,
+				password: null,
+			},
+			defaultUser.id,
+		);
+		return defaultRoom;
+	}
+
+	async addUserToRoom(
+		userToAddId: number,
+		room: RoomEntity,
+		userRole: UserRole,
+	) {
+		await this.createManyToManyRelationship(room, userToAddId, userRole);
+		await this.roomEntityRepository.save(room);
+	}
+
+	/***** Create/remove relationships *****/
+
 	async createManyToManyRelationship(
 		newRoom: RoomEntity,
 		userIdToAdd: number,
@@ -188,52 +204,6 @@ export class RoomService {
 		await this.userToroomEntityRepository.save(userToRoom);
 	}
 
-	async getDefaultRoom() {
-		let defaultRoom: RoomEntity | undefined = await this.findRoomById(1);
-		if (defaultRoom === undefined) {
-			defaultRoom = await this.createDefaultRoom();
-		}
-		return defaultRoom;
-	}
-
-	async createDefaultRoom() {
-		const defaultUser = await this.userService.createDefaultUser();
-		const defaultRoom: RoomEntity = await this.createAndSaveNewRoom(
-			{
-				name: 'general',
-				isDirectMessage: false,
-				visibility: RoomVisibilityType.PUBLIC,
-				password: null,
-			},
-			defaultUser.id,
-		);
-		await this.createDefaultProtectedRoom();
-		return defaultRoom;
-	}
-
-	// TODO: remove this temp room for testing protected
-	async createDefaultProtectedRoom() {
-		const defaultUser: User = await this.userService.getUserByID(1);
-		return await this.createAndSaveNewRoom(
-			{
-				name: 'general protected',
-				isDirectMessage: false,
-				visibility: RoomVisibilityType.PUBLIC,
-				password: '1',
-			},
-			defaultUser.id,
-		);
-	}
-
-	async addUserToRoom(
-		userToAddId: number,
-		room: RoomEntity,
-		userRole: UserRole,
-	) {
-		await this.createManyToManyRelationship(room, userToAddId, userRole);
-		await this.roomEntityRepository.save(room);
-	}
-
 	async deleteUserRoomRelationship(userToRemoveId: number, room: RoomEntity) {
 		await getConnection()
 			.createQueryBuilder()
@@ -247,78 +217,26 @@ export class RoomService {
 		await this.roomEntityRepository.save(room);
 	}
 
-	async setAdminAsOwner(room: RoomEntity) {
-		const admin = await this.findRoomAdmin(room.id);
-		if (admin) {
-			await this.setUserRole(admin.userId, room.id, UserRole.OWNER);
+	/***** Rooms getters *****/
+
+	async getDefaultRoom() {
+		let defaultRoom: RoomEntity | undefined = await this.findRoomById(1);
+		if (defaultRoom === undefined) {
+			defaultRoom = await this.createDefaultRoom();
 		}
-		return admin;
+		return defaultRoom;
 	}
 
-	async IsUserEligibleToSetRole(
-		currentUserId: number,
-		roomId: number,
-		anotherUserNewRole: UserRole,
-	): Promise<boolean> {
-		const userToRoomEntity =
-			await this.userToroomEntityRepository.findOneOrFail({
-				where: {
-					userId: currentUserId,
-					roomId: roomId,
-				},
-			});
-		if (!userToRoomEntity) return false;
-		const currentUserRole = userToRoomEntity.role;
-		return (
-			currentUserRole === UserRole.OWNER ||
-			(currentUserRole === UserRole.ADMIN &&
-				anotherUserNewRole > currentUserRole)
-		);
-	}
-
-	async setUserRole(userId: number, roomId: number, newRole: UserRole) {
-		const result = await getConnection()
-			.createQueryBuilder()
-			.update(UserToRoomEntity)
-			.set({ role: newRole })
-			.where('userId = :userId', { userId })
-			.andWhere('roomId = :roomId', { roomId })
-			.execute();
-		return result.affected;
-	}
-
-	async deleteRoom(room: RoomEntity) {
-		await getConnection()
-			.createQueryBuilder()
-			.delete()
-			.from(RoomEntity)
-			.where('id = :roomId', { roomId: room.id })
-			.execute();
-	}
-
-	// this function returns only one user if at least one is there, needed for finding out if room is empty
-	async getOneUserLeftInRoom(
-		room: RoomEntity,
-	): Promise<UserToRoomEntity | undefined> {
-		const userNumber = await this.userToroomEntityRepository.findOne({
-			where: {
-				roomId: room.id,
-			},
-		});
-		return userNumber;
-	}
-
-	async getSecondUserInDMRoom(
-		currentUserId: number,
-		dMRoomId: number,
-	): Promise<User> {
-		const secondParticipant = await getRepository(User)
-			.createQueryBuilder('user')
-			.innerJoin('user.userToRooms', 'userToRooms')
-			.where('userToRooms.roomId = :dMRoomId', { dMRoomId })
-			.andWhere({ id: Not(currentUserId) })
+	async getSpecificRoomWithUserToRoomRelations(
+		roomName: string,
+	): Promise<RoomEntity> {
+		const specificRoom = await getRepository(RoomEntity)
+			.createQueryBuilder('room')
+			.where('room.name = :roomName', { roomName })
+			.leftJoinAndSelect('room.userToRooms', 'userToRooms')
+			.leftJoinAndSelect('userToRooms.user', 'user')
 			.getOne();
-		return secondParticipant;
+		return specificRoom;
 	}
 
 	async getPublicRoomsList(userId: number) {
@@ -364,35 +282,6 @@ export class RoomService {
 		return filteredRooms;
 	}
 
-	async transformDBDataToDtoForClient(
-		rooms: RoomEntity[],
-		currentUserId: number,
-	) {
-		const roomsForClient = await Promise.all(
-			rooms.map(async (room) => {
-				const listedRoom = plainToClass(RoomForUserDto, room);
-				if (room.isDirectMessage) {
-					const secondParticipant = await this.getSecondUserInDMRoom(
-						currentUserId,
-						room.id,
-					);
-					listedRoom.secondParticipant = secondParticipant
-						? [secondParticipant.id, secondParticipant.username]
-						: [];
-					listedRoom.displayName = secondParticipant
-						? secondParticipant.username
-						: room.name;
-				} else {
-					listedRoom.displayName = room.name;
-				}
-				listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
-				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
-				return listedRoom;
-			}),
-		);
-		return roomsForClient;
-	}
-
 	async getRoomsForUser(userId: number): Promise<RoomEntity[]> {
 		//build SQL query to get rooms
 		// leftJoin will be referencing the property 'users' defined in the RoomEntity.
@@ -404,6 +293,44 @@ export class RoomService {
 			.getMany();
 		return userRooms;
 	}
+
+	/***** Retrieving users in room *****/
+
+	// this function returns only one user if at least one is there, needed for finding out if room is empty
+	async getOneUserLeftInRoom(
+		room: RoomEntity,
+	): Promise<UserToRoomEntity | undefined> {
+		const userNumber = await this.userToroomEntityRepository.findOne({
+			where: {
+				roomId: room.id,
+			},
+		});
+		return userNumber;
+	}
+
+	async getSecondUserInDMRoom(
+		currentUserId: number,
+		dMRoomId: number,
+	): Promise<User> {
+		const secondParticipant = await getRepository(User)
+			.createQueryBuilder('user')
+			.innerJoin('user.userToRooms', 'userToRooms')
+			.where('userToRooms.roomId = :dMRoomId', { dMRoomId })
+			.andWhere({ id: Not(currentUserId) })
+			.getOne();
+		return secondParticipant;
+	}
+
+	async deleteRoom(room: RoomEntity) {
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(RoomEntity)
+			.where('id = :roomId', { roomId: room.id })
+			.execute();
+	}
+
+	/***** Password: *****/
 
 	async updateRoomPassword(room: RoomEntity, newPassword: string | null) {
 		room.password = await this.setRoomPassword(newPassword);
@@ -445,6 +372,50 @@ export class RoomService {
 		}
 		return true;
 	}
+
+	/***** User roles: *****/
+
+	async setAdminAsOwner(room: RoomEntity) {
+		const admin = await this.findRoomAdmin(room.id);
+		if (admin) {
+			await this.setUserRole(admin.userId, room.id, UserRole.OWNER);
+		}
+		return admin;
+	}
+
+	async IsUserEligibleToSetRole(
+		currentUserId: number,
+		roomId: number,
+		anotherUserNewRole: UserRole,
+	): Promise<boolean> {
+		const userToRoomEntity =
+			await this.userToroomEntityRepository.findOneOrFail({
+				where: {
+					userId: currentUserId,
+					roomId: roomId,
+				},
+			});
+		if (!userToRoomEntity) return false;
+		const currentUserRole = userToRoomEntity.role;
+		return (
+			currentUserRole === UserRole.OWNER ||
+			(currentUserRole === UserRole.ADMIN &&
+				anotherUserNewRole > currentUserRole)
+		);
+	}
+
+	async setUserRole(userId: number, roomId: number, newRole: UserRole) {
+		const result = await getConnection()
+			.createQueryBuilder()
+			.update(UserToRoomEntity)
+			.set({ role: newRole })
+			.where('userId = :userId', { userId })
+			.andWhere('roomId = :roomId', { roomId })
+			.execute();
+		return result.affected;
+	}
+
+	/***** Muting: *****/
 
 	async muteUserInRoom(
 		userId: number,
@@ -500,6 +471,8 @@ export class RoomService {
 		return true;
 	}
 
+	/***** Banning: *****/
+
 	async banUserFromRoom(
 		userId: number,
 		room: RoomEntity,
@@ -540,5 +513,34 @@ export class RoomService {
 			(element) => element == userId,
 		);
 		return banIndex === -1 ? false : true;
+	}
+
+	async transformDBDataToDtoForClient(
+		rooms: RoomEntity[],
+		currentUserId: number,
+	) {
+		const roomsForClient = await Promise.all(
+			rooms.map(async (room) => {
+				const listedRoom = plainToClass(RoomForUserDto, room);
+				if (room.isDirectMessage) {
+					const secondParticipant = await this.getSecondUserInDMRoom(
+						currentUserId,
+						room.id,
+					);
+					listedRoom.secondParticipant = secondParticipant
+						? [secondParticipant.id, secondParticipant.username]
+						: [];
+					listedRoom.displayName = secondParticipant
+						? secondParticipant.username
+						: room.name;
+				} else {
+					listedRoom.displayName = room.name;
+				}
+				listedRoom.userRole = room.userToRooms[0]?.role; // getting role from userToRooms array
+				listedRoom.protected = room.password ? true : false; // we don't pass the password back to user
+				return listedRoom;
+			}),
+		);
+		return roomsForClient;
 	}
 }

@@ -16,7 +16,7 @@ import { useStore } from "vuex";
 const props = defineProps(["clickedUserId"]);
 const emit = defineEmits(["closeDialog"]);
 
-const socket: Socket | undefined = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 const store = useStore();
 const route = useRoute();
 const router = useRouter();
@@ -43,7 +43,7 @@ const sendDM = () => {
       isDirectMessage: true,
       userIds: [props.clickedUserId],
     };
-    socket?.emit("createPrivateChatRoom", dMRequest);
+    socket.emit("createDirectMessageRoom", dMRequest);
   }
 };
 </script>
