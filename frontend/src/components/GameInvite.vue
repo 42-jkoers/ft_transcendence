@@ -36,7 +36,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, inject } from "vue";
+import { ref, inject, onMounted, onUnmounted } from "vue";
 import Button from "primevue/button";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -55,17 +55,24 @@ setTimeout(() => {
   socket.emit("getReceivedGameInvites", { data: storeUser.state.user.id });
 }, 100);
 
-socket.on("getReceivedGameInvites", (response) => {
-  receivedInviteList.value = response;
+onMounted(() => {
+  socket.on("getReceivedGameInvites", (response) => {
+    receivedInviteList.value = response;
+  });
+
+  socket.on("errorGameInvite", (response) => {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: response,
+      life: 2000,
+    });
+  });
 });
 
-socket.on("errorGameInvite", (response) => {
-  toast.add({
-    severity: "error",
-    summary: "Error",
-    detail: response,
-    life: 2000,
-  });
+onUnmounted(() => {
+  socket.off("getReceivedGameInvites");
+  socket.off("errorGameInvite");
 });
 
 function rejectInvite(id: number) {

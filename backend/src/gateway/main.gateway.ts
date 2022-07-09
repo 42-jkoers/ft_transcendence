@@ -740,7 +740,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const updatedInviteList =
 				await this.gameService.getReceivedGameInvites(receiverId.data);
 			this.server
-				.to(receiverId.toString())
+				.to(receiverId.data.toString())
 				.emit('getReceivedGameInvites', updatedInviteList);
 		}
 	}

@@ -260,18 +260,18 @@ Tutorial:
 	- [fix Aileen to do]
 		- add integer dto (validation) to all socket message body
 		- change UserProfileCard to pass validation pipe and implement socket
+		- GameInvite socket un-listen
 
 **************************
 **		Next To To				**
 **************************
-- check why game invite is not prompt to the receiver
 - fix todos
+- socket.off for everything
 
 ******************************
 **			General To To				**
 ******************************
 - try/catch all axios exception
-- deregister user
 
 ******************************
 **					Issues					**
