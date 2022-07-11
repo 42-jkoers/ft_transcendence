@@ -44,10 +44,12 @@ async function gameLoop(server: Server, gameService: GameService) {
 
 		if (game.status == GameStatus.PLAYING)
 			server.in(frame.socketRoomID).emit('gameFrame', frame);
-		else if (game.status == GameStatus.COMPLETED)
+		else if (game.status == GameStatus.COMPLETED) {
+			server.in(frame.socketRoomID).emit('gameFrame', frame);
 			server
 				.in(game.socketRoomID)
 				.emit('gameFinished', game.getWinnerID());
+		}
 	}
 }
 
