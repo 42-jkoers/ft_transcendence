@@ -2,12 +2,17 @@
   <p class="message">
     This is the play page (look at the console for all info)
   </p>
-  <p>
-    {{ winnerMsg }}
-  </p>
-
-  <canvas width="300" height="400" id="game"></canvas>
-  <!-- TODO: variable instead 300 400 magic number -->
+  <div v-if="isGameFinish">
+    <h3>
+      {{ winnerMsg }}
+    </h3>
+    <h4>Play again:</h4>
+    <JoinGameQueueAutoVue />
+  </div>
+  <div v-else>
+    <canvas width="300" height="400" id="game"></canvas>
+    <!-- TODO: variable instead 300 400 magic number -->
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -15,7 +20,10 @@ import { inject, onMounted, ref } from "vue";
 import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
 import { GameInPlay, Frame } from "@backend/game/render";
+import JoinGameQueueAutoVue from "@/components/JoinGameQueueAuto.vue";
+import storeUser from "@/store";
 let winnerMsg = ref<string>("");
+const isGameFinish = ref<boolean>(false);
 
 function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
   const { width, height, grid } = game.canvas;
@@ -105,6 +113,7 @@ onMounted(() => {
   socket.on("gameFinished", (id: number) => {
     const msg = `Game is over, user ${id} won`; // TODO: instead of user id, show full name
     winnerMsg.value = msg;
+    isGameFinish.value = true;
     console.log(msg);
   });
 
