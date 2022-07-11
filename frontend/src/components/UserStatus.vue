@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { defineProps, ref, inject } from "vue";
 import Tag from "primevue/tag";
-import { GameStatusType } from "@/types/GameStatus.enum";
+import { PlayerGameStatusType } from "@/types/GameStatus.enum";
 import { Socket } from "socket.io-client";
 import { computed } from "@vue/reactivity";
 
@@ -35,7 +35,7 @@ const isVisible = computed(() => {
     style.value = undefined;
     status.value = "Offline";
   } else {
-    if (props.gameStatus === GameStatusType.PLAYING) {
+    if (props.gameStatus === PlayerGameStatusType.PLAYING) {
       icon.value = "pi pi-discord";
       style.value = "info";
       status.value = "Gaming";
