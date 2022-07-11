@@ -940,7 +940,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const game = this.gameService.findInPlayByID(id.data);
 		if (!game) return;
 		client.emit('getGame', game.getInPlay());
-		client.join(game.socketRoomID); // TODO: remove from room afterwards
+		client.join(game.socketRoomID);
 		console.log('getGame', id.data, game.socketRoomID);
 	}
 
