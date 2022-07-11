@@ -83,7 +83,10 @@ class Paddle {
 
 	tick() {
 		this.y -= this.update * this.speed;
-		// TODO bounce
+		if (this.y < 0) this.y = 0;
+		else if (this.y + this.height > this.canvas.height)
+			this.y = this.canvas.height - this.height;
+
 		this.update = 0;
 	}
 
