@@ -11,7 +11,7 @@ import {
 	PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GameEntity } from 'src/game/game.entity';
-import { GameStatusType } from 'src/game/gamestatus.enum';
+import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
 
 @Entity()
 export class User {
@@ -65,8 +65,8 @@ export class User {
 	@JoinTable({ joinColumn: { name: 'sender_id' } })
 	sentGameInvites: User[];
 
-	@Column({ default: GameStatusType.IDEL })
-	public gameStatus: GameStatusType;
+	@Column({ default: PlayerGameStatusType.IDLE })
+	public gameStatus: PlayerGameStatusType;
 }
 
 export default User;

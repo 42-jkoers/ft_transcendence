@@ -272,6 +272,7 @@ Tutorial:
 ******************************************
 (Mon) 2022-07-11
 	- create endGame logic
+	- rename GameStatusType enum to PlayerGameStatusType, correct IDEL to IDLE
 
 **************************
 **		Next To To				**

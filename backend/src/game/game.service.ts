@@ -6,7 +6,7 @@ import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
 import { UserI } from 'src/user/user.interface';
-import { GameStatusType } from './gamestatus.enum';
+import { PlayerGameStatusType } from './playergamestatus.enum';
 import { Game } from './render';
 
 Injectable();
@@ -36,9 +36,9 @@ export class GameService {
 		const inPlay = new Game([sender.id, receiver.id], newGame.id);
 		this.inPlays.push(inPlay);
 		// step 2: set both user game status = playing
-		sender.gameStatus = GameStatusType.PLAYING;
+		sender.gameStatus = PlayerGameStatusType.PLAYING;
 		await this.userRepository.save(sender);
-		receiver.gameStatus = GameStatusType.PLAYING;
+		receiver.gameStatus = PlayerGameStatusType.PLAYING;
 		await this.userRepository.save(receiver);
 		// step 3: remove both user from game invite.
 		await this.removeGameInvite(sender, receiver);
@@ -147,18 +147,18 @@ export class GameService {
 
 	async joinQueue(userId: number) {
 		await this.userRepository.update(userId, {
-			gameStatus: GameStatusType.QUEUE,
+			gameStatus: PlayerGameStatusType.QUEUE,
 		});
 	}
 
 	async quitQueue(userId: number) {
 		await this.userRepository.update(userId, {
-			gameStatus: GameStatusType.IDEL,
+			gameStatus: PlayerGameStatusType.IDLE,
 		});
 	}
 
 	async getGameQueue(): Promise<UserI[]> {
-		const gameStatus = GameStatusType.QUEUE;
+		const gameStatus = PlayerGameStatusType.QUEUE;
 		const queue = await this.userRepository
 			.createQueryBuilder('user')
 			.where('user.gameStatus = :gameStatus', { gameStatus })
@@ -166,7 +166,7 @@ export class GameService {
 		return queue;
 	}
 
-	async setGameStatus(userId: number, status: GameStatusType) {
+	async setGameStatus(userId: number, status: PlayerGameStatusType) {
 		await this.userRepository.update(userId, {
 			gameStatus: status,
 		});
@@ -188,8 +188,8 @@ export class GameService {
 
 	async endGame(gameId: number) {
 		const players = await this.getGamePlayers(gameId);
-		await this.setGameStatus(players[0].id, GameStatusType.IDEL);
-		await this.setGameStatus(players[1].id, GameStatusType.IDEL);
+		await this.setGameStatus(players[0].id, PlayerGameStatusType.IDLE);
+		await this.setGameStatus(players[1].id, PlayerGameStatusType.IDLE);
 		// TODO: to update Match History
 		await this.deleteGame(gameId);
 	}

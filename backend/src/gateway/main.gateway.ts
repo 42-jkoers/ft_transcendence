@@ -31,7 +31,7 @@ import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
 import { UserIdDto } from 'src/user/dto';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
-import { GameStatusType } from 'src/game/gamestatus.enum';
+import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
 import { GameEntity } from 'src/game/game.entity';
 import { FriendService } from 'src/user/friend/friend.service';
 import { IntegerDto } from './util/integer.dto';
@@ -861,8 +861,8 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!user1 || !user2) {
 			throw new Error('User does not exist.');
 		} else if (
-			user1.gameStatus === GameStatusType.PLAYING ||
-			user2.gameStatus === GameStatusType.PLAYING
+			user1.gameStatus === PlayerGameStatusType.PLAYING ||
+			user2.gameStatus === PlayerGameStatusType.PLAYING
 		) {
 			throw new Error('User is already in a game.');
 		} else {
@@ -882,7 +882,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	) {
 		this.removeGameInvite(senderId, client);
 		const sender = await this.userService.getUserByID(senderId.data);
-		if (sender.gameStatus === GameStatusType.PLAYING) {
+		if (sender.gameStatus === PlayerGameStatusType.PLAYING) {
 			client.emit(
 				'errorMatchMaking',
 				'The other player is already in a game.',
@@ -965,13 +965,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async quitQueue(client: Socket) {
 		const user = await this.userService.getUserByID(client.data.user.id);
 		switch (user.gameStatus) {
-			case GameStatusType.IDEL:
+			case PlayerGameStatusType.IDLE:
 				client.emit('errorMatchMaking', 'User is not in queue.');
 				return;
-			case GameStatusType.QUEUE:
+			case PlayerGameStatusType.QUEUE:
 				await this.gameService.quitQueue(user.id);
 				return;
-			case GameStatusType.PLAYING:
+			case PlayerGameStatusType.PLAYING:
 				client.emit('errorMatchMaking', 'User is already in a game.');
 				return;
 		}
@@ -981,7 +981,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async matchPlayer(client: Socket) {
 		// if user is already in queue
 		const user = await this.userService.getUserByID(client.data.user.id);
-		if (user.gameStatus === GameStatusType.QUEUE) {
+		if (user.gameStatus === PlayerGameStatusType.QUEUE) {
 			return;
 		}
 		// if user is not in quee
@@ -1016,11 +1016,11 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const players = await this.gameService.getGamePlayers(gameId.data);
 		await this.gameService.setGameStatus(
 			players[0].id,
-			GameStatusType.IDEL,
+			PlayerGameStatusType.IDLE,
 		);
 		await this.gameService.setGameStatus(
 			players[1].id,
-			GameStatusType.IDEL,
+			PlayerGameStatusType.IDLE,
 		);
 		await this.gameService.deleteGame(gameId.data);
 		this.broadcastGameList();
