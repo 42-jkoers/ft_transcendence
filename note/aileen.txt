@@ -262,6 +262,17 @@ Tutorial:
 		- change UserProfileCard to pass validation pipe and implement socket
 		- GameInvite socket un-listen
 
+(Mon) 2022-07-11
+	- [fix Aileen to do]
+		- clear friend action confirm dialog
+		- imporve log out logic
+
+******************************************
+**					End game logic							**
+******************************************
+(Mon) 2022-07-11
+	-
+
 **************************
 **		Next To To				**
 **************************
