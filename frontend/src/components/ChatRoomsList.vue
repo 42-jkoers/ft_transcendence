@@ -137,7 +137,6 @@ const updateRoomsListInStore = (roomsList: Room[]) =>
 
 socket.on("postPublicRoomsList", (response) => {
   isRoomsListReady.value = true;
-  console.log("rooms from server", response);
   rooms.value = response;
   updateRoomsListInStore(response);
 });

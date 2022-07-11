@@ -51,5 +51,6 @@ socket.on("logOutFromAnotherSocket", () => {
 .title {
   font-size: xx-large;
   font-weight: 600;
+  color: rgb(231, 240, 247);
 }
 </style>
