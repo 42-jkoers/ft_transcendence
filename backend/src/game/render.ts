@@ -133,12 +133,8 @@ class Ball {
 		else if (this.y + this.radius > this.c.height) {
 			this.y = this.c.height - this.radius - Number.EPSILON;
 			this.dy *= -1;
-		} //
-		else if (this.x + this.radius > this.c.width) {
-			// TODO: remove this
-			this.dx *= -1;
-			this.x = this.c.width - this.radius - Number.EPSILON;
 		}
+
 		for (const paddle of paddles) this.tickPaddle(paddle);
 	}
 
