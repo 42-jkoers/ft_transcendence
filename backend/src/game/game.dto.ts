@@ -21,8 +21,6 @@ export class PaddleUpdateDto {
 }
 
 export enum GameStatus {
-	IN_QUE,
 	PLAYING,
 	COMPLETED,
-	ABANDONED,
 }
