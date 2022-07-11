@@ -1,6 +1,7 @@
 <template>
   <div>
-    <h2>Welcome to our pong place. Meet other people and play pong together</h2>
+    <h3>Welcome to our pong place.</h3>
+    <h3>Meet other people and play pong together.</h3>
   </div>
   <div class="card">
     <div class="flex justify-content-center flex-wrap card-container mt-4">
@@ -11,7 +12,7 @@
       />
       <Button
         @click="goToGame"
-        label="Play Pong"
+        label="I want to play Pong"
         class="flex align-items-center justify-content-center border-round m-4"
       />
     </div>
@@ -34,7 +35,7 @@ const goToGame = () => {
 };
 </script>
 <style>
-h2 {
+h3 {
   color: rgb(203, 206, 208);
 }
 </style>
