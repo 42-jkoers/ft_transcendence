@@ -86,14 +86,16 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.logger.log('Client disconnected');
 	}
 
+	// if user logs out from one window, all other window will be logged out immediately
 	@SubscribeMessage('exitUserSocketRoom')
 	async exitUserSocketRoom(socket: Socket) {
-		const sockets = await this.server
-			.in(socket.data.user.id.toString())
-			.fetchSockets();
 		const socketRoom = socket.data.user.id.toString();
-		for (const socket of sockets) {
-			socket.leave(socketRoom);
+		const sockets = await this.server.in(socketRoom).fetchSockets();
+		for (const socket_iterator of sockets) {
+			if (socket_iterator.id !== socket.id) {
+				socket_iterator.emit('logOutFromAnotherSocket');
+			}
+			socket_iterator.leave(socketRoom);
 		}
 	}
 

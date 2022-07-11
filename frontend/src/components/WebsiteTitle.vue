@@ -41,6 +41,11 @@ socket.on("matchGameInvite", (componentId, componentName) => {
     },
   });
 });
+
+socket.on("logOutFromAnotherSocket", () => {
+  storeUser.dispatch("logout");
+  router.push({ name: "Home" });
+});
 </script>
 <style scoped>
 .title {
