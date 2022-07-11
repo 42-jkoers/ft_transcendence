@@ -1009,20 +1009,4 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 		}
 	}
-
-	@UsePipes(new ValidationPipe({ transform: true }))
-	@SubscribeMessage('tempDeleteGame')
-	async tempExitGame(@MessageBody() gameId: IntegerDto) {
-		const players = await this.gameService.getGamePlayers(gameId.data);
-		await this.gameService.setGameStatus(
-			players[0].id,
-			PlayerGameStatusType.IDLE,
-		);
-		await this.gameService.setGameStatus(
-			players[1].id,
-			PlayerGameStatusType.IDLE,
-		);
-		await this.gameService.deleteGame(gameId.data);
-		this.broadcastGameList();
-	}
 }
