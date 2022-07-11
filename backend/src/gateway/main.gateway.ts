@@ -45,16 +45,22 @@ async function gameLoop(server: Server, gameService: GameService) {
 		if (game.status == GameStatus.PLAYING)
 			server.in(frame.socketRoomID).emit('gameFrame', frame);
 		else if (game.status == GameStatus.COMPLETED) {
-			// inform players & watchers game is finished
+			// step 1: inform players & watchers game is finished
 			server
 				.in(game.socketRoomID)
 				.emit('gameFinished', game.getWinnerID());
-			// remove game from database
+			// step 2: remove game from database, change player game status
 			gameService.endGame(game.id);
-			// send update game list to all connected socket
-			const gameList = await gameService.getGameList();
-			server.emit('getGameList', gameList);
+			// step 3: remove players/watchers from game socket room
+			const sockets = await server.in(game.socketRoomID).fetchSockets();
+			for (const socket of sockets) {
+				socket.leave(game.socketRoomID);
+			}
 		}
+
+		// send update game list to all connected socket
+		const gameList = await gameService.getGameList();
+		server.emit('getGameList', gameList);
 	}
 }
 
