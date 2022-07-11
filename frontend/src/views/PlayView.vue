@@ -2,40 +2,35 @@
   <p class="message">
     This is the play page (look at the console for all info)
   </p>
+  <p>
+    {{ winnerMsg }}
+  </p>
 
   <canvas width="300" height="400" id="game"></canvas>
   <!-- TODO: variable instead 300 400 magic number -->
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted } from "vue";
+import { inject, onMounted, ref } from "vue";
 import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
-import { GameInPlay, Frame } from "@backend/game/game.dto";
+import { GameInPlay, Frame } from "@backend/game/render";
+let winnerMsg = ref<string>("");
 
 function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
   const { width, height, grid } = game.canvas;
   context.clearRect(0, 0, width, height);
 
-  // leftPaddle.y += leftPaddle.dy;
-  // rightPaddle.y += rightPaddle.dy;
-
-  // prevent paddles from going through walls
-  // if (leftPaddle.y < grid) {
-  //   leftPaddle.y = grid;
-  // } else if (leftPaddle.y > maxPaddleY) {
-  //   leftPaddle.y = maxPaddleY;
-  // }
-
-  // if (rightPaddle.y < grid) {
-  //   rightPaddle.y = grid;
-  // } else if (rightPaddle.y > maxPaddleY) {
-  //   rightPaddle.y = maxPaddleY;
-  // }
-
   context.fillStyle = "white";
   for (const paddle of f.paddles) {
     context.fillRect(paddle.x, paddle.y, grid, paddle.height);
+  }
+
+  if (f.paddles[0]) {
+    context.fillText(String(f.paddles[0].score), width / 2 - 90, 80);
+  }
+  if (f.paddles[1]) {
+    context.fillText(String(f.paddles[1].score), width / 2 + 80, 80);
   }
 
   context.fillRect(
@@ -60,6 +55,7 @@ function initCanvas(game: GameInPlay, ctx: CanvasRenderingContext2D) {
   console.log("init", game);
   ctx.canvas.width = game.canvas.width;
   ctx.canvas.height = game.canvas.height;
+  ctx.font = "35px courier"; // TODO: scale
 }
 
 function scaleFrame(frame: Frame, scaler: number) {
@@ -104,6 +100,12 @@ onMounted(() => {
     if (gameInPlay) {
       draw(context, gameInPlay, frame);
     }
+  });
+
+  socket.on("gameFinished", (id: number) => {
+    const msg = `Game is over, user ${id} won`; // TODO: instead of user id, show full name
+    winnerMsg.value = msg;
+    console.log(msg);
   });
 
   window.addEventListener("keydown", (e) => {

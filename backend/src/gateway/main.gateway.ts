@@ -20,8 +20,8 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
-import { GameService, tick } from '../game/game.service';
-import { PaddleUpdateDto } from 'src/game/game.dto';
+import { GameService } from '../game/game.service';
+import { GameStatus, PaddleUpdateDto } from 'src/game/game.dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
@@ -37,6 +37,20 @@ import { FriendService } from 'src/user/friend/friend.service';
 import { IntegerDto } from './util/integer.dto';
 import { RoomPasswordDto } from 'src/chat/room/dto/room.password.dto';
 
+async function gameLoop(server: Server, gameService: GameService) {
+	const games = await gameService.tick();
+	for (const game of games) {
+		const frame = game.getFrame();
+
+		if (game.status == GameStatus.PLAYING)
+			server.in(frame.socketRoomID).emit('gameFrame', frame);
+		else if (game.status == GameStatus.COMPLETED)
+			server
+				.in(game.socketRoomID)
+				.emit('gameFinished', game.getWinnerID());
+	}
+}
+
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
 }) //allows us to make use of any WebSockets library (in our case socket.io)
@@ -50,12 +64,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly gameService: GameService,
 		private readonly friendService: FriendService,
 	) {
-		// console.log('constructor');
-		setInterval(() => {
-			for (const update of tick()) {
-				this.server.in(update.socketRoomID).emit('gameFrame', update);
-			}
-		}, 1000 / 60); // TODO: something better than this, handling server lag
+		setInterval(() => gameLoop(this.server, this.gameService), 1000 / 60); // TODO: something better than this, handling server lag
 	}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -917,7 +926,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async getGame(client: Socket, id: IntegerDto) {
 		const game = this.gameService.findInPlayByID(id.data);
 		if (!game) return;
-		client.emit('getGame', game);
+		client.emit('getGame', game.getInPlay());
 		client.join(game.socketRoomID); // TODO: remove from room afterwards
 		console.log('getGame', id.data, game.socketRoomID);
 	}
