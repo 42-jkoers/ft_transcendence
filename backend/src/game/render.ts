@@ -72,7 +72,7 @@ class Paddle {
 		this.x =
 			this.position == 'left'
 				? this.canvas.grid / 2
-				: this.canvas.width - this.canvas.grid / 2;
+				: this.canvas.width - this.canvas.grid;
 		this.y = this.canvas.height / 2 + this.height / 2;
 		this.update = 0;
 	}
@@ -201,7 +201,7 @@ export class Game {
 	constructor(playerIDS: number[], id: number, status?: GameStatus) {
 		this.id = id;
 		this.socketRoomID = `game${id}`;
-		this.status = status ?? GameStatus.IN_QUE;
+		this.status = status ?? GameStatus.PLAYING;
 		this.paddles = [];
 		this.canvas = {
 			height: 1,
