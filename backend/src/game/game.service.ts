@@ -34,7 +34,7 @@ function collides(ball: Ball, paddle: Paddle) {
 	if (collides) {
 		ball.x = ball.radius + paddle.x + Number.EPSILON;
 		ball.dx *= -1;
-		console.log('c');
+		// console.log('c');
 	}
 }
 

@@ -66,15 +66,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.handshake.headers.cookie,
 		);
 		if (user) {
-			console.log(user);
+			// console.log(user);
 			const roomEntities: RoomEntity[] =
-				await this.roomService.getRoomsForUser(user.id); //TODO get only room names from room service
+				await this.roomService.getRoomsForUser(user.id);
 			roomEntities.forEach((room) => {
 				client.join(room.name);
 			}); //each new socket connection joins the room that the user is already a part of
 			client.join(user.id.toString()); //all clients join a unique room called by their ids. this is needed to fetch all sockets of that user
-		} else {
-			console.log('user not authorized.\n'); //FIXME throw an exception
 		}
 		client.data.user = user;
 
@@ -83,7 +81,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleDisconnect(client: Socket) {
 		client.disconnect(); //manually disconnects the socket
-		this.logger.log('Client disconnected');
 	}
 
 	// if user logs out from one window, all other window will be logged out immediately

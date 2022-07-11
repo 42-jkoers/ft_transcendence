@@ -19,7 +19,7 @@ export class MessageService {
 		room: RoomI,
 	): Promise<MessageI> {
 		message.user = user;
-		message.room = room; //TODO ask if modifying interface is best practice
+		message.room = room;
 		return this.messageRepository.save(
 			this.messageRepository.create(message),
 		);

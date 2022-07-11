@@ -36,7 +36,7 @@ import PrimeVueButton from "primevue/button";
 const router = useRouter();
 function openCreateRoomCard() {
   router.push({
-    name: "Create-chatroom", // FIXME : temporarily pushing back to chat
+    name: "Create-chatroom",
   });
 }
 </script>
