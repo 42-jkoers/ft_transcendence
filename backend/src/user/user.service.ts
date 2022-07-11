@@ -9,7 +9,7 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { UserToRoomEntity } from 'src/chat/room/entities/user.to.room.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
-import { GameEntity } from 'src/game/game.entity';
+import { GameStatusType } from 'src/game/gamestatus.enum';
 
 @Injectable()
 export class UserService {
@@ -157,5 +157,17 @@ export class UserService {
 		return this.userRepository.update(userId, {
 			isTwoFactorAuthEnabled: true,
 		});
+	}
+
+	async resetAllUserGameStatus() {
+		const userIdList = await this.userRepository
+			.createQueryBuilder('user')
+			.select(['user.id'])
+			.getMany();
+		for (const userId of userIdList) {
+			await this.userRepository.update(userId, {
+				gameStatus: GameStatusType.IDEL,
+			});
+		}
 	}
 }

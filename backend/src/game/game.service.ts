@@ -24,7 +24,7 @@ export class GameService {
 		@InjectRepository(User)
 		private userRepository: Repository<User>,
 	) {
-		// none
+		this.userService.resetAllUserGameStatus();
 	}
 
 	async createGame(sender: User, receiver: User): Promise<GameEntity> {
