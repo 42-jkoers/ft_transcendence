@@ -261,11 +261,12 @@ export class Game {
 	}
 
 	getWinnerID(): number | undefined {
-		// TODO: more info
-		// if (this.status !== GameStatus.COMPLETED) throw 'game not done yet';
-
-		for (const paddle of this.paddles) {
-			if (paddle.score > 5) return paddle.userID;
+		const winningScore = 5;
+		if (this.paddles[0]?.score >= winningScore) {
+			return this.paddles[1]?.userID;
+		}
+		if (this.paddles[1]?.score >= winningScore) {
+			return this.paddles[0]?.userID;
 		}
 		return undefined;
 	}
