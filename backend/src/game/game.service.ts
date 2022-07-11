@@ -9,13 +9,13 @@ import { UserI } from 'src/user/user.interface';
 import { GameStatusType } from './gamestatus.enum';
 import { Game } from './render';
 
-// This is a in memory db of all the games in play
-// It is not in the postgres database because in a normal game there will be 60 updates per second
-// a postgres cannot keep up with that
-export const inPlays: Game[] = [new Game([2], 1)];
-
 Injectable();
 export class GameService {
+	// This is a in memory db of all the games in play
+	// It is not in the postgres database because in a normal game there will be 60 updates per second
+	// a postgres cannot keep up with that
+	private inPlays: Game[] = [];
+
 	constructor(
 		@Inject(forwardRef(() => UserService))
 		private readonly userService: UserService,
@@ -33,8 +33,8 @@ export class GameService {
 		newGame.name = sender.username + ' vs ' + receiver.username;
 		newGame.players = [sender, receiver];
 		await this.gameEntityRepository.save(newGame);
-		const inPlay = new Game([sender.id], newGame.id);
-		inPlays.push(inPlay);
+		const inPlay = new Game([sender.id, receiver.id], newGame.id);
+		this.inPlays.push(inPlay);
 		// step 2: set both user game status = playing
 		sender.gameStatus = GameStatusType.PLAYING;
 		await this.userRepository.save(sender);
@@ -44,17 +44,6 @@ export class GameService {
 		await this.removeGameInvite(sender, receiver);
 		await this.removeGameInvite(receiver, sender);
 		return newGame;
-	}
-
-	startGame(gameID: number) {
-		const game = inPlays.find((g) => g.id === gameID);
-		if (!game) return;
-
-		if (game.nPlayers() !== 2) {
-			console.log(`cannot start game with ${game.nPlayers()}`);
-			return;
-		}
-		game.status = GameStatus.PLAYING;
 	}
 
 	async getAllGames(userID: number): Promise<GameEntity[]> {
@@ -73,7 +62,20 @@ export class GameService {
 	}
 
 	findInPlayByID(id: number): Game | undefined {
-		return inPlays.find((p) => p.id === id);
+		return this.inPlays.find((p) => p.id === id);
+	}
+
+	// render all the games' frames
+	async tick(): Promise<Game[]> {
+		this.inPlays = this.inPlays.filter(
+			(p) => p.status !== GameStatus.COMPLETED,
+		);
+
+		for (const game of this.inPlays) {
+			game.tick(); // render next frame
+			// if (game.status === GameStatus.COMPLETED)// TODO: save
+		}
+		return this.inPlays;
 	}
 
 	// async getUserType(
@@ -92,7 +94,8 @@ export class GameService {
 	async playerUpdate(userID: number, pos: PaddleUpdateDto) {
 		if (pos.update == 0) return;
 
-		for (const game of inPlays) {
+		for (const game of this.inPlays) {
+			// if the player id is not in the game, it is ignored by the Game class
 			game.addUpdate(userID, pos.update);
 		}
 	}

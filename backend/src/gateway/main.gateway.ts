@@ -21,7 +21,7 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
-import { GameService, inPlays } from '../game/game.service';
+import { GameService } from '../game/game.service';
 import { GameStatus, PaddleUpdateDto } from 'src/game/game.dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
@@ -35,16 +35,17 @@ import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 import { GameStatusType } from 'src/game/gamestatus.enum';
 import { GameEntity } from 'src/game/game.entity';
 
-function gameLoop(server: Server) {
-	for (const game of inPlays) {
-		const frame = game.tick();
-		if (game.status == GameStatus.PLAYING) {
+async function gameLoop(server: Server, gameService: GameService) {
+	const games = await gameService.tick();
+	for (const game of games) {
+		const frame = game.getFrame();
+
+		if (game.status == GameStatus.PLAYING)
 			server.in(frame.socketRoomID).emit('gameFrame', frame);
-		} //
-		else if (game.status == GameStatus.COMPLETED) {
-			server.in(game.socketRoomID).emit('gameFinished', game.winnerID());
-			// TODO: save to database
-		}
+		else if (game.status == GameStatus.COMPLETED)
+			server
+				.in(game.socketRoomID)
+				.emit('gameFinished', game.getWinnerID());
 	}
 }
 
@@ -61,8 +62,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly blockedUsersService: BlockedUsersService,
 		private readonly gameService: GameService,
 	) {
-		// console.log('constructor');
-		setInterval(() => gameLoop(this.server), 1000 / 60); // TODO: something better than this, handling server lag
+		setInterval(() => gameLoop(this.server, this.gameService), 1000 / 60); // TODO: something better than this, handling server lag
 	}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -768,7 +768,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async getGame(client: Socket, id: number) {
 		const game = this.gameService.findInPlayByID(id);
 		if (!game) return;
-		client.emit('getGame', game);
+		client.emit('getGame', game.getInPlay());
 		client.join(game.socketRoomID); // TODO: remove from room afterwards
 		console.log('getGame', id, game.socketRoomID);
 	}

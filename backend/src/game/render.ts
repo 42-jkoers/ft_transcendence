@@ -32,6 +32,15 @@ export interface Frame {
 	socketRoomID: string;
 }
 
+export interface GameInPlay {
+	id: number;
+	socketRoomID: string;
+	status: GameStatus;
+	ball: Ball;
+	canvas: Canvas;
+	paddles: Paddle[];
+}
+
 class Paddle {
 	public readonly userID: number;
 	public readonly position: 'left' | 'right';
@@ -182,14 +191,14 @@ export class Game {
 	public readonly socketRoomID: string;
 	public status: GameStatus;
 
-	public paddles: Paddle[];
+	public readonly paddles: Paddle[];
 	private canvas: Canvas;
 	private ball: Ball;
 
-	constructor(playerIDS: number[], id: number) {
+	constructor(playerIDS: number[], id: number, status?: GameStatus) {
 		this.id = id;
 		this.socketRoomID = `game${id}`;
-		this.status = GameStatus.IN_QUE;
+		this.status = status ?? GameStatus.IN_QUE;
 		this.paddles = [];
 		this.canvas = {
 			height: 1,
@@ -200,13 +209,18 @@ export class Game {
 		for (const id of playerIDS) this.addPaddle(id);
 	}
 
-	private addPaddle(userID: number) {
+	addPaddle(userID: number) {
+		if (this.paddles.length >= 2) throw new Error('too many paddles');
+
 		const position = this.paddles.length == 0 ? 'left' : 'right';
 		this.paddles.push(new Paddle(userID, this.canvas, position));
+
+		if (this.paddles.length == 2) this.status = GameStatus.PLAYING;
 	}
 
-	tick(): Frame {
-		this.status = GameStatus.PLAYING;
+	tick() {
+		// if (this.status !== GameStatus.PLAYING) // TODO: uncomment this
+		// 	throw new Error(`cannot tick game with status ${this.status}`);
 
 		this.ball.tick(this.paddles);
 		for (const paddle of this.paddles) {
@@ -223,6 +237,11 @@ export class Game {
 			}
 		}
 
+		if (this.getWinnerID() !== undefined)
+			this.status = GameStatus.COMPLETED;
+	}
+
+	getFrame(): Frame {
 		return {
 			ball: this.ball.export(),
 			paddles: this.paddles.map((p) => p.export()),
@@ -230,9 +249,20 @@ export class Game {
 		};
 	}
 
-	winnerID(): number {
+	getInPlay(): GameInPlay {
+		return {
+			id: this.id,
+			socketRoomID: this.socketRoomID,
+			status: this.status,
+			ball: this.ball,
+			canvas: this.canvas,
+			paddles: this.paddles,
+		};
+	}
+
+	getWinnerID(): number | undefined {
 		// TODO: more info
-		if (this.status !== GameStatus.COMPLETED) throw 'game not done yet';
+		// if (this.status !== GameStatus.COMPLETED) throw 'game not done yet';
 
 		for (const paddle of this.paddles) {
 			if (paddle.score > 5) return paddle.userID;
