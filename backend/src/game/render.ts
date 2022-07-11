@@ -77,7 +77,7 @@ class Paddle {
 		this.update = 0;
 	}
 
-	addUpdate(update: -1 | 1) {
+	addUpdate(update: -1 | 0 | 1) {
 		this.update = update;
 	}
 
@@ -86,8 +86,6 @@ class Paddle {
 		if (this.y < 0) this.y = 0;
 		else if (this.y + this.height > this.canvas.height)
 			this.y = this.canvas.height - this.height;
-
-		this.update = 0;
 	}
 
 	export(): PaddleUpdate {
@@ -274,7 +272,7 @@ export class Game {
 		return this.paddles.length;
 	}
 
-	addUpdate(playerID: number, update: -1 | 1) {
+	addUpdate(playerID: number, update: -1 | 0 | 1) {
 		for (const p of this.paddles) {
 			if (p.userID == playerID) p.addUpdate(update);
 		}

@@ -92,8 +92,6 @@ export class GameService {
 	// }
 
 	async playerUpdate(userID: number, pos: PaddleUpdateDto) {
-		if (pos.update == 0) return;
-
 		for (const game of this.inPlays) {
 			// if the player id is not in the game, it is ignored by the Game class
 			game.addUpdate(userID, pos.update);
