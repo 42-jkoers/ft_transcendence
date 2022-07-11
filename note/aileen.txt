@@ -271,7 +271,7 @@ Tutorial:
 **					End game logic							**
 ******************************************
 (Mon) 2022-07-11
-	-
+	- create endGame logic
 
 **************************
 **		Next To To				**

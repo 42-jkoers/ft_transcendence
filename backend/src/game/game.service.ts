@@ -185,4 +185,12 @@ export class GameService {
 			.getOne();
 		return game.players;
 	}
+
+	async endGame(gameId: number) {
+		const players = await this.getGamePlayers(gameId);
+		await this.setGameStatus(players[0].id, GameStatusType.IDEL);
+		await this.setGameStatus(players[1].id, GameStatusType.IDEL);
+		// TODO: to update Match History
+		await this.deleteGame(gameId);
+	}
 }
