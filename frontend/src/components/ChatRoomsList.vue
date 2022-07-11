@@ -63,7 +63,13 @@
         bodyStyle="padding:0"
         header="Chat Rooms"
         headerStyle="padding-left:0"
-      ></Column>
+      >
+        <template #body="slotProps">
+          <div :class="roomsClass(slotProps.data)">
+            {{ slotProps.data.displayName }}
+          </div>
+        </template>
+      </Column>
       <Column field="joined" style="max-width: 2.5rem">
         <template #body="slotProps">
           <div>
@@ -107,6 +113,7 @@ import ProgressSpinner from "primevue/progressspinner";
 import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";
 import { useToast } from "primevue/usetoast";
+import MessageI from "@/types/Message.interface";
 
 const socket: Socket = inject("socketioInstance") as Socket;
 const router = useRouter();
@@ -117,6 +124,7 @@ socket.emit("getPublicRoomsList");
 
 const isRoomsListReady = ref<boolean>(false);
 const store = useStore();
+
 onMounted(() => {
   if (!isRoomsListReady.value && store.state.roomsInfo.length > 0) {
     rooms.value = store.state.roomsInfo;
@@ -142,6 +150,23 @@ socket.on("room deleted", (deletedRoomName) => {
   }
   socket.emit("getPublicRoomsList");
 });
+
+const roomsWithNewMessage = ref<string[]>([]);
+
+socket.on("messageAdded", (message: MessageI) => {
+  if (message.room.name !== route.params.roomName) {
+    roomsWithNewMessage.value?.push(message.room.name);
+  }
+});
+
+const roomsClass = (roomData: any) => [
+  {
+    newMessageArrived:
+      roomsWithNewMessage.value?.find((roomName) => {
+        return roomName === roomData.name;
+      }) && roomData.name !== route.params.roomName,
+  },
+];
 
 const toast = useToast();
 socket.on("CannotSendDirectMessage", (user) => {
@@ -175,6 +200,9 @@ const onRowSelect = (event) => {
       name: "ChatBox",
       params: { roomName: room.name },
     });
+    roomsWithNewMessage.value = roomsWithNewMessage.value?.filter(
+      (roomName) => roomName !== room.name
+    );
   }
 };
 
@@ -268,5 +296,10 @@ const editRoomPrivacy = () => {
   90% {
     stroke: #afada9;
   }
+}
+
+.newMessageArrived {
+  font-weight: 700;
+  color: #ffffff;
 }
 </style>

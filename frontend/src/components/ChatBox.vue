@@ -155,6 +155,12 @@ const currentRoom = computed(() =>
 );
 
 const allowedToViewContent = ref<boolean>(false);
+
+function onMessageAdded(message: MessageI) {
+  if (route.params.roomName === message.room.name)
+    messages.value.unshift(message);
+}
+
 onMounted(() => {
   socket.emit("getMessagesForRoom", { roomName: route.params.roomName }); //emit to load once it's mounted
 
@@ -183,10 +189,7 @@ onMounted(() => {
     }
   }); //recevies the existing messages from backend when room is first loaded
 
-  socket.on("messageAdded", (message: MessageI) => {
-    if (route.params.roomName === message.room.name)
-      messages.value.unshift(message);
-  }); //place the new message on top of the messages arrayy
+  socket.on("messageAdded", onMessageAdded); //place the new message on top of the messages arrayy
 
   socket.on("userBanFromRoomResult", (response) => {
     isUserBanned.value = response;
@@ -337,7 +340,7 @@ const showRoleChangeFailMessage = (newUserRole: UserRole, roomName: string) => {
 };
 
 onUnmounted(() => {
-  socket.off("messageAdded"); //to prevent multiple event binding in every rerender
+  socket.off("messageAdded", onMessageAdded); //to prevent multiple event binding in every rerender
   socket.off("noPermissionToViewContent");
   socket.off("userBanFromRoomResult");
   socket.off("newRoleAcquired");
