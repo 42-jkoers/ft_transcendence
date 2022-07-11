@@ -1,5 +1,5 @@
 export enum PlayerGameStatusType {
-  IDEL,
-  QUEUE,
-  PLAYING,
+	IDLE,
+	QUEUE,
+	PLAYING,
 }
