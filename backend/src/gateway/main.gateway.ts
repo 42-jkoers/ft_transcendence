@@ -86,6 +86,17 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.logger.log('Client disconnected');
 	}
 
+	@SubscribeMessage('exitUserSocketRoom')
+	async exitUserSocketRoom(socket: Socket) {
+		const sockets = await this.server
+			.in(socket.data.user.id.toString())
+			.fetchSockets();
+		const socketRoom = socket.data.user.id.toString();
+		for (const socket of sockets) {
+			socket.leave(socketRoom);
+		}
+	}
+
 	/***** Retrieving rooms list events  *****/
 
 	@SubscribeMessage('getPublicRoomsList')
