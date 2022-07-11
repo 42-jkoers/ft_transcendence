@@ -20,8 +20,8 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
-import { GameService, tick } from '../game/game.service';
-import { PaddleUpdateDto } from 'src/game/game.dto';
+import { GameService } from '../game/game.service';
+import { GameStatus, PaddleUpdateDto } from 'src/game/game.dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
@@ -31,11 +31,38 @@ import { RoomVisibilityType } from 'src/chat/room/enums/room.visibility.enum';
 import { UserIdDto } from 'src/user/dto';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
-import { GameStatusType } from 'src/game/gamestatus.enum';
+import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
 import { GameEntity } from 'src/game/game.entity';
 import { FriendService } from 'src/user/friend/friend.service';
 import { IntegerDto } from './util/integer.dto';
 import { RoomPasswordDto } from 'src/chat/room/dto/room.password.dto';
+
+async function gameLoop(server: Server, gameService: GameService) {
+	const games = await gameService.tick();
+	for (const game of games) {
+		const frame = game.getFrame();
+
+		if (game.status == GameStatus.PLAYING)
+			server.in(frame.socketRoomID).emit('gameFrame', frame);
+		else if (game.status == GameStatus.COMPLETED) {
+			// step 1: inform players & watchers game is finished
+			server
+				.in(game.socketRoomID)
+				.emit('gameFinished', game.getWinnerID());
+			// step 2: remove game from database, change player game status
+			gameService.endGame(game.id);
+			// step 3: remove players/watchers from game socket room
+			const sockets = await server.in(game.socketRoomID).fetchSockets();
+			for (const socket of sockets) {
+				socket.leave(game.socketRoomID);
+			}
+		}
+
+		// send update game list to all connected socket
+		const gameList = await gameService.getGameList();
+		server.emit('getGameList', gameList);
+	}
+}
 
 @WebSocketGateway({
 	cors: { origin: 'http://localhost:8080', credentials: true },
@@ -50,12 +77,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly gameService: GameService,
 		private readonly friendService: FriendService,
 	) {
-		// console.log('constructor');
-		setInterval(() => {
-			for (const update of tick()) {
-				this.server.in(update.socketRoomID).emit('gameFrame', update);
-			}
-		}, 1000 / 60); // TODO: something better than this, handling server lag
+		setInterval(() => gameLoop(this.server, this.gameService), 1000 / 60); // TODO: something better than this, handling server lag
 	}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -836,8 +858,8 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!user1 || !user2) {
 			throw new Error('User does not exist.');
 		} else if (
-			user1.gameStatus === GameStatusType.PLAYING ||
-			user2.gameStatus === GameStatusType.PLAYING
+			user1.gameStatus === PlayerGameStatusType.PLAYING ||
+			user2.gameStatus === PlayerGameStatusType.PLAYING
 		) {
 			throw new Error('User is already in a game.');
 		} else {
@@ -857,7 +879,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	) {
 		this.removeGameInvite(senderId, client);
 		const sender = await this.userService.getUserByID(senderId.data);
-		if (sender.gameStatus === GameStatusType.PLAYING) {
+		if (sender.gameStatus === PlayerGameStatusType.PLAYING) {
 			client.emit(
 				'errorMatchMaking',
 				'The other player is already in a game.',
@@ -914,8 +936,8 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async getGame(client: Socket, id: IntegerDto) {
 		const game = this.gameService.findInPlayByID(id.data);
 		if (!game) return;
-		client.emit('getGame', game);
-		client.join(game.socketRoomID); // TODO: remove from room afterwards
+		client.emit('getGame', game.getInPlay());
+		client.join(game.socketRoomID);
 		console.log('getGame', id.data, game.socketRoomID);
 	}
 
@@ -940,13 +962,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async quitQueue(client: Socket) {
 		const user = await this.userService.getUserByID(client.data.user.id);
 		switch (user.gameStatus) {
-			case GameStatusType.IDEL:
+			case PlayerGameStatusType.IDLE:
 				client.emit('errorMatchMaking', 'User is not in queue.');
 				return;
-			case GameStatusType.QUEUE:
+			case PlayerGameStatusType.QUEUE:
 				await this.gameService.quitQueue(user.id);
 				return;
-			case GameStatusType.PLAYING:
+			case PlayerGameStatusType.PLAYING:
 				client.emit('errorMatchMaking', 'User is already in a game.');
 				return;
 		}
@@ -956,7 +978,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async matchPlayer(client: Socket) {
 		// if user is already in queue
 		const user = await this.userService.getUserByID(client.data.user.id);
-		if (user.gameStatus === GameStatusType.QUEUE) {
+		if (user.gameStatus === PlayerGameStatusType.QUEUE) {
 			return;
 		}
 		// if user is not in quee
@@ -983,21 +1005,5 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				client.emit('errorMatchMaking', error.message);
 			}
 		}
-	}
-
-	@UsePipes(new ValidationPipe({ transform: true }))
-	@SubscribeMessage('tempDeleteGame')
-	async tempExitGame(@MessageBody() gameId: IntegerDto) {
-		const players = await this.gameService.getGamePlayers(gameId.data);
-		await this.gameService.setGameStatus(
-			players[0].id,
-			GameStatusType.IDEL,
-		);
-		await this.gameService.setGameStatus(
-			players[1].id,
-			GameStatusType.IDEL,
-		);
-		await this.gameService.deleteGame(gameId.data);
-		this.broadcastGameList();
 	}
 }

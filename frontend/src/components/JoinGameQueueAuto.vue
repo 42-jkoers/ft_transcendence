@@ -1,5 +1,5 @@
 <template>
-  <div style="margin-top: 5%">
+  <div>
     <Button
       label="Find A Match"
       class="p-button-rounded"

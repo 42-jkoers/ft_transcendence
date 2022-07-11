@@ -19,12 +19,6 @@
             v-tooltip.right="'Visit this game'"
             @click="watchGame(slotProps.data.id)"
           />
-          <Button
-            class="p-button-rounded p-button-danger"
-            icon="pi pi-times"
-            v-tooltip.right="'For Testing: Delete this game'"
-            @click="deleteGame(slotProps.data.id)"
-          />
         </template>
       </Column>
     </DataTable>
@@ -55,10 +49,5 @@ function watchGame(gameId: number) {
     name: "Play",
     params: { id: gameId },
   });
-}
-
-// TODO: to delete
-function deleteGame(gameId: number) {
-  socket.emit("tempDeleteGame", { data: gameId });
 }
 </script>

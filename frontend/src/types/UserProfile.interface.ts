@@ -1,9 +1,9 @@
-import { GameStatusType } from "./GameStatus.enum";
+import { PlayerGameStatusType } from "./GameStatus.enum";
 
 export default interface UserProfileI {
   id: number;
   username: string;
   avatar: string;
   twoFactor: boolean;
-  gameStatus: GameStatusType;
+  gameStatus: PlayerGameStatusType;
 }
