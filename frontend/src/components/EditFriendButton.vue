@@ -13,7 +13,10 @@ import axios from "axios";
 import storeUser from "@/store";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
-import { friendActionMessage } from "@/types/editFriendAction";
+import {
+  EditFriendActionType,
+  friendActionMessage,
+} from "@/types/editFriendAction";
 
 const props = defineProps({
   friendId: Number,
@@ -24,14 +27,18 @@ const props = defineProps({
 const confirm = useConfirm();
 const toast = useToast();
 function proceedConfirmation() {
-  confirm.require({
-    message: "Are you sure you want to proceed?",
-    header: "Confirmation",
-    icon: "pi pi-exclamation-triangle",
-    accept: () => {
-      editFriend(props.friendId, props.action);
-    },
-  });
+  if (props.action === EditFriendActionType.REMOVE_FRIEND) {
+    confirm.require({
+      message: "Are you sure you want to proceed?",
+      header: "Confirmation",
+      icon: "pi pi-exclamation-triangle",
+      accept: () => {
+        editFriend(props.friendId, props.action);
+      },
+    });
+  } else {
+    editFriend(props.friendId, props.action);
+  }
 }
 
 const emit = defineEmits<{

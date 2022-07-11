@@ -51,7 +51,6 @@ socket.on("getGameList", (response) => {
 });
 
 function watchGame(gameId: number) {
-  // TODO: fix issue of no connection without refresh
   router.push({
     name: "Play",
     params: { id: gameId },
@@ -60,6 +59,6 @@ function watchGame(gameId: number) {
 
 // TODO: to delete
 function deleteGame(gameId: number) {
-  socket.emit("tempDeleteGame", gameId);
+  socket.emit("tempDeleteGame", { data: gameId });
 }
 </script>

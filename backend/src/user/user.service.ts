@@ -88,7 +88,6 @@ export class UserService {
 	}
 
 	async deleteUser(userId: number) {
-		// TODO: to delete from Game relationship?
 		await getConnection()
 			.createQueryBuilder()
 			.delete()

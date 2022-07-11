@@ -122,6 +122,6 @@ onMounted(() => {
     }
   });
 
-  socket.emit("getGame", parseInt(route.params.id as string));
+  socket.emit("getGame", { data: parseInt(route.params.id as string) });
 });
 </script>

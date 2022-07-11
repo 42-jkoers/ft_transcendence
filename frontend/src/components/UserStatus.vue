@@ -29,7 +29,7 @@ socket.on("getUserConnectedSocketCount", (socketCount, isSafeResponse) => {
 });
 
 const isVisible = computed(() => {
-  socket.emit("getUserConnectedSocketCount", props.userId);
+  socket.emit("getUserConnectedSocketCount", { data: props.userId });
   if (userConnectedSocketCount.value === 0) {
     icon.value = "pi pi-power-off";
     style.value = undefined;

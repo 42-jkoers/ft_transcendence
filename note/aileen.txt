@@ -250,20 +250,30 @@ Tutorial:
 	- improve GameView frontend design
 	- fix bug: when user sent an invite then join another queue, upon accept invite the other user receive error notification
 	
+******************************************
+**				Finalizing Branches						**
+******************************************
+(Thu) 2022-07-07
+	- [improve online status]
+(Fri) 2022-07-08
+	- [remove connected users]
+	- [fix Aileen to do]
+		- add integer dto (validation) to all socket message body
+		- change UserProfileCard to pass validation pipe and implement socket
+		- GameInvite socket un-listen
 
 **************************
 **		Next To To				**
 **************************
-- key change event - force render
-	https://michaelnthiessen.com/force-re-render/
+- socket.off for everything
 
 ******************************
 **			General To To				**
 ******************************
+- change friend to socket
+- fix todos
 - try/catch all axios exception
-- deregister user
 
 ******************************
 **					Issues					**
 ******************************
-- Login Button sometimes needs to be clicked twice (console.log for each step to check)
