@@ -72,19 +72,20 @@ class Paddle {
 		this.x =
 			this.position == 'left'
 				? this.canvas.grid / 2
-				: this.canvas.width - this.canvas.grid / 2;
+				: this.canvas.width - this.canvas.grid;
 		this.y = this.canvas.height / 2 + this.height / 2;
 		this.update = 0;
 	}
 
-	addUpdate(update: -1 | 1) {
+	addUpdate(update: -1 | 0 | 1) {
 		this.update = update;
 	}
 
 	tick() {
 		this.y -= this.update * this.speed;
-		// TODO bounce
-		this.update = 0;
+		if (this.y < 0) this.y = 0;
+		else if (this.y + this.height > this.canvas.height)
+			this.y = this.canvas.height - this.height;
 	}
 
 	export(): PaddleUpdate {
@@ -130,12 +131,8 @@ class Ball {
 		else if (this.y + this.radius > this.c.height) {
 			this.y = this.c.height - this.radius - Number.EPSILON;
 			this.dy *= -1;
-		} //
-		else if (this.x + this.radius > this.c.width) {
-			// TODO: remove this
-			this.dx *= -1;
-			this.x = this.c.width - this.radius - Number.EPSILON;
 		}
+
 		for (const paddle of paddles) this.tickPaddle(paddle);
 	}
 
@@ -198,7 +195,7 @@ export class Game {
 	constructor(playerIDS: number[], id: number, status?: GameStatus) {
 		this.id = id;
 		this.socketRoomID = `game${id}`;
-		this.status = status ?? GameStatus.IN_QUE;
+		this.status = status ?? GameStatus.PLAYING;
 		this.paddles = [];
 		this.canvas = {
 			height: 1,
@@ -261,11 +258,12 @@ export class Game {
 	}
 
 	getWinnerID(): number | undefined {
-		// TODO: more info
-		// if (this.status !== GameStatus.COMPLETED) throw 'game not done yet';
-
-		for (const paddle of this.paddles) {
-			if (paddle.score > 5) return paddle.userID;
+		const winningScore = 5;
+		if (this.paddles[0]?.score >= winningScore) {
+			return this.paddles[1]?.userID;
+		}
+		if (this.paddles[1]?.score >= winningScore) {
+			return this.paddles[0]?.userID;
 		}
 		return undefined;
 	}
@@ -274,7 +272,7 @@ export class Game {
 		return this.paddles.length;
 	}
 
-	addUpdate(playerID: number, update: -1 | 1) {
+	addUpdate(playerID: number, update: -1 | 0 | 1) {
 		for (const p of this.paddles) {
 			if (p.userID == playerID) p.addUpdate(update);
 		}

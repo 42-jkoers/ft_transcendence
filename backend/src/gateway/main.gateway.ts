@@ -42,9 +42,13 @@ async function gameLoop(server: Server, gameService: GameService) {
 	for (const game of games) {
 		const frame = game.getFrame();
 
-		if (game.status == GameStatus.PLAYING)
+		if (
+			game.status == GameStatus.PLAYING ||
+			game.status == GameStatus.COMPLETED
+		)
 			server.in(frame.socketRoomID).emit('gameFrame', frame);
-		else if (game.status == GameStatus.COMPLETED) {
+
+		if (game.status == GameStatus.COMPLETED) {
 			// step 1: inform players & watchers game is finished
 			server
 				.in(game.socketRoomID)

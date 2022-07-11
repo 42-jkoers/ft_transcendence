@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { GameEntity } from './game.entity';
-import { GameStatus, PaddleUpdateDto } from './game.dto';
+import { PaddleUpdateDto } from './game.dto';
 import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
@@ -24,7 +24,7 @@ export class GameService {
 		@InjectRepository(User)
 		private userRepository: Repository<User>,
 	) {
-		// none
+		this.userService.resetAllUserGameStatus();
 	}
 
 	async createGame(sender: User, receiver: User): Promise<GameEntity> {
@@ -88,8 +88,6 @@ export class GameService {
 	// }
 
 	async playerUpdate(userID: number, pos: PaddleUpdateDto) {
-		if (pos.update == 0) return;
-
 		for (const game of this.inPlays) {
 			// if the player id is not in the game, it is ignored by the Game class
 			game.addUpdate(userID, pos.update);

@@ -84,6 +84,22 @@ function scaleGame(game: GameInPlay, scalar: number) {
   game.canvas.grid *= scalar;
 }
 
+function keyEventToPaddleUpdate(e: KeyboardEvent): -1 | 1 | undefined {
+  switch (e.key) {
+    case "w":
+    case "W":
+    case "ArrowUp":
+      return 1;
+
+    case "s":
+    case "S":
+    case "ArrowDown":
+      return -1;
+    default:
+      return undefined;
+  }
+}
+
 onMounted(() => {
   const canvas = document.getElementById("game") as HTMLCanvasElement;
   const context = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -117,20 +133,23 @@ onMounted(() => {
     console.log(msg);
   });
 
-  window.addEventListener("keydown", (e) => {
-    switch (e.key) {
-      case "w":
-      case "W":
-      case "ArrowUp":
-        socket.emit("paddleUpdate", { update: 1 });
-        break;
+  let lastPaddleUpdate: -1 | 0 | 1 = 0;
 
-      case "s":
-      case "S":
-      case "ArrowDown":
-        socket.emit("paddleUpdate", { update: -1 });
-        break;
-    }
+  function sendKeyUpdate(direction: "keydown" | "keyup", update: -1 | 0 | 1) {
+    if (lastPaddleUpdate === update) return;
+    lastPaddleUpdate = update;
+    console.log("paddleUpdate,", update);
+    socket.emit("paddleUpdate", { update });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const update = keyEventToPaddleUpdate(e);
+    if (update == undefined) return;
+    sendKeyUpdate("keydown", update);
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (keyEventToPaddleUpdate(e) !== undefined) sendKeyUpdate("keyup", 0);
   });
 
   socket.emit("getGame", { data: parseInt(route.params.id as string) });
