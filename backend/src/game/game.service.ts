@@ -67,10 +67,6 @@ export class GameService {
 
 	// render all the games' frames
 	async tick(): Promise<Game[]> {
-		this.inPlays = this.inPlays.filter(
-			(p) => p.status !== GameStatus.COMPLETED,
-		);
-
 		for (const game of this.inPlays) {
 			game.tick(); // render next frame
 			// if (game.status === GameStatus.COMPLETED)// TODO: save
@@ -172,11 +168,6 @@ export class GameService {
 		});
 	}
 
-	async deleteGame(gameId: number) {
-		const game = await this.findByID(gameId);
-		await this.gameEntityRepository.remove(game);
-	}
-
 	async getGamePlayers(gameID: number): Promise<UserI[]> {
 		const game = await this.gameEntityRepository
 			.createQueryBuilder('game')
@@ -190,7 +181,10 @@ export class GameService {
 		const players = await this.getGamePlayers(gameId);
 		await this.setGameStatus(players[0].id, PlayerGameStatusType.IDLE);
 		await this.setGameStatus(players[1].id, PlayerGameStatusType.IDLE);
+
+		this.inPlays = this.inPlays.filter((p) => p.id !== gameId);
 		// TODO: to update Match History
-		await this.deleteGame(gameId);
+		const game = await this.findByID(gameId);
+		await this.gameEntityRepository.remove(game);
 	}
 }
