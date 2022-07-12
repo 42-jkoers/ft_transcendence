@@ -73,7 +73,7 @@ class Paddle {
 			this.position == 'left'
 				? this.canvas.grid / 2
 				: this.canvas.width - this.canvas.grid;
-		this.y = this.canvas.height / 2 + this.height / 2;
+		this.y = this.canvas.height / 2 - this.height / 2;
 		this.update = 0;
 	}
 
