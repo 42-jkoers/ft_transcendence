@@ -21,7 +21,7 @@ import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
 import { GameInPlay, Frame } from "@backend/game/render";
 import JoinGameQueueAutoVue from "@/components/JoinGameQueueAuto.vue";
-import storeUser from "@/store";
+
 let winnerMsg = ref<string>("");
 const isGameFinish = ref<boolean>(false);
 
