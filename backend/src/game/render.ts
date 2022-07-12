@@ -88,7 +88,7 @@ class Paddle {
 			this.position == 'left'
 				? this.canvas.grid / 2
 				: this.canvas.width - this.canvas.grid;
-		this.y = this.canvas.height / 2 + this.height / 2;
+		this.y = this.canvas.height / 2 - this.height / 2;
 		this.update = 0;
 	}
 
@@ -101,6 +101,10 @@ class Paddle {
 		if (this.y < 0) this.y = 0;
 		else if (this.y + this.height > this.canvas.height)
 			this.y = this.canvas.height - this.height;
+	}
+
+	dy() {
+		return this.update * this.speed;
 	}
 
 	export(): PaddleUpdate {
@@ -181,28 +185,32 @@ class Ball {
 		return this.radius;
 	}
 
+	private paddleCollides(paddle: Readonly<Paddle>): boolean {
+		let dx = Math.abs(this.x - (paddle.x + paddle.width / 2));
+		let dy = Math.abs(this.y - (paddle.y + paddle.height / 2));
+
+		if (dx > this.radius + paddle.width / 2) return false;
+		if (dy > this.radius + paddle.height / 2) return false;
+		if (dx <= paddle.width) return true;
+		if (dy <= paddle.height) return true;
+
+		dx = dx - paddle.width;
+		dy = dy - paddle.height;
+		return dx * dx + dy * dy <= this.radius * this.radius;
+	}
+
 	private tickPaddle(paddle: Readonly<Paddle>) {
+		if (!this.paddleCollides(paddle)) return;
+		this.dx *= -1;
+		// higher number means more that the ball will be more affected by the paddles' current direction
+		const grip = 0.2;
+		this.dy -= paddle.dy() * grip;
+
 		if (paddle.position == 'left') {
-			const collides =
-				this.x - this.radius < paddle.x + paddle.width &&
-				this.x + this.radius > paddle.x + paddle.width &&
-				this.y - this.radius > paddle.y &&
-				this.y + this.radius < paddle.y + paddle.height;
-			if (collides) {
-				this.dx *= -1;
-				this.x = paddle.x + paddle.width + this.radius + Number.EPSILON;
-			}
+			this.x = paddle.x + paddle.width + this.radius + Number.EPSILON;
 		} //
 		else if (paddle.position == 'right') {
-			const collides2 =
-				this.x + this.radius > paddle.x - paddle.width &&
-				this.x - this.radius < paddle.x + paddle.width &&
-				this.y - this.radius >= paddle.y &&
-				this.y + this.radius <= paddle.y + paddle.height;
-			if (collides2) {
-				this.dx *= -1;
-				this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
-			}
+			this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
 		} //
 		else {
 			throw `unhandled paddle position "${paddle.position}"`;
