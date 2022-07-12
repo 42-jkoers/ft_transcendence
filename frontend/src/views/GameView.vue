@@ -27,6 +27,7 @@
             <h4>Play</h4>
 
             <Button
+              v-tooltip.top="'Customization options'"
               icon="pi pi-cog"
               class="p-button-rounded justify-content-center"
               @click="openCustomizationOptionsDialog"
