@@ -15,10 +15,22 @@
       </Card>
     </div>
     <div class="col-8">
+      <GameCustomizationOptionsDialog
+        :isDialogVisible="displayCustomizationOptions"
+        @update:isDialogVisible="displayCustomizationOptions = $event"
+      />
       <Card>
         <template #title>
-          <div class="title">
+          <div
+            class="title flex align-items-center justify-content-around flex-wrap card-container"
+          >
             <h4>Play</h4>
+
+            <Button
+              icon="pi pi-cog"
+              class="p-button-rounded justify-content-center"
+              @click="openCustomizationOptionsDialog"
+            />
           </div>
         </template>
         <template #content>
@@ -42,6 +54,15 @@ import JoinGameQueueAuto from "@/components/JoinGameQueueAuto.vue";
 import WatchGame from "@/components/WatchGame.vue";
 import GameInvite from "@/components/GameInvite.vue";
 import Card from "primevue/card";
+import Button from "primevue/button";
+import { ref } from "vue";
+import GameCustomizationOptionsDialog from "../components/GameCustomizationOptionsDialog.vue";
+
+const displayCustomizationOptions = ref<boolean>(false);
+
+const openCustomizationOptionsDialog = () => {
+  displayCustomizationOptions.value = true;
+};
 </script>
 <style scoped>
 .title {
