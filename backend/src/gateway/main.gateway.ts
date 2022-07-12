@@ -37,7 +37,11 @@ import { FriendService } from 'src/user/friend/friend.service';
 import { IntegerDto } from './util/integer.dto';
 import { RoomPasswordDto } from 'src/chat/room/dto/room.password.dto';
 
-async function gameLoop(server: Server, gameService: GameService) {
+async function gameLoop(
+	server: Server,
+	gameService: GameService,
+	userService: UserService,
+) {
 	const games = await gameService.tick();
 	for (const game of games) {
 		const frame = game.getFrame();
@@ -48,11 +52,13 @@ async function gameLoop(server: Server, gameService: GameService) {
 		)
 			server.in(frame.socketRoomID).emit('gameFrame', frame);
 
-		if (game.status == GameStatus.COMPLETED) {
+		const winnerId = game.getWinnerID();
+		if (winnerId) {
 			// step 1: inform players & watchers game is finished
-			server
-				.in(game.socketRoomID)
-				.emit('gameFinished', game.getWinnerID());
+			console.log('winnerId', winnerId);
+
+			const user = await userService.findByID(winnerId);
+			server.in(game.socketRoomID).emit('gameFinished', user.username);
 			// step 2: remove game from database, change player game status
 			gameService.endGame(game.id);
 			// step 3: remove players/watchers from game socket room
@@ -81,7 +87,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly gameService: GameService,
 		private readonly friendService: FriendService,
 	) {
-		setInterval(() => gameLoop(this.server, this.gameService), 1000 / 60); // TODO: something better than this, handling server lag
+		setInterval(
+			() => gameLoop(this.server, this.gameService, this.userService),
+			1000 / 60,
+		); // TODO: something better than this, handling server lag
 	}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');

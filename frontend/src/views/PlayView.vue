@@ -1,7 +1,4 @@
 <template>
-  <p class="message">
-    This is the play page (look at the console for all info)
-  </p>
   <div v-if="isGameFinish">
     <h3>
       {{ winnerMsg }}
@@ -126,8 +123,8 @@ onMounted(() => {
     }
   });
 
-  socket.on("gameFinished", (id: number) => {
-    const msg = `Game is over, user ${id} won`; // TODO: instead of user id, show full name
+  socket.on("gameFinished", (username: string) => {
+    const msg = `Game is over, the winner is: ${username}`; // TODO: instead of user id, show full name
     winnerMsg.value = msg;
     isGameFinish.value = true;
     console.log(msg);
