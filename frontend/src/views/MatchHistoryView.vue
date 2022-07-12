@@ -56,7 +56,7 @@ watch(id, async () => {
 });
 
 async function findUser() {
-  socket.emit("getUserProfile", id.value);
+  socket.emit("getUserProfile", { data: id.value });
   socket.on("getUserProfile", (response) => {
     if (response) {
       user.value = response;

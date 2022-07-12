@@ -89,7 +89,7 @@ onMounted(async () => {
 });
 
 async function getMatchHistory() {
-  socket.emit("getMatchHistory", id.value);
+  socket.emit("getMatchHistory", { data: id.value });
   // socket.emit("getMatchHistory", 3); //TODO for now do it for 3 as the mock data is built on player id 3
   socket.on("getMatchHistory", (response) => {
     console.log("entered into the function");

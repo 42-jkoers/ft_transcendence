@@ -803,15 +803,17 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	//TODO get match history from game entities?? check with Jopper
+	// @UsePipes(new ValidationPipe({ transform: true })) //TODO add pipe
 	@SubscribeMessage('getMatchHistory')
 	async getMatchHistory(
-		@MessageBody() id: number,
+		@MessageBody() idDTO: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
 		//TODO add errro proof
-		const matchHistory = await this.gameService.getMatchHistory(id);
+		const matchHistory = await this.gameService.getMatchHistory(idDTO.data);
 		// const matchHistory = await this.gameService.getMatchHistory(3);
 		// return matchHistory;
+		console.log(matchHistory);
 		client.emit('getMatchHistory', matchHistory);
 	}
 
@@ -871,7 +873,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	async createGame(user1Id: number, user2Id: number): Promise<GameResultEntity> {
+	async createGame(
+		user1Id: number,
+		user2Id: number,
+	): Promise<GameResultEntity> {
 		const user1 = await this.userService.getUserByID(user1Id);
 		const user2 = await this.userService.getUserByID(user2Id);
 		// step 1: to check if any user is already in a game
