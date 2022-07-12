@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, ref } from "vue";
+import { inject, onMounted, onUnmounted, ref } from "vue";
 import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
 import { GameInPlay, Frame } from "@backend/game/render";
@@ -60,7 +60,7 @@ function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
 }
 
 function initCanvas(game: GameInPlay, ctx: CanvasRenderingContext2D) {
-  console.log("init", game);
+  // console.log("init", game);
   ctx.canvas.width = game.canvas.width;
   ctx.canvas.height = game.canvas.height;
   ctx.font = "35px courier"; // TODO: scale
@@ -100,10 +100,10 @@ function keyEventToPaddleUpdate(e: KeyboardEvent): -1 | 1 | undefined {
   }
 }
 
+const socket: Socket = inject("socketioInstance") as Socket;
 onMounted(() => {
   const canvas = document.getElementById("game") as HTMLCanvasElement;
   const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-  const socket: Socket = inject("socketioInstance") as Socket;
   const route = useRoute();
   const scaler = 500;
   let gameInPlay: GameInPlay | undefined;
@@ -138,7 +138,6 @@ onMounted(() => {
   function sendKeyUpdate(direction: "keydown" | "keyup", update: -1 | 0 | 1) {
     if (lastPaddleUpdate === update) return;
     lastPaddleUpdate = update;
-    console.log("paddleUpdate,", update);
     socket.emit("paddleUpdate", { update });
   }
 
@@ -153,5 +152,11 @@ onMounted(() => {
   });
 
   socket.emit("getGame", { data: parseInt(route.params.id as string) });
+});
+
+onUnmounted(() => {
+  socket.off("getGame");
+  socket.off("gameFrame");
+  socket.off("gameFinished");
 });
 </script>
