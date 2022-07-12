@@ -10,6 +10,7 @@ import { UserToRoomEntity } from 'src/chat/room/entities/user.to.room.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
+import { GameMode } from 'src/game/game.dto';
 
 @Injectable()
 export class UserService {
@@ -85,6 +86,18 @@ export class UserService {
 			return undefined;
 		}
 		return await this.findByID(userData.id);
+	}
+
+	async updateUserGameMode(
+		userId: number,
+		gameMode: GameMode,
+	): Promise<UserI | undefined> {
+		try {
+			await this.userRepository.update(userId, { gameMode });
+			return await this.findByID(userId);
+		} catch (error) {
+			return undefined;
+		}
 	}
 
 	async deleteUser(userId: number) {

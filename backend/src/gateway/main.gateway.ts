@@ -21,7 +21,7 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
 import { GameService } from '../game/game.service';
-import { GameStatus, PaddleUpdateDto } from 'src/game/game.dto';
+import { GameModeDto, GameStatus, PaddleUpdateDto } from 'src/game/game.dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
@@ -871,7 +871,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			throw new Error('User is already in a game.');
 		} else {
 			// step 2: create game
-			const createdGame = await this.gameService.createGame(user1, user2);
+
+			const createdGame = await this.gameService.createGame(
+				user1,
+				user2,
+				user1.gameMode,
+			);
 			// step 3: refresh WatchGame list (for all clients)
 			await this.broadcastGameList();
 			return createdGame;
@@ -990,12 +995,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		// if user is not in quee
 		const queue = await this.gameService.getGameQueue();
-		if (queue.length === 0) {
+		const component: UserI | undefined = queue.find(
+			(q) => q.gameMode === user.gameMode,
+		);
+		if (!component) {
 			// if no one is waiting, user will join the queue
 			await this.gameService.joinQueue(client.data.user.id);
 		} else {
-			// if there is already someone waiting, pick the first player in queue
-			const component = queue[0];
 			try {
 				// step 1: create game
 				const createdGame = await this.createGame(
@@ -1012,5 +1018,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				client.emit('errorMatchMaking', error.message);
 			}
 		}
+	}
+
+	@SubscribeMessage('saveUserCustomizationOptions')
+	async saveUserCustomizationOptions(socket: Socket, mode: GameModeDto) {
+		await this.userService.updateUserGameMode(
+			socket.data.user.id,
+			mode.gameMode,
+		);
 	}
 }
