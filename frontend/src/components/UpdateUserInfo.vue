@@ -145,7 +145,6 @@ async function updateData() {
     warnUserNameInvalid(invalidUserNameMessage.value);
   } else {
     // post username to update user profile
-    // TODO change to enum later
     // only pass the true value when nothing changed, otherwise always pass disable.
     // it will only be enabled when the turn-on is called
     if (!storeUser.state.user.twoFactorEnabled && twoFactor.value === true)

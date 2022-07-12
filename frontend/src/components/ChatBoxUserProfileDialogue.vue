@@ -38,7 +38,7 @@ import { ref, defineEmits, defineProps } from "vue";
 import { useRouter } from "vue-router";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
-import Image from "primevue/image"; //TODO style img width
+import Image from "primevue/image";
 import { useStore } from "vuex";
 import ChatBoxSendDMButton from "./ChatBoxSendDMButton.vue";
 import UserStatus from "./UserStatus.vue";

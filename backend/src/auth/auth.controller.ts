@@ -54,7 +54,7 @@ export class AuthController {
 				);
 			if (!isCodeValid) {
 				this.userService.updateTwoFactorAuth(req.user.id, false);
-				throw new UnauthorizedException('Wrong authentication code'); //TODO add error page to request reinput of the code later
+				throw new UnauthorizedException('Wrong authentication code');
 			} else {
 				this.userService.updateTwoFactorAuth(req.user.id, true);
 			}

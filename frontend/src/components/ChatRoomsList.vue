@@ -14,7 +14,6 @@
       :value="rooms"
       class="p-datatable-sm"
       responsiveLayout="scroll"
-      :scrollable="true"
       scrollHeight="60vh"
       :row-hover="true"
       :selection="{ name: route.params.roomName }"

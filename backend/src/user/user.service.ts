@@ -38,7 +38,6 @@ export class UserService {
 		});
 	}
 
-	//FIXME: this is a kind of duplicate findOne function to return User entity instead of UserI
 	async getUserByID(idToFind: number): Promise<User> {
 		return await this.userRepository.findOne({
 			where: { id: idToFind },
@@ -47,7 +46,6 @@ export class UserService {
 
 	async createUser(userData: CreateUserDto): Promise<UserI> {
 		// we need to get the default room(which is the public room for all the users) to push the newly created user in there
-		// FIXME: this has to be replaced by default admin and default room instantiation right after the db has been connected
 		const defaultRoom: RoomEntity = await this.roomService.getDefaultRoom();
 		const newUser = this.userRepository.create(userData);
 		newUser.requestedFriends = [];
