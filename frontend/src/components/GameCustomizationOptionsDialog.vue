@@ -5,7 +5,7 @@
     @update:visible="handleClose"
   >
     <div class="card flex align-items-center justify-content-center">
-      <SelectButton v-model="gameSpeedOption" :options="options" class="" />
+      <SelectButton v-model="gameModeOption" :options="options" class="" />
     </div>
     <template #footer>
       <Button
@@ -30,11 +30,13 @@ const emit = defineEmits(["update:isDialogVisible"]);
 
 const socket: Socket = inject("socketioInstance") as Socket;
 
-const gameSpeedOption = ref<string>("Slow");
-const options = ref(["Slow", "Fast"]);
+const gameModeOption = ref<string>("normal");
+const options = ref(["normal", "fast"]);
 
 const saveNewGameSettings = () => {
-  socket.emit("saveUserCustomizationOptions", { gameSpeed: gameSpeedOption });
+  socket.emit("saveUserCustomizationOptions", {
+    gameMode: gameModeOption.value,
+  });
   emit("update:isDialogVisible", false);
 };
 

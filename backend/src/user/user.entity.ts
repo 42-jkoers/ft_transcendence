@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { GameEntity } from 'src/game/game.entity';
 import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
+import { GameMode } from 'src/game/game.dto';
 
 @Entity()
 export class User {
@@ -67,6 +68,9 @@ export class User {
 
 	@Column({ default: PlayerGameStatusType.IDLE })
 	public gameStatus: PlayerGameStatusType;
+
+	@Column({ default: GameMode.normal })
+	public gameMode: GameMode;
 }
 
 export default User;

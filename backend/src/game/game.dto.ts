@@ -24,3 +24,13 @@ export enum GameStatus {
 	PLAYING,
 	COMPLETED,
 }
+
+export enum GameMode {
+	normal = 'normal',
+	fast = 'fast',
+}
+
+export class GameModeDto {
+	@IsEnum(GameMode)
+	gameMode: GameMode;
+}
