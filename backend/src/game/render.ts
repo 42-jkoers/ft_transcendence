@@ -88,6 +88,10 @@ class Paddle {
 			this.y = this.canvas.height - this.height;
 	}
 
+	dy() {
+		return this.update * this.speed;
+	}
+
 	export(): PaddleUpdate {
 		return {
 			x: this.x,
@@ -170,13 +174,15 @@ class Ball {
 
 	private tickPaddle(paddle: Readonly<Paddle>) {
 		if (!this.paddleCollides(paddle)) return;
+		this.dx *= -1;
+		// higher number means more that the ball will be more affected by the paddles' current direction
+		const grip = 0.5;
+		this.dy -= paddle.dy() * grip;
 
 		if (paddle.position == 'left') {
-			this.dx *= -1;
 			this.x = paddle.x + paddle.width + this.radius + Number.EPSILON;
 		} //
 		else if (paddle.position == 'right') {
-			this.dx *= -1;
 			this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
 		} //
 		else {
