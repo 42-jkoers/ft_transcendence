@@ -138,7 +138,6 @@ onMounted(() => {
   function sendKeyUpdate(direction: "keydown" | "keyup", update: -1 | 0 | 1) {
     if (lastPaddleUpdate === update) return;
     lastPaddleUpdate = update;
-    console.log("paddleUpdate,", update);
     socket.emit("paddleUpdate", { update });
   }
 
