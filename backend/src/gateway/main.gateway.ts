@@ -55,8 +55,6 @@ async function gameLoop(
 		const winnerId = game.getWinnerID();
 		if (winnerId) {
 			// step 1: inform players & watchers game is finished
-			console.log('winnerId', winnerId);
-
 			const user = await userService.findByID(winnerId);
 			server.in(game.socketRoomID).emit('gameFinished', user.username);
 			// step 2: remove game from database, change player game status
