@@ -21,7 +21,7 @@ import {
 
 // TODO: rename to GameHistory, or show that this game has been completed, and rename gameInPlay to game
 @Entity()
-export class GameEntity {
+export class GameResultEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
@@ -66,6 +66,6 @@ export class PlayerEntry {
 	@Column()
 	result: string;
 
-	@ManyToOne(() => GameEntity, (game) => game.playerEntry)
-	game: GameEntity;
+	@ManyToOne(() => GameResultEntity, (game) => game.playerEntry)
+	game: GameResultEntity;
 }

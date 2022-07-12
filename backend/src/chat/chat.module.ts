@@ -11,7 +11,7 @@ import { MessageService } from './message/message.service';
 import { MessageEntity } from './message/message.entity';
 import { UserModule } from 'src/user/user.module';
 import { GameService } from 'src/game/game.service';
-import { GameEntity, PlayerEntry } from 'src/game/game.entity';
+import { GameResultEntity, PlayerEntry } from 'src/game/game.entity';
 import { MuteService } from './room/mute.service';
 import { MuteEntity } from './room/entities/mute.entity';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
@@ -36,7 +36,7 @@ import { FriendService } from 'src/user/friend/friend.service';
 			User,
 			UserToRoomEntity,
 			MessageEntity,
-			GameEntity,
+			GameResultEntity,
 			//TODO checklater see if needed
 			PlayerEntry,
 			MuteEntity,

@@ -32,7 +32,7 @@ import { UserIdDto } from 'src/user/dto';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
-import { GameEntity } from 'src/game/game.entity';
+import { GameResultEntity } from 'src/game/game.entity';
 import { FriendService } from 'src/user/friend/friend.service';
 import { IntegerDto } from './util/integer.dto';
 import { RoomPasswordDto } from 'src/chat/room/dto/room.password.dto';
@@ -871,7 +871,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	async createGame(user1Id: number, user2Id: number): Promise<GameEntity> {
+	async createGame(user1Id: number, user2Id: number): Promise<GameResultEntity> {
 		const user1 = await this.userService.getUserByID(user1Id);
 		const user2 = await this.userService.getUserByID(user2Id);
 		// step 1: to check if any user is already in a game

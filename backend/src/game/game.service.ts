@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import { GameEntity, PlayerEntry } from './game.entity';
+import { GameResultEntity, PlayerEntry } from './game.entity';
 import { PaddleUpdateDto } from './game.dto';
 import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,8 +19,8 @@ export class GameService {
 	constructor(
 		@Inject(forwardRef(() => UserService))
 		private readonly userService: UserService,
-		@InjectRepository(GameEntity)
-		private readonly gameEntityRepository: Repository<GameEntity>,
+		@InjectRepository(GameResultEntity)
+		private readonly gameResultEntityRepository: Repository<GameResultEntity>,
 		@InjectRepository(PlayerEntry)
 		private readonly entryRepository: Repository<PlayerEntry>,
 		@InjectRepository(User)
@@ -46,7 +46,7 @@ export class GameService {
 		});
 		await this.userRepository.save(player1);
 		await this.userRepository.save(player2);
-		const game1 = this.gameEntityRepository.create({
+		const game1 = this.gameResultEntityRepository.create({
 			created_at: '2022.07.1',
 			updated_at: '2022.07.1',
 			// score: [1, 4],
@@ -62,7 +62,7 @@ export class GameService {
 		await this.entryRepository.save(entry2);
 		game1.players = [player1, player2];
 		game1.playerEntry = [entry1, entry2];
-		await this.gameEntityRepository.save(game1);
+		await this.gameResultEntityRepository.save(game1);
 		//game2 Xiaojing vs Irem
 		const player3 = this.userRepository.create({
 			// id: 13,
@@ -78,7 +78,7 @@ export class GameService {
 		});
 		await this.userRepository.save(player3);
 		await this.userRepository.save(player4);
-		const game2 = this.gameEntityRepository.create({
+		const game2 = this.gameResultEntityRepository.create({
 			created_at: '2022.07.2',
 			updated_at: '2022.07.4',
 			// score: [5, 0],
@@ -94,8 +94,8 @@ export class GameService {
 		await this.entryRepository.save(entry4);
 		game2.players = [player3, player4];
 		game2.playerEntry = [entry3, entry4];
-		await this.gameEntityRepository.save(game2);
-		const game3 = this.gameEntityRepository.create({
+		await this.gameResultEntityRepository.save(game2);
+		const game3 = this.gameResultEntityRepository.create({
 			created_at: '2022.06.30',
 			updated_at: '2022.06.30',
 			// score: [8, 4],
@@ -111,12 +111,12 @@ export class GameService {
 		await this.entryRepository.save(entry6);
 		game3.playerEntry = [entry5, entry6];
 		game3.players = [player3, player1];
-		await this.gameEntityRepository.save(game3);
+		await this.gameResultEntityRepository.save(game3);
 	}
 
 	async getMatchHistory(UserId: number) {
 		// await this.seed(); //TODO this is for testing query purpose only, should be removed later
-		const matchHistories = await getRepository(GameEntity)
+		const matchHistories = await getRepository(GameResultEntity)
 			.createQueryBuilder('game')
 			.leftJoin('game.players', 'player')
 			.select(['game.id', 'game.updated_at'])
@@ -129,7 +129,7 @@ export class GameService {
 		return matchHistories;
 	}
 
-	flattenData(data: GameEntity) {
+	flattenData(data: GameResultEntity) {
 		return [
 			data.id,
 			data.playerEntry[0].player.avatar,
@@ -142,12 +142,12 @@ export class GameService {
 		];
 	}
 
-	async createGame(sender: User, receiver: User): Promise<GameEntity> {
+	async createGame(sender: User, receiver: User): Promise<GameResultEntity> {
 		// step 1: create game entity
-		const newGame = this.gameEntityRepository.create();
+		const newGame = this.gameResultEntityRepository.create();
 		newGame.name = sender.username + ' vs ' + receiver.username;
 		newGame.players = [sender, receiver];
-		await this.gameEntityRepository.save(newGame);
+		await this.gameResultEntityRepository.save(newGame);
 		const inPlay = new Game([sender.id, receiver.id], newGame.id);
 		this.inPlays.push(inPlay);
 		// step 2: set both user game status = playing
@@ -161,8 +161,8 @@ export class GameService {
 		return newGame;
 	}
 
-	async getAllGames(userID: number): Promise<GameEntity[]> {
-		const games = await getRepository(GameEntity)
+	async getAllGames(userID: number): Promise<GameResultEntity[]> {
+		const games = await getRepository(GameResultEntity)
 			.createQueryBuilder('game')
 			.leftJoinAndSelect('game.players', 'player')
 			.where('player.id = :id', { id: userID })
@@ -170,8 +170,8 @@ export class GameService {
 		return games;
 	}
 
-	async findByID(id: number): Promise<GameEntity | undefined> {
-		return await this.gameEntityRepository.findOne({
+	async findByID(id: number): Promise<GameResultEntity | undefined> {
+		return await this.gameResultEntityRepository.findOne({
 			where: { id },
 		});
 	}
@@ -193,7 +193,7 @@ export class GameService {
 	// 	gameID: string,
 	// 	userID: number,
 	// ): Promise<'player' | 'viewer'> {
-	// 	const game = await getRepository(GameEntity)
+	// 	const game = await getRepository(GameResultEntity)
 	// 		.createQueryBuilder('game')
 	// 		.where('game.id = :id', { id: gameID })
 	// 		.leftJoinAndSelect('game.players', 'player')
@@ -209,8 +209,8 @@ export class GameService {
 		}
 	}
 
-	async getGameList(): Promise<GameEntity[]> {
-		const games = await getRepository(GameEntity)
+	async getGameList(): Promise<GameResultEntity[]> {
+		const games = await getRepository(GameResultEntity)
 			.createQueryBuilder('game')
 			.leftJoinAndSelect('game.players', 'player')
 			.getMany();
@@ -282,7 +282,7 @@ export class GameService {
 	}
 
 	async getGamePlayers(gameID: number): Promise<UserI[]> {
-		const game = await this.gameEntityRepository
+		const game = await this.gameResultEntityRepository
 			.createQueryBuilder('game')
 			.leftJoinAndSelect('game.players', 'player')
 			.where('game.id = :gameID', { gameID })
@@ -298,6 +298,6 @@ export class GameService {
 		this.inPlays = this.inPlays.filter((p) => p.id !== gameId);
 		// TODO: to update Match History
 		const game = await this.findByID(gameId);
-		await this.gameEntityRepository.remove(game);
+		await this.gameResultEntityRepository.remove(game);
 	}
 }
