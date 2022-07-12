@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { GameResultEntity, PlayerEntry } from './game.entity';
-import { PaddleUpdateDto } from './game.dto';
+import { GameMode, PaddleUpdateDto } from './game.dto';
 import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
@@ -142,7 +142,11 @@ export class GameService {
 		];
 	}
 
-	async createGame(sender: User, receiver: User): Promise<GameResultEntity> {
+	async createGame(
+		sender: User,
+		receiver: User,
+		mode: GameMode,
+	): Promise<GameResultEntity> {
 		// step 1: create game entity
 		const newGame = this.gameResultEntityRepository.create();
 		newGame.name = sender.username + ' vs ' + receiver.username;
@@ -298,6 +302,6 @@ export class GameService {
 		this.inPlays = this.inPlays.filter((p) => p.id !== gameId);
 		// TODO: to update Match History
 		const game = await this.findByID(gameId);
-		await this.gameResultEntityRepository.remove(game);
+		if (game) await this.gameResultEntityRepository.remove(game);
 	}
 }

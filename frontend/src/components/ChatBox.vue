@@ -255,10 +255,6 @@ socket.on("connect", () => {
   socket.sendBuffer = [];
 });
 
-socket.on("NoPermissionToAddMessage", () => {
-  console.log("No permission event caught");
-}); //TODO: do we need to handle this?
-
 //binding a click event listener to a method named 'sendMessage'
 function sendMessage() {
   if (input.value) {
@@ -489,7 +485,7 @@ const isBanned = (userID: number) => {
 <style scoped>
 #all-messages {
   height: 50vh; /*if there is no height it does not scroll */
-  overflow-y: scroll; /* FIXME school computer shows white bars */
+  overflow-y: scroll;
   overflow-wrap: break-word;
 }
 

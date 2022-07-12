@@ -1,4 +1,4 @@
-import { GameStatus } from './game.dto';
+import { GameMode, GameStatus } from './game.dto';
 
 // PaddlePosition
 export enum PaddlePos {
@@ -49,15 +49,30 @@ class Paddle {
 	public readonly height: number;
 	public readonly width: number;
 	public score: number;
+	public readonly mode: GameMode;
 
 	private readonly speed: number;
 	private update: -1 | 0 | 1;
 	private readonly canvas: Canvas;
 
-	constructor(userID: number, canvas: Canvas, position: 'left' | 'right') {
+	constructor(
+		userID: number,
+		canvas: Canvas,
+		position: 'left' | 'right',
+		mode: GameMode,
+	) {
 		this.userID = userID;
 
-		this.speed = canvas.width * 0.01;
+		this.mode = mode;
+		switch (this.mode) {
+			case GameMode.normal:
+				this.speed = canvas.width * 0.01;
+				break;
+
+			case GameMode.fast:
+				this.speed = canvas.width * 0.02;
+				break;
+		}
 		this.height = canvas.height * 0.2;
 		this.width = canvas.grid / 2;
 		this.score = 0;
@@ -73,7 +88,7 @@ class Paddle {
 			this.position == 'left'
 				? this.canvas.grid / 2
 				: this.canvas.width - this.canvas.grid;
-		this.y = this.canvas.height / 2 + this.height / 2;
+		this.y = this.canvas.height / 2 - this.height / 2;
 		this.update = 0;
 	}
 
@@ -88,6 +103,10 @@ class Paddle {
 			this.y = this.canvas.height - this.height;
 	}
 
+	dy() {
+		return this.update * this.speed;
+	}
+
 	export(): PaddleUpdate {
 		return {
 			x: this.x,
@@ -100,6 +119,8 @@ class Paddle {
 }
 
 class Ball {
+	public readonly mode: GameMode;
+
 	private c: Canvas;
 	private x: number;
 	private y: number;
@@ -107,16 +128,26 @@ class Ball {
 	private dy: number;
 	private radius: number;
 
-	constructor(canvas: Canvas) {
+	constructor(canvas: Canvas, mode: GameMode) {
 		this.c = canvas;
+		this.mode = mode;
 		this.reset();
 	}
 
 	reset() {
 		this.x = this.c.width * 0.5;
 		this.y = this.c.height * 0.5;
-		this.dx = this.c.height * -0.003;
-		this.dy = this.c.height * -0.005;
+		switch (this.mode) {
+			case GameMode.normal:
+				this.dx = -0.003;
+				this.dy = -0.005;
+				break;
+
+			case GameMode.fast:
+				this.dx = -0.006;
+				this.dy = -0.009;
+				break;
+		}
 		this.radius = this.c.grid;
 	}
 
@@ -154,28 +185,32 @@ class Ball {
 		return this.radius;
 	}
 
+	private paddleCollides(paddle: Readonly<Paddle>): boolean {
+		let dx = Math.abs(this.x - (paddle.x + paddle.width / 2));
+		let dy = Math.abs(this.y - (paddle.y + paddle.height / 2));
+
+		if (dx > this.radius + paddle.width / 2) return false;
+		if (dy > this.radius + paddle.height / 2) return false;
+		if (dx <= paddle.width) return true;
+		if (dy <= paddle.height) return true;
+
+		dx = dx - paddle.width;
+		dy = dy - paddle.height;
+		return dx * dx + dy * dy <= this.radius * this.radius;
+	}
+
 	private tickPaddle(paddle: Readonly<Paddle>) {
+		if (!this.paddleCollides(paddle)) return;
+		this.dx *= -1;
+		// higher number means more that the ball will be more affected by the paddles' current direction
+		const grip = 0.2;
+		this.dy -= paddle.dy() * grip;
+
 		if (paddle.position == 'left') {
-			const collides =
-				this.x - this.radius < paddle.x + paddle.width &&
-				this.x + this.radius > paddle.x + paddle.width &&
-				this.y - this.radius > paddle.y &&
-				this.y + this.radius < paddle.y + paddle.height;
-			if (collides) {
-				this.dx *= -1;
-				this.x = paddle.x + paddle.width + this.radius + Number.EPSILON;
-			}
+			this.x = paddle.x + paddle.width + this.radius + Number.EPSILON;
 		} //
 		else if (paddle.position == 'right') {
-			const collides2 =
-				this.x + this.radius > paddle.x - paddle.width &&
-				this.x - this.radius < paddle.x + paddle.width &&
-				this.y - this.radius >= paddle.y &&
-				this.y + this.radius <= paddle.y + paddle.height;
-			if (collides2) {
-				this.dx *= -1;
-				this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
-			}
+			this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
 		} //
 		else {
 			throw `unhandled paddle position "${paddle.position}"`;
@@ -187,12 +222,18 @@ export class Game {
 	public readonly id: number;
 	public readonly socketRoomID: string;
 	public status: GameStatus;
+	public readonly mode: GameMode;
 
 	public readonly paddles: Paddle[];
 	private canvas: Canvas;
 	private ball: Ball;
 
-	constructor(playerIDS: number[], id: number, status?: GameStatus) {
+	constructor(
+		playerIDS: number[],
+		id: number,
+		mode: GameMode,
+		status?: GameStatus,
+	) {
 		this.id = id;
 		this.socketRoomID = `game${id}`;
 		this.status = status ?? GameStatus.PLAYING;
@@ -202,7 +243,8 @@ export class Game {
 			width: 4 / 3,
 			grid: 0.025,
 		};
-		this.ball = new Ball(this.canvas);
+		this.mode = mode;
+		this.ball = new Ball(this.canvas, mode);
 		for (const id of playerIDS) this.addPaddle(id);
 	}
 
@@ -210,7 +252,7 @@ export class Game {
 		if (this.paddles.length >= 2) throw new Error('too many paddles');
 
 		const position = this.paddles.length == 0 ? 'left' : 'right';
-		this.paddles.push(new Paddle(userID, this.canvas, position));
+		this.paddles.push(new Paddle(userID, this.canvas, position, this.mode));
 
 		if (this.paddles.length == 2) this.status = GameStatus.PLAYING;
 	}

@@ -196,7 +196,6 @@ export class RoomService {
 	) {
 		const userToRoom: UserToRoomEntity =
 			this.userToroomEntityRepository.create();
-		//FIXME: temp workaround getting user of type UserEntity instead of UserI. Will be replaced with UserEntity
 		const user: User = await this.userService.getUserByID(userIdToAdd);
 		userToRoom.user = user;
 		userToRoom.room = newRoom;
