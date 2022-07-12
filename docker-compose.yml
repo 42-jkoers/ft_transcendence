@@ -4,9 +4,10 @@ services:
     container_name: ft_transcendence_backend
     build:
       context: ./backend
-      # target: development 
+      # target: development
     volumes:
       - ./backend:/app/
+      - ./upload:/upload/
       - backend_node_module:/app/node_modules
     ports:
       - "3000:3000"
@@ -19,18 +20,19 @@ services:
       - redis
 
   frontend:
-      container_name: ft_transcendence_frontend
-      # Specify the directory where dockerfile is located.
-      build:
-          context: ./frontend
-      volumes:
-          - ./frontend:/app/
-          - frontend_node_module:/app/node_modules
-      ports:
-          - "8080:8080"
-      # Link to containers in another service and also express dependency between services in the same way as depends_on.
-      links:
-          - backend
+    container_name: ft_transcendence_frontend
+    # Specify the directory where dockerfile is located.
+    build:
+      context: ./frontend
+    volumes:
+      - ./frontend:/app/
+      - ./upload:/upload/
+      - frontend_node_module:/app/node_modules
+    ports:
+      - "8080:8080"
+    # Link to containers in another service and also express dependency between services in the same way as depends_on.
+    links:
+      - backend
 
   postgres:
     container_name: ft_transcendence_postgres
@@ -41,7 +43,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-  
+
   pgadmin:
     links:
       - postgres:postgres
@@ -58,7 +60,7 @@ services:
 
   redis:
     container_name: ft_transcendence_redis
-    image: 'redis:alpine'
+    image: "redis:alpine"
     ports:
       - "6379:6379"
     volumes:
