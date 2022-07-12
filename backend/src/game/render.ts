@@ -154,28 +154,30 @@ class Ball {
 		return this.radius;
 	}
 
+	private paddleCollides(paddle: Readonly<Paddle>): boolean {
+		let dx = Math.abs(this.x - (paddle.x + paddle.width / 2));
+		let dy = Math.abs(this.y - (paddle.y + paddle.height / 2));
+
+		if (dx > this.radius + paddle.width / 2) return false;
+		if (dy > this.radius + paddle.height / 2) return false;
+		if (dx <= paddle.width) return true;
+		if (dy <= paddle.height) return true;
+
+		dx = dx - paddle.width;
+		dy = dy - paddle.height;
+		return dx * dx + dy * dy <= this.radius * this.radius;
+	}
+
 	private tickPaddle(paddle: Readonly<Paddle>) {
+		if (!this.paddleCollides(paddle)) return;
+
 		if (paddle.position == 'left') {
-			const collides =
-				this.x - this.radius < paddle.x + paddle.width &&
-				this.x + this.radius > paddle.x + paddle.width &&
-				this.y - this.radius > paddle.y &&
-				this.y + this.radius < paddle.y + paddle.height;
-			if (collides) {
-				this.dx *= -1;
-				this.x = paddle.x + paddle.width + this.radius + Number.EPSILON;
-			}
+			this.dx *= -1;
+			this.x = paddle.x + paddle.width + this.radius + Number.EPSILON;
 		} //
 		else if (paddle.position == 'right') {
-			const collides2 =
-				this.x + this.radius > paddle.x - paddle.width &&
-				this.x - this.radius < paddle.x + paddle.width &&
-				this.y - this.radius >= paddle.y &&
-				this.y + this.radius <= paddle.y + paddle.height;
-			if (collides2) {
-				this.dx *= -1;
-				this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
-			}
+			this.dx *= -1;
+			this.x = paddle.x - paddle.width - this.radius - Number.EPSILON;
 		} //
 		else {
 			throw `unhandled paddle position "${paddle.position}"`;
