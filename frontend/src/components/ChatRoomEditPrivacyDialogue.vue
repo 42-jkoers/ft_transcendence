@@ -29,7 +29,6 @@
             id="remove-password"
             v-model="removePasswordChecked"
             :binary="true"
-            @change="showValue"
           />
           <label for="remove-password">Remove password</label>
         </div>
@@ -82,9 +81,6 @@ const closePasswordDialog = () => {
 
 const removePasswordChecked = ref<boolean>(false);
 
-const showValue = () =>
-  console.log("IS removePasswordChecked? ", removePasswordChecked.value);
-
 const updateRoomPassword = () => {
   if (
     !passwordValue.value ||
@@ -94,7 +90,7 @@ const updateRoomPassword = () => {
     passwordValue.value = null;
   }
   socket.emit("updateRoomPassword", {
-    name: props.room.name,
+    roomName: props.room.name,
     password: passwordValue.value,
   });
   closePasswordDialog();

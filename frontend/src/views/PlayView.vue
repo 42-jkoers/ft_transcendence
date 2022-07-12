@@ -2,40 +2,43 @@
   <p class="message">
     This is the play page (look at the console for all info)
   </p>
-
-  <canvas width="300" height="400" id="game"></canvas>
-  <!-- TODO: variable instead 300 400 magic number -->
+  <div v-if="isGameFinish">
+    <h3>
+      {{ winnerMsg }}
+    </h3>
+    <h4>Play again:</h4>
+    <JoinGameQueueAutoVue />
+  </div>
+  <div v-else>
+    <canvas width="300" height="400" id="game"></canvas>
+    <!-- TODO: variable instead 300 400 magic number -->
+  </div>
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted } from "vue";
+import { inject, onMounted, onUnmounted, ref } from "vue";
 import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
-import { GameInPlay, Frame } from "@backend/game/game.dto";
+import { GameInPlay, Frame } from "@backend/game/render";
+import JoinGameQueueAutoVue from "@/components/JoinGameQueueAuto.vue";
+import storeUser from "@/store";
+let winnerMsg = ref<string>("");
+const isGameFinish = ref<boolean>(false);
 
 function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
   const { width, height, grid } = game.canvas;
   context.clearRect(0, 0, width, height);
 
-  // leftPaddle.y += leftPaddle.dy;
-  // rightPaddle.y += rightPaddle.dy;
-
-  // prevent paddles from going through walls
-  // if (leftPaddle.y < grid) {
-  //   leftPaddle.y = grid;
-  // } else if (leftPaddle.y > maxPaddleY) {
-  //   leftPaddle.y = maxPaddleY;
-  // }
-
-  // if (rightPaddle.y < grid) {
-  //   rightPaddle.y = grid;
-  // } else if (rightPaddle.y > maxPaddleY) {
-  //   rightPaddle.y = maxPaddleY;
-  // }
-
   context.fillStyle = "white";
   for (const paddle of f.paddles) {
     context.fillRect(paddle.x, paddle.y, grid, paddle.height);
+  }
+
+  if (f.paddles[0]) {
+    context.fillText(String(f.paddles[0].score), width / 2 - 90, 80);
+  }
+  if (f.paddles[1]) {
+    context.fillText(String(f.paddles[1].score), width / 2 + 80, 80);
   }
 
   context.fillRect(
@@ -57,9 +60,10 @@ function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
 }
 
 function initCanvas(game: GameInPlay, ctx: CanvasRenderingContext2D) {
-  console.log("init", game);
+  // console.log("init", game);
   ctx.canvas.width = game.canvas.width;
   ctx.canvas.height = game.canvas.height;
+  ctx.font = "35px courier"; // TODO: scale
 }
 
 function scaleFrame(frame: Frame, scaler: number) {
@@ -80,10 +84,26 @@ function scaleGame(game: GameInPlay, scalar: number) {
   game.canvas.grid *= scalar;
 }
 
+function keyEventToPaddleUpdate(e: KeyboardEvent): -1 | 1 | undefined {
+  switch (e.key) {
+    case "w":
+    case "W":
+    case "ArrowUp":
+      return 1;
+
+    case "s":
+    case "S":
+    case "ArrowDown":
+      return -1;
+    default:
+      return undefined;
+  }
+}
+
+const socket: Socket = inject("socketioInstance") as Socket;
 onMounted(() => {
   const canvas = document.getElementById("game") as HTMLCanvasElement;
   const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-  const socket: Socket = inject("socketioInstance") as Socket;
   const route = useRoute();
   const scaler = 500;
   let gameInPlay: GameInPlay | undefined;
@@ -106,22 +126,37 @@ onMounted(() => {
     }
   });
 
-  window.addEventListener("keydown", (e) => {
-    switch (e.key) {
-      case "w":
-      case "W":
-      case "ArrowUp":
-        socket.emit("paddleUpdate", { update: 1 });
-        break;
-
-      case "s":
-      case "S":
-      case "ArrowDown":
-        socket.emit("paddleUpdate", { update: -1 });
-        break;
-    }
+  socket.on("gameFinished", (id: number) => {
+    const msg = `Game is over, user ${id} won`; // TODO: instead of user id, show full name
+    winnerMsg.value = msg;
+    isGameFinish.value = true;
+    console.log(msg);
   });
 
-  socket.emit("getGame", parseInt(route.params.id as string));
+  let lastPaddleUpdate: -1 | 0 | 1 = 0;
+
+  function sendKeyUpdate(direction: "keydown" | "keyup", update: -1 | 0 | 1) {
+    if (lastPaddleUpdate === update) return;
+    lastPaddleUpdate = update;
+    socket.emit("paddleUpdate", { update });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const update = keyEventToPaddleUpdate(e);
+    if (update == undefined) return;
+    sendKeyUpdate("keydown", update);
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (keyEventToPaddleUpdate(e) !== undefined) sendKeyUpdate("keyup", 0);
+  });
+
+  socket.emit("getGame", { data: parseInt(route.params.id as string) });
+});
+
+onUnmounted(() => {
+  socket.off("getGame");
+  socket.off("gameFrame");
+  socket.off("gameFinished");
 });
 </script>

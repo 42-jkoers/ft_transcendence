@@ -16,14 +16,12 @@ import { useStore } from "vuex";
 const props = defineProps(["clickedUserId"]);
 const emit = defineEmits(["closeDialog"]);
 
-const socket: Socket | undefined = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 const store = useStore();
 const route = useRoute();
 const router = useRouter();
 
 const sendDM = () => {
-  console.log("props: ", props);
-
   const dMRoom = computed(() =>
     store.state.roomsInfo.find(
       (room) =>
@@ -31,7 +29,6 @@ const sendDM = () => {
         room.secondParticipant[0] === props.clickedUserId
     )
   );
-  console.log("dm room", dMRoom);
 
   if (dMRoom.value) {
     if (route.params.roomName === dMRoom.value.name) {
@@ -46,7 +43,7 @@ const sendDM = () => {
       isDirectMessage: true,
       userIds: [props.clickedUserId],
     };
-    socket?.emit("createPrivateChatRoom", dMRequest);
+    socket.emit("createDirectMessageRoom", dMRequest);
   }
 };
 </script>

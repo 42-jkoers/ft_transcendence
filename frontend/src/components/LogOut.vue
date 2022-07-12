@@ -5,34 +5,24 @@
       class="p-button-rounded p-button-text p-button-outlined"
       label="Log Out"
       icon="pi pi-power-off"
-      @click="confirmLogOut"
+      @click="logOut"
     />
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject } from "vue";
 import axios from "axios";
 import storeUser from "@/store";
 import router from "@/router";
-import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import Button from "primevue/button";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
+import { Socket } from "socket.io-client";
 
-const confirm = useConfirm();
+const socket: Socket = inject("socketioInstance") as Socket;
 const toast = useToast();
 const isVisible = ref<boolean>(true);
 
-async function confirmLogOut() {
-  confirm.require({
-    message: "Are you sure you want to log out?",
-    header: "Confirmation",
-    icon: "pi pi-exclamation-triangle",
-    accept: () => {
-      logOut();
-    },
-  });
-}
 async function logOut() {
   await axios
     .get("http://localhost:3000/auth/logout", {
@@ -41,6 +31,7 @@ async function logOut() {
     .then(() => {
       storeUser.dispatch("logout");
       isVisible.value = false;
+      socket.emit("exitUserSocketRoom");
       redirectToHome();
     })
     .catch(() => {

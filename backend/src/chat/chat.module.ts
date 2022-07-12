@@ -7,8 +7,6 @@ import { User } from '../user/user.entity';
 import { UserToRoomEntity } from './room/entities/user.to.room.entity';
 import { RoomService } from './room/room.service';
 import { AuthModule } from '../auth/auth.module';
-import { ConnectedUserService } from './connected-user/connected-user.service';
-import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
 import { MessageService } from './message/message.service';
 import { MessageEntity } from './message/message.entity';
 import { UserModule } from 'src/user/user.module';
@@ -17,16 +15,17 @@ import { GameEntity, PlayerEntry } from 'src/game/game.entity';
 import { MuteService } from './room/mute.service';
 import { MuteEntity } from './room/entities/mute.entity';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
+import { FriendService } from 'src/user/friend/friend.service';
 
 @Module({
 	providers: [
 		MainGateway,
 		RoomService,
 		BlockedUsersService,
-		ConnectedUserService,
 		MessageService,
 		GameService,
 		MuteService,
+		FriendService,
 	],
 	imports: [
 		forwardRef(() => AuthModule),
@@ -36,7 +35,6 @@ import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 			RoomEntity,
 			User,
 			UserToRoomEntity,
-			ConnectedUserEntity,
 			MessageEntity,
 			GameEntity,
 			//TODO checklater see if needed

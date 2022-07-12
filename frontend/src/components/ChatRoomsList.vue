@@ -30,11 +30,13 @@
           <div>
             <i
               v-if="slotProps.data.protected"
+              v-tooltip.right="'Protected'"
               class="pi pi-shield"
               style="font-size: 0.8rem"
             ></i>
             <i
               v-else-if="slotProps.data.isDirectMessage"
+              v-tooltip.right="'Direct message'"
               class="pi pi-user"
               style="font-size: 0.8rem"
             ></i>
@@ -44,9 +46,15 @@
                 !slotProps.data.isDirectMessage
               "
               class="pi pi-lock"
+              v-tooltip.right="'Private'"
               style="font-size: 0.8rem"
             ></i>
-            <i v-else class="pi pi-hashtag" style="font-size: 0.8rem"></i>
+            <i
+              v-else
+              class="pi pi-hashtag"
+              v-tooltip.right="'Public'"
+              style="font-size: 0.8rem"
+            ></i>
           </div>
         </template>
       </Column>
@@ -55,13 +63,20 @@
         bodyStyle="padding:0"
         header="Chat Rooms"
         headerStyle="padding-left:0"
-      ></Column>
+      >
+        <template #body="slotProps">
+          <div :class="roomsClass(slotProps.data)">
+            {{ slotProps.data.displayName }}
+          </div>
+        </template>
+      </Column>
       <Column field="joined" style="max-width: 2.5rem">
         <template #body="slotProps">
           <div>
             <i
               v-if="slotProps.data.userRole !== undefined"
               class="pi pi-check-circle"
+              v-tooltip.top="'You\'ve joined this chat'"
               style="font-size: 0.8rem"
             ></i>
           </div>
@@ -98,16 +113,18 @@ import ProgressSpinner from "primevue/progressspinner";
 import { UserRole } from "@/types/UserRole.Enum";
 import { useStore } from "vuex";
 import { useToast } from "primevue/usetoast";
+import MessageI from "@/types/Message.interface";
 
-const socket: Socket | undefined = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 const router = useRouter();
 const route = useRoute();
 
 const rooms = ref();
-socket?.emit("getPublicRoomsList");
+socket.emit("getPublicRoomsList");
 
 const isRoomsListReady = ref<boolean>(false);
 const store = useStore();
+
 onMounted(() => {
   if (!isRoomsListReady.value && store.state.roomsInfo.length > 0) {
     rooms.value = store.state.roomsInfo;
@@ -118,14 +135,13 @@ onMounted(() => {
 const updateRoomsListInStore = (roomsList: Room[]) =>
   store.commit("updateRoomsListInStore", roomsList);
 
-socket?.on("postPublicRoomsList", (response) => {
+socket.on("postPublicRoomsList", (response) => {
   isRoomsListReady.value = true;
-  console.log("rooms from server", response);
   rooms.value = response;
   updateRoomsListInStore(response);
 });
 
-socket?.on("room deleted", (deletedRoomName) => {
+socket.on("room deleted", (deletedRoomName) => {
   if (deletedRoomName === route.params.roomName) {
     router.push({
       name: "Chat",
@@ -134,8 +150,25 @@ socket?.on("room deleted", (deletedRoomName) => {
   socket.emit("getPublicRoomsList");
 });
 
+const roomsWithNewMessage = ref<string[]>([]);
+
+socket.on("messageAdded", (message: MessageI) => {
+  if (message.room.name !== route.params.roomName) {
+    roomsWithNewMessage.value?.push(message.room.name);
+  }
+});
+
+const roomsClass = (roomData: any) => [
+  {
+    newMessageArrived:
+      roomsWithNewMessage.value?.find((roomName) => {
+        return roomName === roomData.name;
+      }) && roomData.name !== route.params.roomName,
+  },
+];
+
 const toast = useToast();
-socket?.on("CannotSendDirectMessage", (user) => {
+socket.on("CannotSendDirectMessage", (user) => {
   toast.add({
     severity: "error",
     summary: "Error",
@@ -144,7 +177,7 @@ socket?.on("CannotSendDirectMessage", (user) => {
   });
 });
 
-socket?.on("postPrivateChatRoom", (dMRoom) => {
+socket.on("postPrivateChatRoom", (dMRoom) => {
   router.push({
     name: "ChatBox",
     params: { roomName: dMRoom.name },
@@ -166,6 +199,9 @@ const onRowSelect = (event) => {
       name: "ChatBox",
       params: { roomName: room.name },
     });
+    roomsWithNewMessage.value = roomsWithNewMessage.value?.filter(
+      (roomName) => roomName !== room.name
+    );
   }
 };
 
@@ -216,7 +252,7 @@ const confirmLeave = (room) => {
     header: "Leave Confirmation",
     icon: "pi pi-info-circle",
     accept: () => {
-      socket?.emit("removeUserFromRoom", room.value.name);
+      socket.emit("removeUserFromRoom", { roomName: room.value.name });
       if (
         route.params.roomName === room.value.name &&
         (room.value.visibility === RoomVisibility.PRIVATE ||
@@ -235,7 +271,7 @@ const handleAddToRoom = (room) => {
     selectedRoomName.value = room.name;
     displayPasswordDialog.value = true;
   } else {
-    socket?.emit("addUserToRoom", room.name);
+    socket.emit("addUserToRoom", { roomName: room.name });
   }
 };
 
@@ -259,5 +295,10 @@ const editRoomPrivacy = () => {
   90% {
     stroke: #afada9;
   }
+}
+
+.newMessageArrived {
+  font-weight: 700;
+  color: #ffffff;
 }
 </style>

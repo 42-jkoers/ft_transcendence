@@ -1,4 +1,5 @@
 import { RoomI } from 'src/chat/room/room.interface';
+import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
 
 export interface UserI {
 	id?: number;
@@ -12,7 +13,6 @@ export interface UserI {
 	isTwoFactorAuthEnabled?: boolean;
 	isTwoFactorAuthenticated?: boolean;
 	twoFactorAuthSecret?: string;
-	socketCount?: number;
 	sentGameInvites?: UserI[];
-	isGaming?: boolean;
+	gameStatus?: PlayerGameStatusType;
 }

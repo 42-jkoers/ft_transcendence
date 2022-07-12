@@ -7,9 +7,9 @@ import { UserI } from './user.interface';
 import { RoomService } from '../chat/room/room.service';
 import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { UserToRoomEntity } from 'src/chat/room/entities/user.to.room.entity';
-import ConnectedUserEntity from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
+import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
 
 @Injectable()
 export class UserService {
@@ -57,16 +57,6 @@ export class UserService {
 			defaultRoom,
 			UserRole.VISITOR,
 		);
-
-		//FIXME: temp for testing protected rooms:
-		const protectedWithPassword: RoomEntity =
-			await this.roomService.findRoomById(2);
-		await this.roomService.addUserToRoom(
-			createdUser.id,
-			protectedWithPassword,
-			UserRole.VISITOR,
-		);
-
 		return createdUser;
 	}
 
@@ -75,7 +65,6 @@ export class UserService {
 			intraID: '00000',
 			username: 'admin',
 			avatar: '/default_avatar.png',
-			socketCount: 0,
 		};
 		const defaultUser = this.userRepository.create(defaultUserData);
 		await this.userRepository.save(defaultUser);
@@ -98,48 +87,7 @@ export class UserService {
 		return await this.findByID(userData.id);
 	}
 
-	async getSocketCount(userId: number): Promise<number> {
-		const user = await this.findByID(userId);
-		return user.socketCount;
-	}
-
-	async resetAllSocketCount() {
-		const userIdList = await this.userRepository
-			.createQueryBuilder('user')
-			.select(['user.id'])
-			.getMany();
-		for (let i = 0; i < userIdList.length; ++i) {
-			await this.userRepository.update(userIdList[i], {
-				socketCount: 0,
-			});
-		}
-	}
-
-	async increaseSocketCount(userId: number): Promise<UserI> {
-		const currentSocketCount = await this.getSocketCount(userId);
-		await this.userRepository.update(userId, {
-			socketCount: currentSocketCount + 1,
-		});
-		return await this.getUserByID(userId);
-	}
-
-	async decreaseSocketCount(userId: number): Promise<UserI> {
-		const currentSocketCount = await this.getSocketCount(userId);
-		if (currentSocketCount > 0) {
-			await this.userRepository.update(userId, {
-				socketCount: currentSocketCount - 1,
-			});
-		}
-		return await this.getUserByID(userId);
-	}
-
 	async deleteUser(userId: number) {
-		await getConnection()
-			.createQueryBuilder()
-			.delete()
-			.from(ConnectedUserEntity)
-			.where('userId = :userId', { userId })
-			.execute();
 		await getConnection()
 			.createQueryBuilder()
 			.delete()
@@ -209,5 +157,17 @@ export class UserService {
 		return this.userRepository.update(userId, {
 			isTwoFactorAuthEnabled: true,
 		});
+	}
+
+	async resetAllUserGameStatus() {
+		const userIdList = await this.userRepository
+			.createQueryBuilder('user')
+			.select(['user.id'])
+			.getMany();
+		for (const userId of userIdList) {
+			await this.userRepository.update(userId, {
+				gameStatus: PlayerGameStatusType.IDLE,
+			});
+		}
 	}
 }

@@ -21,56 +21,6 @@ export class PaddleUpdateDto {
 }
 
 export enum GameStatus {
-	IN_QUE,
 	PLAYING,
 	COMPLETED,
-	ABANDONED,
-}
-
-export interface Paddle {
-	y: number; // point is defined as center of ball
-	x: number; // point is defined as center of ball
-	height: number;
-	width: number;
-	speed: number;
-}
-
-export interface Player {
-	id: number;
-	score: number;
-	update: PaddleUpdate;
-	paddle: Paddle;
-}
-
-export interface Frame {
-	ball: {
-		x: number; // point is defined as center of ball
-		y: number; // point is defined as center of ball
-		radius: number;
-	};
-	paddles: Paddle[];
-	socketRoomID: string;
-}
-
-export interface Ball {
-	x: number;
-	y: number;
-	dx: number;
-	dy: number;
-	radius: number;
-}
-
-export interface Canvas {
-	width: number;
-	height: number;
-	grid: number;
-}
-
-export interface GameInPlay {
-	id: number;
-	socketRoomID: string;
-	status: GameStatus;
-	ball: Ball;
-	canvas: Canvas;
-	players: Player[];
 }

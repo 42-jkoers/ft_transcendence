@@ -1,7 +1,5 @@
-import { ConnectedUserEntity } from 'src/chat/connected-user/connected-user.entity';
 import { MessageEntity } from 'src/chat/message/message.entity';
 import { UserToRoomEntity } from '../chat/room/entities/user.to.room.entity';
-import { GameResultI } from './util/gameResult.interface';
 
 import {
 	Column,
@@ -13,6 +11,7 @@ import {
 	PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GameEntity, PlayerEntry } from 'src/game/game.entity';
+import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
 
 @Entity()
 export class User {
@@ -28,9 +27,6 @@ export class User {
 	@Column()
 	public avatar: string;
 
-	@Column()
-	public socketCount: number;
-
 	@ManyToMany(() => User)
 	@JoinTable({ joinColumn: { name: 'sender_id' } })
 	requestedFriends: User[];
@@ -43,10 +39,6 @@ export class User {
 	@ManyToMany(() => User, { cascade: true })
 	@JoinTable({ joinColumn: { name: 'userId_1' } })
 	blocked: User[];
-
-	@JoinColumn()
-	@OneToMany(() => ConnectedUserEntity, (connection) => connection.user)
-	connections: ConnectedUserEntity[];
 
 	@OneToMany(() => UserToRoomEntity, (userToRoom) => userToRoom.user, {
 		cascade: true,
@@ -77,9 +69,6 @@ export class User {
 	@JoinTable({ joinColumn: { name: 'sender_id' } })
 	sentGameInvites: User[];
 
-	@Column({ default: false })
-	public isGaming: boolean;
-
 	//TODO how to set the gameresult all zero?
 	@Column({ default: 0 })
 	public ladder: number;
@@ -89,6 +78,8 @@ export class User {
 
 	@Column({ default: 0 })
 	public loses: number;
+	@Column({ default: PlayerGameStatusType.IDLE })
+	public gameStatus: PlayerGameStatusType;
 }
 
 export default User;
