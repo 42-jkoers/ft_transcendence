@@ -92,7 +92,6 @@ export class UserService {
 		userId: number,
 		gameMode: GameMode,
 	): Promise<UserI | undefined> {
-		console.log('updateUserGameMode', gameMode);
 		try {
 			await this.userRepository.update(userId, { gameMode });
 			return await this.findByID(userId);
