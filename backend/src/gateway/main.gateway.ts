@@ -875,7 +875,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const createdGame = await this.gameService.createGame(
 				user1,
 				user2,
-				user1.gameMode, // TODO: only match users that have the same game mode
+				user1.gameMode,
 			);
 			// step 3: refresh WatchGame list (for all clients)
 			await this.broadcastGameList();
@@ -995,12 +995,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		// if user is not in quee
 		const queue = await this.gameService.getGameQueue();
-		if (queue.length === 0) {
+		const component: UserI | undefined = queue.find(
+			(q) => q.gameMode === user.gameMode,
+		);
+		if (!component) {
 			// if no one is waiting, user will join the queue
 			await this.gameService.joinQueue(client.data.user.id);
 		} else {
-			// if there is already someone waiting, pick the first player in queue
-			const component = queue[0];
 			try {
 				// step 1: create game
 				const createdGame = await this.createGame(
