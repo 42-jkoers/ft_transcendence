@@ -176,7 +176,7 @@ class Ball {
 		if (!this.paddleCollides(paddle)) return;
 		this.dx *= -1;
 		// higher number means more that the ball will be more affected by the paddles' current direction
-		const grip = 0.5;
+		const grip = 0.2;
 		this.dy -= paddle.dy() * grip;
 
 		if (paddle.position == 'left') {
