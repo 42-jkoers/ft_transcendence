@@ -7,7 +7,7 @@
   >
     <div class="card flex align-items-center justify-content-start">
       <h5>Select paddle color</h5>
-      <ColorPicker v-model="paddleColor" class="m-2" />
+      <ColorPicker v-model="paddleColor" class="m-4" />
     </div>
     <template #footer>
       <Button
@@ -41,7 +41,7 @@ const defaultPaddleValues = {
   // paddleSize: "1",
 };
 const paddleColor = ref("fffafa");
-const paddleSize = ref("1");
+// const paddleSize = ref("1");
 
 const reset = () => {
   paddleColor.value = defaultPaddleValues.paddleColor;
