@@ -34,7 +34,7 @@ import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
 import { GameInPlay, Frame } from "@backend/game/render";
 import JoinGameQueueAutoVue from "@/components/JoinGameQueueAuto.vue";
-import storeUser from "@/store";
+
 const isGameFinish = ref<boolean>(false);
 
 function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
