@@ -168,8 +168,6 @@ function saveNewRoom() {
   ) {
     newRoom.password = null;
   }
-  console.log("newRoom", newRoom);
-
   socket.emit("createRoom", newRoom);
   isValidRoomName.value = true;
 }
