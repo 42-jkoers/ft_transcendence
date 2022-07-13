@@ -1,4 +1,11 @@
-import { IsEnum, IsNotEmpty, MinLength } from 'class-validator';
+import {
+	IsEnum,
+	IsNotEmpty,
+	IsNumber,
+	IsString,
+	MinLength,
+} from 'class-validator';
+import { PlayerEntry } from './game.entity';
 
 export class CreateGameDto {
 	@IsNotEmpty()
@@ -33,4 +40,13 @@ export enum GameMode {
 export class GameModeDto {
 	@IsEnum(GameMode)
 	gameMode: GameMode;
+}
+
+export class MatchHistoryDto {
+	@IsNumber()
+	game_id: number;
+
+	updated_at: Date;
+
+	playerEntry: PlayerEntry[];
 }

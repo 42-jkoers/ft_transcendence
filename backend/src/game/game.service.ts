@@ -1,13 +1,14 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { GameResultEntity, PlayerEntry } from './game.entity';
-import { GameMode, PaddleUpdateDto } from './game.dto';
+import { GameMode, MatchHistoryDto, PaddleUpdateDto } from './game.dto';
 import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
 import { UserI } from 'src/user/user.interface';
 import { PlayerGameStatusType } from './playergamestatus.enum';
 import { Game } from './render';
+import { plainToClass } from 'class-transformer';
 
 Injectable();
 export class GameService {
@@ -116,17 +117,49 @@ export class GameService {
 
 	async getMatchHistory(UserId: number) {
 		// await this.seed(); //TODO this is for testing query purpose only, should be removed later
-		const matchHistories = await getRepository(GameResultEntity)
+		const matchHistories: GameResultEntity[] = await getRepository(
+			GameResultEntity,
+		)
 			.createQueryBuilder('game')
 			.leftJoin('game.players', 'player')
 			.select(['game.id', 'game.updated_at'])
 			.leftJoin('game.playerEntry', 'entry')
 			.addSelect(['entry.score', 'entry.result'])
 			.leftJoin('entry.player', 'gamer')
-			.addSelect(['gamer.username', 'gamer.avatar'])
+			.addSelect(['gamer.username', 'gamer.avatar', 'gamer.id'])
 			.where('player.id = :id', { id: UserId })
 			.getMany();
-		return matchHistories;
+		const response = await this.transformToMatchHistory(
+			matchHistories,
+			UserId,
+		);
+		return response;
+	}
+
+	async transformToMatchHistory(
+		matchHistories: GameResultEntity[],
+		UserId: number,
+	) {
+		const response = await Promise.all(
+			matchHistories.map(async (matchHistory) => {
+				const historyUnit = plainToClass(MatchHistoryDto, matchHistory);
+				if (historyUnit.playerEntry[0].player.id != UserId) {
+					console.log(
+						'switch',
+						historyUnit.playerEntry[0].player.id,
+						historyUnit.playerEntry[1].player.id,
+					);
+					const temp: PlayerEntry = historyUnit.playerEntry[0];
+					historyUnit.playerEntry[0] = historyUnit.playerEntry[1];
+					historyUnit.playerEntry[1] = temp;
+				}
+				// console.log('historyUnit response', historyUnit);
+				// console.log('player1', historyUnit.playerEntry[0]);
+				// console.log('player2', historyUnit.playerEntry[1]);
+				return historyUnit;
+			}),
+		);
+		return response;
 	}
 
 	flattenData(data: GameResultEntity) {
@@ -152,7 +185,7 @@ export class GameService {
 		newGame.name = sender.username + ' vs ' + receiver.username;
 		newGame.players = [sender, receiver];
 		await this.gameResultEntityRepository.save(newGame);
-		const inPlay = new Game([sender.id, receiver.id], newGame.id);
+		const inPlay = new Game([sender.id, receiver.id], newGame.id, mode);
 		this.inPlays.push(inPlay);
 		// step 2: set both user game status = playing
 		sender.gameStatus = PlayerGameStatusType.PLAYING;
