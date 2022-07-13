@@ -107,18 +107,19 @@ export class GameService {
 	async gameToOngoingGameDto(
 		game: Game,
 	): Promise<OngoingGameDto | undefined> {
-		if (game.status === GameStatus.PLAYING) {
-			let onGoingGame: OngoingGameDto;
-			onGoingGame.id = game.id;
+		if (game && game.id && game.status === GameStatus.PLAYING) {
 			const player1 = await this.userService.getUserByID(
 				game.paddles[0].userID,
 			);
 			const player2 = await this.userService.getUserByID(
-				game.paddles[0].userID,
+				game.paddles[1].userID,
 			);
 			if (player1 && player2) {
-				onGoingGame.playerName1 = player1.username;
-				onGoingGame.playerName2 = player2.username;
+				const onGoingGame = {
+					id: game.id,
+					playerName1: player1.username,
+					playerName2: player2.username,
+				};
 				return onGoingGame;
 			}
 		} else {
@@ -127,7 +128,7 @@ export class GameService {
 	}
 
 	async getOngoingGameList(): Promise<OngoingGameDto[]> {
-		let onGoingGames: OngoingGameDto[];
+		const onGoingGames = [];
 		for (const game of this.inPlays) {
 			const onGoingGame = await this.gameToOngoingGameDto(game);
 			if (onGoingGame) {
