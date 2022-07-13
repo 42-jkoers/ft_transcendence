@@ -225,11 +225,15 @@ export class GameService {
 
 	// render all the games' frames
 	async tick(): Promise<Game[]> {
+		const games: Game[] = [];
+
 		for (const game of this.inPlays) {
-			game.tick(); // render next frame
-			// if (game.status === GameStatus.COMPLETED)// TODO: save
+			if (game.status !== GameStatus.COMPLETED) {
+				game.tick(); // render next frame
+				games.push(game);
+			}
 		}
-		return this.inPlays;
+		return games;
 	}
 
 	// async getUserType(

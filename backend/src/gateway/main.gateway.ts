@@ -90,10 +90,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly gameService: GameService,
 		private readonly friendService: FriendService,
 	) {
-		setInterval(
-			() => gameLoop(this.server, this.gameService, this.userService),
-			1000 / 60,
-		); // TODO: something better than this, handling server lag
+		(async () => {
+			while (42) {
+				gameLoop(this.server, this.gameService, this.userService);
+				await new Promise((resolve) => setTimeout(resolve, 1000 / 60));
+			}
+		})();
 	}
 	@WebSocketServer() server: Server; //gives access to the server instance to use for triggering events
 	private logger: Logger = new Logger('ChatGateway');
@@ -802,9 +804,9 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			id.data === client.data.user.id
 				? true
 				: await this.friendService.isFriends(
-						id.data,
-						client.data.user.id,
-				  );
+					id.data,
+					client.data.user.id,
+				);
 		const socketCount = (
 			await this.server.in(id.data.toString()).fetchSockets()
 		).length;
