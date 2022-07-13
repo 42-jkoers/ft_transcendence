@@ -10,7 +10,7 @@ import {
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
-import { GameEntity } from 'src/game/game.entity';
+import { GameResultEntity, PlayerEntry } from 'src/game/game.entity';
 import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
 import { GameMode } from 'src/game/game.dto';
 
@@ -58,14 +58,27 @@ export class User {
 	@Column({ nullable: true })
 	public twoFactorAuthSecret?: string;
 
-	@ManyToMany(() => GameEntity, (game) => game.players)
-	@JoinTable() // the user is the owner of the game
-	games: GameEntity[];
+	@ManyToMany(() => GameResultEntity, (game) => game.players)
+	@JoinTable({ joinColumn: { name: 'playerId' } }) // the user is the owner of the game
+	games: GameResultEntity[];
+
+	@OneToMany(() => PlayerEntry, (playEntry) => playEntry.player)
+	@JoinColumn()
+	playEntry: PlayerEntry[];
 
 	@ManyToMany(() => User)
 	@JoinTable({ joinColumn: { name: 'sender_id' } })
 	sentGameInvites: User[];
 
+	//TODO how to set the gameresult all zero?
+	@Column({ default: 0 })
+	public ladder: number;
+
+	@Column({ default: 0 })
+	public wins: number;
+
+	@Column({ default: 0 })
+	public loses: number;
 	@Column({ default: PlayerGameStatusType.IDLE })
 	public gameStatus: PlayerGameStatusType;
 

@@ -19,6 +19,7 @@
           <div v-if="isSafe">
             <UserStatus :userId="user?.id" :gameStatus="user?.gameStatus" />
             <h4>(to be add) game record</h4>
+            <h4>ladder: {{ user?.ladder }}</h4>
           </div>
         </template>
         <template #footer>
@@ -96,7 +97,6 @@ watch(id, async () => {
 onMounted(async () => {
   await updateProfile();
   socket.on("getUserProfile", (userData, isFriendResult) => {
-    console.log(">> receive");
     user.value = userData;
     isUserExist.value = true;
     isSelf.value = id.value === String(storeUser.state.user.id);

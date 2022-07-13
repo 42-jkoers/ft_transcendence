@@ -5,5 +5,6 @@ export default interface UserProfileI {
   username: string;
   avatar: string;
   twoFactor: boolean;
+  ladder: number;
   gameStatus: PlayerGameStatusType;
 }

@@ -21,7 +21,12 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
 import { GameService } from '../game/game.service';
-import { GameModeDto, GameStatus, PaddleUpdateDto } from 'src/game/game.dto';
+import {
+	GameModeDto,
+	GameStatus,
+	PaddleUpdateDto,
+	MatchHistoryDto,
+} from 'src/game/game.dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
@@ -32,10 +37,11 @@ import { UserIdDto } from 'src/user/dto';
 import { BlockedUsersService } from 'src/user/blocked/blocked.service';
 import { RoomAndUserDTO } from 'src/chat/room/dto/room.and.user.dto';
 import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
-import { GameEntity } from 'src/game/game.entity';
+import { GameResultEntity } from 'src/game/game.entity';
 import { FriendService } from 'src/user/friend/friend.service';
 import { IntegerDto } from './util/integer.dto';
 import { RoomPasswordDto } from 'src/chat/room/dto/room.password.dto';
+import { plainToClass } from 'class-transformer';
 
 async function gameLoop(
 	server: Server,
@@ -805,6 +811,23 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.emit('getUserConnectedSocketCount', socketCount, isSafe);
 	}
 
+	//TODO get match history from game entities?? check with Jopper
+	// @UsePipes(new ValidationPipe({ transform: true })) //TODO add pipe
+	@SubscribeMessage('getMatchHistory')
+	async getMatchHistory(
+		@MessageBody() idDTO: IntegerDto,
+		@ConnectedSocket() client: Socket,
+	) {
+		//TODO add errro proof
+		const matchHistories = await this.gameService.getMatchHistory(
+			idDTO.data,
+		);
+		// const matchHistory = await this.gameService.getMatchHistory(3);
+		// return matchHistory;
+		console.log(matchHistories);
+		client.emit('getMatchHistory', matchHistories);
+	}
+
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('sendGameInvite')
 	async sendGameInvite(
@@ -861,7 +884,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	async createGame(user1Id: number, user2Id: number): Promise<GameEntity> {
+	async createGame(
+		user1Id: number,
+		user2Id: number,
+	): Promise<GameResultEntity> {
 		const user1 = await this.userService.getUserByID(user1Id);
 		const user2 = await this.userService.getUserByID(user2Id);
 		// step 1: to check if any user is already in a game
