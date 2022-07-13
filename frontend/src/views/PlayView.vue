@@ -1,8 +1,12 @@
 <template>
   <div v-if="isGameFinish">
-    <h3>
-      {{ winnerMsg }}
-    </h3>
+    <h3>Game is over, the winner is</h3>
+    <div class="winner flex justify-content-center">
+      <h2>
+        {{ winnerUsername }}
+      </h2>
+    </div>
+
     <h4>Play again:</h4>
     <JoinGameQueueAutoVue />
   </div>
@@ -31,7 +35,6 @@ import { useRoute } from "vue-router";
 import { GameInPlay, Frame } from "@backend/game/render";
 import JoinGameQueueAutoVue from "@/components/JoinGameQueueAuto.vue";
 import storeUser from "@/store";
-let winnerMsg = ref<string>("");
 const isGameFinish = ref<boolean>(false);
 
 function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
@@ -111,6 +114,7 @@ function keyEventToPaddleUpdate(e: KeyboardEvent): -1 | 1 | undefined {
 
 const senderUsername = ref("");
 const receiverUsername = ref("");
+const winnerUsername = ref("");
 const socket: Socket = inject("socketioInstance") as Socket;
 onMounted(() => {
   const canvas = document.getElementById("game") as HTMLCanvasElement;
@@ -141,10 +145,9 @@ onMounted(() => {
   });
 
   socket.on("gameFinished", (username: string) => {
-    const msg = `Game is over, the winner is ${username}`;
-    winnerMsg.value = msg;
+    console.log("username:", username);
+    winnerUsername.value = username;
     isGameFinish.value = true;
-    console.log(msg);
   });
 
   let lastPaddleUpdate: -1 | 0 | 1 = 0;
@@ -176,6 +179,11 @@ onUnmounted(() => {
 </script>
 <style>
 .username {
+  color: aliceblue;
+}
+
+.winner {
+  font-weight: 700;
   color: aliceblue;
 }
 </style>
