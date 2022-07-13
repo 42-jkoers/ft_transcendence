@@ -148,6 +148,8 @@ class Ball {
 				this.dy = -0.009;
 				break;
 		}
+		this.dx *= Math.random() > 0.5 ? 1 : -1;
+		this.dy *= Math.random() > 0.5 ? 1 : -1;
 		this.radius = this.c.grid;
 	}
 
