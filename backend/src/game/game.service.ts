@@ -1,7 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { GameEntity } from './game.entity';
-import { GameMode, PaddleUpdateDto } from './game.dto';
+import {
+	GameMode,
+	GameStatus,
+	OngoingGameDto,
+	PaddleUpdateDto,
+} from './game.dto';
 import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/user/user.entity';
@@ -98,12 +103,39 @@ export class GameService {
 		}
 	}
 
-	async getGameList(): Promise<GameEntity[]> {
-		const games = await getRepository(GameEntity)
-			.createQueryBuilder('game')
-			.leftJoinAndSelect('game.players', 'player')
-			.getMany();
-		return games;
+	// convert Game to OnGoingGameDto
+	async gameToOngoingGameDto(
+		game: Game,
+	): Promise<OngoingGameDto | undefined> {
+		if (game && game.id && game.status === GameStatus.PLAYING) {
+			const player1 = await this.userService.getUserByID(
+				game.paddles[0].userID,
+			);
+			const player2 = await this.userService.getUserByID(
+				game.paddles[1].userID,
+			);
+			if (player1 && player2) {
+				const onGoingGame = {
+					id: game.id,
+					playerName1: player1.username,
+					playerName2: player2.username,
+				};
+				return onGoingGame;
+			}
+		} else {
+			return undefined;
+		}
+	}
+
+	async getOngoingGameList(): Promise<OngoingGameDto[]> {
+		const onGoingGames = [];
+		for (const game of this.inPlays) {
+			const onGoingGame = await this.gameToOngoingGameDto(game);
+			if (onGoingGame) {
+				onGoingGames.push(onGoingGame);
+			}
+		}
+		return onGoingGames;
 	}
 
 	async addGameInvite(sender: UserI, receiver: UserI) {

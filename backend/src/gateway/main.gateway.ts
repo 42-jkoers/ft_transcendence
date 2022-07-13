@@ -60,11 +60,10 @@ async function gameLoop(server: Server, gameService: GameService) {
 			for (const socket of sockets) {
 				socket.leave(game.socketRoomID);
 			}
+			// send update game list to all connected socket
+			const gameList = await gameService.getOngoingGameList();
+			server.emit('getOngoingGameList', gameList);
 		}
-
-		// send update game list to all connected socket
-		const gameList = await gameService.getGameList();
-		server.emit('getGameList', gameList);
 	}
 }
 
@@ -751,15 +750,15 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.handleGetPublicRoomsList(client);
 	}
 
-	async broadcastGameList() {
-		const gameList = await this.gameService.getGameList();
-		this.server.emit('getGameList', gameList);
+	async broadcastOngoingGameList() {
+		const gameList = await this.gameService.getOngoingGameList();
+		this.server.emit('getOngoingGameList', gameList);
 	}
 
-	@SubscribeMessage('getGameList')
-	async getGameList(@ConnectedSocket() client: Socket) {
-		const gameList = await this.gameService.getGameList();
-		client.emit('getGameList', gameList);
+	@SubscribeMessage('getOngoingGameList')
+	async getOngoingGameList(@ConnectedSocket() client: Socket) {
+		const gameList = await this.gameService.getOngoingGameList();
+		client.emit('getOngoingGameList', gameList);
 	}
 
 	@UsePipes(new ValidationPipe({ transform: true }))
@@ -875,7 +874,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				user1.gameMode,
 			);
 			// step 3: refresh WatchGame list (for all clients)
-			await this.broadcastGameList();
+			await this.broadcastOngoingGameList();
 			return createdGame;
 		}
 	}
