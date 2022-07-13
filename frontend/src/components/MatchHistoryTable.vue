@@ -55,10 +55,9 @@
 <script setup lang="ts">
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-import { inject, ref, computed, onMounted } from "vue";
+import { inject, ref, computed, onMounted, onUnmounted } from "vue";
 import { Socket } from "socket.io-client";
 import { useRoute } from "vue-router";
-import { useToast } from "primevue/usetoast";
 import Chip from "primevue/chip";
 import Tag from "primevue/tag";
 
@@ -66,11 +65,13 @@ const matchHistory = ref();
 const socket: Socket = inject("socketioInstance") as Socket;
 const router = useRoute();
 const id = computed(() => router.params.id); //this is to get the id passed in as parameter from the router
-const toast = useToast();
-const i = ref(0);
 
 onMounted(async () => {
   await getMatchHistory();
+});
+
+onUnmounted(() => {
+  socket.off("getMatchHistory");
 });
 
 async function getMatchHistory() {

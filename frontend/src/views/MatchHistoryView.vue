@@ -37,7 +37,7 @@ const socket: Socket = inject("socketioInstance") as Socket;
 const user = ref<UserProfileI>();
 const router = useRoute();
 const id = computed(() => router.params.id); //this is to get the id passed in as parameter from the router
-const toast = useToast(); //TODO check if we need it later
+const toast = useToast();
 
 onMounted(async () => {
   findUser();
