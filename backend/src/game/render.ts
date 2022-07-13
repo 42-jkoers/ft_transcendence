@@ -260,9 +260,6 @@ export class Game {
 	}
 
 	tick() {
-		// if (this.status !== GameStatus.PLAYING) // TODO: uncomment this
-		// 	throw new Error(`cannot tick game with status ${this.status}`);
-
 		this.ball.tick(this.paddles);
 		for (const paddle of this.paddles) {
 			paddle.tick();
