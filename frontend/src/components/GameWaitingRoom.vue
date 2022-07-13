@@ -30,7 +30,7 @@
 </template>
 <script setup lang="ts">
 import { Socket } from "socket.io-client";
-import { inject, onMounted, computed } from "vue";
+import { inject, onMounted, computed, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useToast } from "primevue/usetoast";
 import Button from "primevue/button";
@@ -61,6 +61,10 @@ socket.on("errorMatchMaking", (response) => {
     life: 2000,
   });
   leaveRoom();
+});
+
+onUnmounted(() => {
+  socket.off("errorMatchMaking");
 });
 
 function leaveRoom() {
