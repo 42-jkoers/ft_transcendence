@@ -70,7 +70,6 @@ export class User {
 	@JoinTable({ joinColumn: { name: 'sender_id' } })
 	sentGameInvites: User[];
 
-	//TODO how to set the gameresult all zero?
 	@Column({ default: 0 })
 	public ladder: number;
 

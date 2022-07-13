@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import { GameResultEntity, PlayerEntry } from './game.entity';
+import { GameResultEntity, PlayerEntry, Result } from './game.entity';
 import {
 	GameMode,
 	GameStatus,
@@ -40,13 +40,11 @@ export class GameService {
 	async seed() {
 		//game1 Aileen vs Olga
 		const player1 = this.userRepository.create({
-			// id: 10,
 			username: 'Aileen',
 			intraID: '20',
 			avatar: '/default_avatar.png',
 		});
 		const player2 = this.userRepository.create({
-			// id: 11,
 			username: 'Olga',
 			intraID: '30',
 			avatar: '/default_avatar.png',
@@ -56,12 +54,14 @@ export class GameService {
 		const game1 = this.gameResultEntityRepository.create({
 			created_at: '2022.07.1',
 			updated_at: '2022.07.1',
-			// score: [1, 4],
 		});
-		const entry1 = this.entryRepository.create({ score: 2, result: 'won' });
+		const entry1 = this.entryRepository.create({
+			score: 2,
+			result: Result.WON,
+		});
 		const entry2 = this.entryRepository.create({
 			score: 1,
-			result: 'lost',
+			result: Result.LOST,
 		});
 		entry1.player = player1;
 		entry2.player = player2;
@@ -72,13 +72,11 @@ export class GameService {
 		await this.gameResultEntityRepository.save(game1);
 		//game2 Xiaojing vs Irem
 		const player3 = this.userRepository.create({
-			// id: 13,
 			username: 'Xiaojing',
 			intraID: '40',
 			avatar: '/default_avatar.png',
 		});
 		const player4 = this.userRepository.create({
-			// id: 14,
 			username: 'Irem',
 			intraID: '50',
 			avatar: '/default_avatar.png',
@@ -88,13 +86,15 @@ export class GameService {
 		const game2 = this.gameResultEntityRepository.create({
 			created_at: '2022.07.2',
 			updated_at: '2022.07.4',
-			// score: [5, 0],
 		});
 		const entry3 = this.entryRepository.create({
 			score: 1,
-			result: 'lost',
+			result: Result.LOST,
 		});
-		const entry4 = this.entryRepository.create({ score: 4, result: 'won' });
+		const entry4 = this.entryRepository.create({
+			score: 4,
+			result: Result.WON,
+		});
 		entry3.player = player3;
 		entry4.player = player4;
 		await this.entryRepository.save(entry3);
@@ -105,13 +105,15 @@ export class GameService {
 		const game3 = this.gameResultEntityRepository.create({
 			created_at: '2022.06.30',
 			updated_at: '2022.06.30',
-			// score: [8, 4],
 		});
 		const entry5 = this.entryRepository.create({
 			score: 4,
-			result: 'lost',
+			result: Result.LOST,
 		});
-		const entry6 = this.entryRepository.create({ score: 7, result: 'won' });
+		const entry6 = this.entryRepository.create({
+			score: 7,
+			result: Result.WON,
+		});
 		entry5.player = player1;
 		entry6.player = player3;
 		await this.entryRepository.save(entry5);
@@ -122,7 +124,7 @@ export class GameService {
 	}
 
 	async getMatchHistory(UserId: number) {
-		await this.seed(); //TODO this is for testing query purpose only, should be removed later
+		// await this.seed(); //TODO this is for testing query purpose only, should be removed later
 		const matchHistories: GameResultEntity[] = await getRepository(
 			GameResultEntity,
 		)
@@ -150,18 +152,10 @@ export class GameService {
 			matchHistories.map(async (matchHistory) => {
 				const historyUnit = plainToClass(MatchHistoryDto, matchHistory);
 				if (historyUnit.playerEntry[0].player.id != UserId) {
-					console.log(
-						'switch',
-						historyUnit.playerEntry[0].player.id,
-						historyUnit.playerEntry[1].player.id,
-					);
 					const temp: PlayerEntry = historyUnit.playerEntry[0];
 					historyUnit.playerEntry[0] = historyUnit.playerEntry[1];
 					historyUnit.playerEntry[1] = temp;
 				}
-				// console.log('historyUnit response', historyUnit);
-				// console.log('player1', historyUnit.playerEntry[0]);
-				// console.log('player2', historyUnit.playerEntry[1]);
 				return historyUnit;
 			}),
 		);
@@ -188,7 +182,6 @@ export class GameService {
 	): Promise<GameResultEntity> {
 		// step 1: create game entity
 		const newGame = this.gameResultEntityRepository.create();
-		newGame.name = sender.username + ' vs ' + receiver.username;
 		newGame.players = [sender, receiver];
 		await this.gameResultEntityRepository.save(newGame);
 		const inPlay = new Game([sender.id, receiver.id], newGame.id, mode);

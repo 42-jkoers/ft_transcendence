@@ -33,7 +33,6 @@ export class TwoFactorAuthService {
 	public async serveImage(otpauthUrl: string) {
 		toDataURL(otpauthUrl, function (err, qrImage) {
 			if (!err) {
-				console.log(qrImage);
 				return qrImage;
 			} else {
 				throw new BadRequestException('cannot generate QR');

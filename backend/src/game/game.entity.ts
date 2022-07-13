@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { maxLength, ValidateNested } from 'class-validator';
+import { ValidateNested } from 'class-validator';
 import User from 'src/user/user.entity';
 import {
 	CreateDateColumn,
@@ -8,35 +8,24 @@ import {
 	UpdateDateColumn,
 	ManyToMany,
 	Column,
-	JoinTable,
 	OneToMany,
 	ManyToOne,
 	JoinColumn,
 } from 'typeorm';
 
-// export enum Result {
-// 	WON = 'won',
-// 	LOST = 'lost',
-// }
+export enum Result {
+	WON,
+	LOST,
+	NO_RESULT,
+}
 
-// TODO: rename to GameHistory, or show that this game has been completed, and rename gameInPlay to game
 @Entity()
 export class GameResultEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	//TODO why do we need name? @Joppe
-	//for now I changed to optional and nullable
-	@Column({ nullable: true })
-	name?: string;
-
-	//not needed since this will be stored in the playerEntry
-	// @Column('int', { array: true })
-	// score: number[];
-
-	//TODO why players are not required? @Joppe
 	@ManyToMany(() => User, (user) => user.games)
-	players?: User[];
+	players: User[];
 
 	@ValidateNested({ each: true })
 	@Type(() => PlayerEntry)
@@ -62,9 +51,8 @@ export class PlayerEntry {
 	@ManyToOne(() => User, (player) => player.playEntry)
 	player: User;
 
-	// @Column({ type: 'enum', enum: 'Result' })
-	@Column()
-	result: string;
+	@Column({ type: 'enum', enum: Result, default: Result.NO_RESULT })
+	result: Result;
 
 	@ManyToOne(() => GameResultEntity, (game) => game.playerEntry)
 	game: GameResultEntity;
