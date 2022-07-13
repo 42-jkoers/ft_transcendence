@@ -37,10 +37,10 @@ const router = useRouter();
 const gameList = ref();
 
 setTimeout(() => {
-  socket.emit("getGameList");
+  socket.emit("getOngoingGameList");
 }, 100);
 
-socket.on("getGameList", (response) => {
+socket.on("getOngoingGameList", (response) => {
   gameList.value = response;
 });
 
