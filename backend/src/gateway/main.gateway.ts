@@ -48,23 +48,23 @@ async function gameLoop(
 	gameService: GameService,
 	userService: UserService,
 ) {
+	// console.log('>> gameLoop start');
 	const games = await gameService.tick();
 	for (const game of games) {
 		const frame = game.getFrame();
-
 		if (
 			game.status == GameStatus.PLAYING ||
 			game.status == GameStatus.COMPLETED
 		)
 			server.in(frame.socketRoomID).emit('gameFrame', frame);
 
-		const winnerId = game.getWinnerID();
-		if (winnerId) {
+		if (game.status === GameStatus.COMPLETED) {
+			const winnerId = game.getWinnerID();
 			// step 1: inform players & watchers game is finished
 			const user = await userService.findByID(winnerId);
 			server.in(game.socketRoomID).emit('gameFinished', user.username);
 			// step 2: remove game from database, change player game status
-			gameService.endGame(game.id);
+			await gameService.endGame(game.id);
 			// step 3: remove players/watchers from game socket room
 			const sockets = await server.in(game.socketRoomID).fetchSockets();
 			for (const socket of sockets) {
@@ -75,6 +75,7 @@ async function gameLoop(
 			server.emit('getOngoingGameList', gameList);
 		}
 	}
+	// console.log('>> gameLoop end');
 }
 
 @WebSocketGateway({
