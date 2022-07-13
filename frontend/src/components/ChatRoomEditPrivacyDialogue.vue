@@ -66,7 +66,7 @@ import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import BlockUI from "primevue/blockui";
 
-const socket: Socket = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 
 const props = defineProps(["isDialogVisible", "room"]);
 
