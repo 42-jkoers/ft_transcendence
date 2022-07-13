@@ -1,17 +1,36 @@
 <template>
-  <p class="message">
-    This is the play page (look at the console for all info)
-  </p>
   <div v-if="isGameFinish">
-    <h3>
-      {{ winnerMsg }}
-    </h3>
+    <h3>Game is over, the winner is</h3>
+    <div class="winner flex justify-content-center">
+      <h2>
+        {{ winnerUsername }}
+      </h2>
+    </div>
+
     <h4>Play again:</h4>
     <JoinGameQueueAutoVue />
   </div>
   <div v-else>
-    <canvas width="300" height="400" id="game"></canvas>
-    <!-- TODO: variable instead 300 400 magic number -->
+    <div class="card">
+      <div
+        class="username flex justify-content-center flex-wrap card-container"
+      >
+        <div
+          class="username flex align-items-center justify-content-center mr-8"
+        >
+          <h2>
+            {{ senderUsername }}
+          </h2>
+        </div>
+        <div class="flex align-items-center justify-content-center ml-8">
+          <h2>
+            {{ receiverUsername }}
+          </h2>
+        </div>
+      </div>
+      <canvas width="300" height="400" id="game"></canvas>
+      <!-- TODO: variable instead 300 400 magic number -->
+    </div>
   </div>
 </template>
 
@@ -22,7 +41,6 @@ import { useRoute } from "vue-router";
 import { GameInPlay, Frame } from "@backend/game/render";
 import JoinGameQueueAutoVue from "@/components/JoinGameQueueAuto.vue";
 
-let winnerMsg = ref<string>("");
 const isGameFinish = ref<boolean>(false);
 
 function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
@@ -100,6 +118,9 @@ function keyEventToPaddleUpdate(e: KeyboardEvent): -1 | 1 | undefined {
   }
 }
 
+const senderUsername = ref("");
+const receiverUsername = ref("");
+const winnerUsername = ref("");
 const socket: Socket = inject("socketioInstance") as Socket;
 onMounted(() => {
   const canvas = document.getElementById("game") as HTMLCanvasElement;
@@ -112,7 +133,10 @@ onMounted(() => {
     console.log("BadRequestException", response);
   });
 
-  socket.on("getGame", (game: GameInPlay) => {
+  socket.on("getGame", (game: GameInPlay, usernames) => {
+    console.log("usernames", usernames);
+    senderUsername.value = usernames.sender;
+    receiverUsername.value = usernames.receiver;
     scaleGame(game, scaler);
     gameInPlay = game;
     initCanvas(game, context);
@@ -126,11 +150,10 @@ onMounted(() => {
     }
   });
 
-  socket.on("gameFinished", (id: number) => {
-    const msg = `Game is over, user ${id} won`; // TODO: instead of user id, show full name
-    winnerMsg.value = msg;
+  socket.on("gameFinished", (username: string) => {
+    console.log("username:", username);
+    winnerUsername.value = username;
     isGameFinish.value = true;
-    console.log(msg);
   });
 
   let lastPaddleUpdate: -1 | 0 | 1 = 0;
@@ -160,3 +183,13 @@ onUnmounted(() => {
   socket.off("gameFinished");
 });
 </script>
+<style>
+.username {
+  color: aliceblue;
+}
+
+.winner {
+  font-weight: 700;
+  color: aliceblue;
+}
+</style>
