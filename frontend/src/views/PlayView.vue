@@ -53,10 +53,10 @@ function draw(context: CanvasRenderingContext2D, game: GameInPlay, f: Frame) {
   }
 
   if (f.paddles[0]) {
-    context.fillText(String(f.paddles[1].score), width / 2 + 80, 80);
+    context.fillText(String(f.paddles[0].score), width / 2 + 80, 80);
   }
   if (f.paddles[1]) {
-    context.fillText(String(f.paddles[0].score), width / 2 - 90, 80);
+    context.fillText(String(f.paddles[1].score), width / 2 - 90, 80);
   }
 
   context.fillRect(
