@@ -365,13 +365,18 @@ export class GameService {
 	}
 
 	async endGame(gameId: number) {
-		// step1: set players status back to IDLE
+		// step 1: find the game
+		const game = this.inPlays.find((game) => {
+			if (game.id === gameId) return game;
+		});
+
+		if (!game) return;
+		// step2: set players status back to IDLE
 		const players = await this.getGamePlayers(gameId);
 		await this.setGameStatus(players[0].id, PlayerGameStatusType.IDLE);
 		await this.setGameStatus(players[1].id, PlayerGameStatusType.IDLE);
 
-		// step 2: find the game
-		const game = this.inPlays.find((game) => game.id === gameId);
+		// console.log('!!!!game', game);
 
 		// step 3: create the 2 player entries.
 		const player1 = game.paddles[0];
@@ -400,8 +405,8 @@ export class GameService {
 
 		await this.entryRepository.save(newPlayerEntry1);
 		await this.entryRepository.save(newPlayerEntry2);
-
 		// step 3: remove game from ongoing inPlays list.
-		this.inPlays = this.inPlays.filter((p) => p.id !== gameId);
+		this.inPlays = this.inPlays.filter((play) => play.id !== gameId);
+		console.log('>> endGame end');
 	}
 }
