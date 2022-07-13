@@ -13,13 +13,19 @@
   <div v-else>
     <div class="card">
       <div
-        class="username flex justify-content-around flex-wrap card-container"
+        class="username flex justify-content-center flex-wrap card-container"
       >
-        <div class="username flex align-items-center justify-content-center">
-          {{ senderUsername }}
+        <div
+          class="username flex align-items-center justify-content-center mr-8"
+        >
+          <h2>
+            {{ senderUsername }}
+          </h2>
         </div>
-        <div class="flex align-items-center justify-content-center">
-          {{ receiverUsername }}
+        <div class="flex align-items-center justify-content-center ml-8">
+          <h2>
+            {{ receiverUsername }}
+          </h2>
         </div>
       </div>
       <canvas width="300" height="400" id="game"></canvas>
