@@ -20,6 +20,8 @@
             <UserStatus :userId="user?.id" :gameStatus="user?.gameStatus" />
             <br />
             <h4>ladder: {{ user?.ladder }}</h4>
+            <h4>wins: {{ user?.wins }}</h4>
+            <h4>loses: {{ user?.loses }}</h4>
             <Button
               label="View match history"
               icon="pi pi-users"

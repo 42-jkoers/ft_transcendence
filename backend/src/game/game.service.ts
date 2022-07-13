@@ -411,6 +411,5 @@ export class GameService {
 
 		// step 5: remove game from ongoing inPlays list.
 		this.inPlays = this.inPlays.filter((play) => play.id !== gameId);
-		console.log('>> endGame end');
 	}
 }

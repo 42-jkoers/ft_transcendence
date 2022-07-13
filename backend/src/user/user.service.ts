@@ -193,8 +193,8 @@ export class UserService {
 		} else {
 			user.loses++;
 		}
-		const ladder = (user.wins - user.loses) / 5;
-		if (ladder > 0) {
+		const ladder: number = Math.round((user.wins - user.loses) / 5);
+		if (ladder >= 0) {
 			user.ladder = ladder;
 		}
 		await this.userRepository.save(user);
