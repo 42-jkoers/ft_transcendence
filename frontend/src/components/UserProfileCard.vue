@@ -19,12 +19,10 @@
           <div v-if="isSafe">
             <UserStatus :userId="user?.id" :gameStatus="user?.gameStatus" />
             <br />
-            <h4>ladder: {{ user?.ladder }}</h4>
-            <h4>wins: {{ user?.wins }}</h4>
-            <h4>loses: {{ user?.loses }}</h4>
+            <h4>Ladder {{ user?.ladder }}</h4>
             <Button
-              label="View match history"
-              icon="pi pi-users"
+              label="View Match History"
+              icon="pi pi-book"
               class="p-button-rounded p-button-outlined"
               @click="showMatchHistory"
             />
