@@ -70,7 +70,7 @@ class Paddle {
 				break;
 
 			case GameMode.fast:
-				this.speed = canvas.width * 0.02;
+				this.speed = canvas.width * 0.016;
 				break;
 		}
 		this.height = canvas.height * 0.2;
@@ -148,6 +148,8 @@ class Ball {
 				this.dy = -0.009;
 				break;
 		}
+		this.dx *= Math.random() > 0.5 ? 1 : -1;
+		this.dy *= Math.random() > 0.5 ? 1 : -1;
 		this.radius = this.c.grid;
 	}
 
@@ -258,9 +260,6 @@ export class Game {
 	}
 
 	tick() {
-		// if (this.status !== GameStatus.PLAYING) // TODO: uncomment this
-		// 	throw new Error(`cannot tick game with status ${this.status}`);
-
 		this.ball.tick(this.paddles);
 		for (const paddle of this.paddles) {
 			paddle.tick();
