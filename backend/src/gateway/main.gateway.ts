@@ -952,7 +952,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async getGame(client: Socket, id: IntegerDto) {
 		const game = this.gameService.findInPlayByID(id.data);
 		if (!game) return;
-		client.emit('getGame', game.getInPlay());
+		const user1 = await this.userService.findByID(game.paddles[0].userID);
+		const user2 = await this.userService.findByID(game.paddles[1].userID);
+		client.emit('getGame', game.getInPlay(), {
+			sender: user1.username,
+			receiver: user2.username,
+		});
 		client.join(game.socketRoomID);
 		console.log('getGame', id.data, game.socketRoomID);
 	}

@@ -7,8 +7,20 @@
     <JoinGameQueueAutoVue />
   </div>
   <div v-else>
-    <canvas width="300" height="400" id="game"></canvas>
-    <!-- TODO: variable instead 300 400 magic number -->
+    <div class="card">
+      <div
+        class="username flex justify-content-around flex-wrap card-container"
+      >
+        <div class="username flex align-items-center justify-content-center">
+          {{ senderUsername }}
+        </div>
+        <div class="flex align-items-center justify-content-center">
+          {{ receiverUsername }}
+        </div>
+      </div>
+      <canvas width="300" height="400" id="game"></canvas>
+      <!-- TODO: variable instead 300 400 magic number -->
+    </div>
   </div>
 </template>
 
@@ -97,6 +109,8 @@ function keyEventToPaddleUpdate(e: KeyboardEvent): -1 | 1 | undefined {
   }
 }
 
+const senderUsername = ref("");
+const receiverUsername = ref("");
 const socket: Socket = inject("socketioInstance") as Socket;
 onMounted(() => {
   const canvas = document.getElementById("game") as HTMLCanvasElement;
@@ -109,7 +123,10 @@ onMounted(() => {
     console.log("BadRequestException", response);
   });
 
-  socket.on("getGame", (game: GameInPlay) => {
+  socket.on("getGame", (game: GameInPlay, usernames) => {
+    console.log("usernames", usernames);
+    senderUsername.value = usernames.sender;
+    receiverUsername.value = usernames.receiver;
     scaleGame(game, scaler);
     gameInPlay = game;
     initCanvas(game, context);
@@ -124,7 +141,7 @@ onMounted(() => {
   });
 
   socket.on("gameFinished", (username: string) => {
-    const msg = `Game is over, the winner is: ${username}`; // TODO: instead of user id, show full name
+    const msg = `Game is over, the winner is ${username}`;
     winnerMsg.value = msg;
     isGameFinish.value = true;
     console.log(msg);
@@ -157,3 +174,8 @@ onUnmounted(() => {
   socket.off("gameFinished");
 });
 </script>
+<style>
+.username {
+  color: aliceblue;
+}
+</style>
