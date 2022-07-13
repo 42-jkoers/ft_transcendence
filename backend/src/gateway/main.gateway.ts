@@ -123,6 +123,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	// if user logs out from one window, all other window will be logged out immediately
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('exitUserSocketRoom')
 	async exitUserSocketRoom(socket: Socket) {
 		const socketRoom = socket.data.user.id.toString();
@@ -136,7 +137,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	/***** Retrieving rooms list events  *****/
-
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('getPublicRoomsList')
 	async handleGetPublicRoomsList(socket) {
 		if (!socket.data.user) {
@@ -769,6 +770,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server.emit('getOngoingGameList', gameList);
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('getOngoingGameList')
 	async getOngoingGameList(@ConnectedSocket() client: Socket) {
 		const gameList = await this.gameService.getOngoingGameList();
@@ -812,8 +814,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.emit('getUserConnectedSocketCount', socketCount, isSafe);
 	}
 
-	//TODO get match history from game entities?? check with Jopper
-	// @UsePipes(new ValidationPipe({ transform: true })) //TODO add pipe
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('getMatchHistory')
 	async getMatchHistory(
 		@MessageBody() idDTO: IntegerDto,
@@ -988,23 +989,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log('getGame', id.data, game.socketRoomID);
 	}
 
-	// @SubscribeMessage('getUserType')
-	// async getUserType(client: Socket, id: string) {
-	// 	const type = await this.gameService.getUserType(
-	// 		id,
-	// 		client.data.user.id,
-	// 	);
-	// 	client.emit('getUserType', type);
-	// }
-
-	// TODO: to uncomment the valiadation?
-	// @UseFilters(new WsExceptionFilter())
-	// @UsePipes(new ValidationPipe({ transform: true }))
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('paddleUpdate')
 	async paddleUpdate(socket: Socket, pos: PaddleUpdateDto) {
 		await this.gameService.playerUpdate(socket.data.user.id, pos);
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('quitQueue')
 	async quitQueue(client: Socket) {
 		const user = await this.userService.getUserByID(client.data.user.id);
@@ -1021,6 +1012,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('matchPlayer')
 	async matchPlayer(client: Socket) {
 		// if user is already in queue
@@ -1055,6 +1047,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('saveUserCustomizationOptions')
 	async saveUserCustomizationOptions(socket: Socket, mode: GameModeDto) {
 		await this.userService.updateUserGameMode(
