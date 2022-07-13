@@ -18,8 +18,14 @@
         <template #content>
           <div v-if="isSafe">
             <UserStatus :userId="user?.id" :gameStatus="user?.gameStatus" />
-            <h4>(to be add) game record</h4>
-            <h4>ladder: {{ user?.ladder }}</h4>
+            <br />
+            <h4>Ladder {{ user?.ladder }}</h4>
+            <Button
+              label="View Match History"
+              icon="pi pi-book"
+              class="p-button-rounded p-button-outlined"
+              @click="showMatchHistory"
+            />
           </div>
         </template>
         <template #footer>
@@ -127,6 +133,14 @@ async function updateProfile() {
 
 function evaluateIsSafe() {
   isSafe.value = isSelf.value || isFriend.value;
+}
+
+function showMatchHistory() {
+  const UserID = id.value;
+  router.push({
+    name: "MatchHistory",
+    params: { id: UserID },
+  });
 }
 
 function changeFriendStatus() {

@@ -21,12 +21,7 @@ import { RoomEntity } from 'src/chat/room/entities/room.entity';
 import { UserService } from 'src/user/user.service';
 import { createRoomDto } from '../chat/room/dto';
 import { GameService } from '../game/game.service';
-import {
-	GameModeDto,
-	GameStatus,
-	PaddleUpdateDto,
-	MatchHistoryDto,
-} from 'src/game/game.dto';
+import { GameModeDto, GameStatus, PaddleUpdateDto } from 'src/game/game.dto';
 import { directMessageDto } from 'src/chat/room/dto/direct.message.room.dto';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { AddMessageDto } from 'src/chat/message/dto/add.message.dto';
@@ -41,7 +36,6 @@ import { GameResultEntity } from 'src/game/game.entity';
 import { FriendService } from 'src/user/friend/friend.service';
 import { IntegerDto } from './util/integer.dto';
 import { RoomPasswordDto } from 'src/chat/room/dto/room.password.dto';
-import { plainToClass } from 'class-transformer';
 
 async function gameLoop(
 	server: Server,
@@ -105,7 +99,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.handshake.headers.cookie,
 		);
 		if (user) {
-			// console.log(user);
 			const roomEntities: RoomEntity[] =
 				await this.roomService.getRoomsForUser(user.id);
 			roomEntities.forEach((room) => {
@@ -820,13 +813,9 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() idDTO: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
-		//TODO add errro proof
 		const matchHistories = await this.gameService.getMatchHistory(
 			idDTO.data,
 		);
-		// const matchHistory = await this.gameService.getMatchHistory(3);
-		// return matchHistory;
-		console.log(matchHistories);
 		client.emit('getMatchHistory', matchHistories);
 	}
 

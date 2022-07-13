@@ -4,6 +4,7 @@ import {
 	IsNumber,
 	IsPositive,
 	IsString,
+	MaxLength,
 	MinLength,
 } from 'class-validator';
 import { PlayerEntry } from './game.entity';
@@ -47,6 +48,7 @@ export class MatchHistoryDto {
 	@IsNumber()
 	game_id: number;
 
+	@MaxLength(10)
 	updated_at: Date;
 
 	playerEntry: PlayerEntry[];

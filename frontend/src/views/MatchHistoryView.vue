@@ -25,43 +25,26 @@
 
 <script setup lang="ts">
 import MatchHistoryTable from "../components/MatchHistoryTable.vue";
-import UserProfileCard from "../components/UserProfileCard.vue";
 import { useRoute } from "vue-router";
-import { watch, inject, ref, computed, onMounted } from "vue";
+import { watch, inject, ref, computed, onMounted, onUnmounted } from "vue";
 import { Socket } from "socket.io-client";
 import UserProfileI from "@/types/UserProfile.interface";
-import storeUser from "@/store";
 import { useToast } from "primevue/usetoast";
 import { ErrorType, errorMessage } from "@/types/errorManagement";
 import Avatar from "primevue/avatar";
 
-const socket: Socket = inject("socketioInstance");
+const socket: Socket = inject("socketioInstance") as Socket;
 const user = ref<UserProfileI>();
 const router = useRoute();
 const id = computed(() => router.params.id); //this is to get the id passed in as parameter from the router
-const toast = useToast(); //TODO check if we need it later
+const toast = useToast();
 
 onMounted(async () => {
-  await findUser();
-  console.log("in view enter into the route matchhistory with id", id);
-  console.log("user name", user.value?.username);
-});
-
-//this is to watch anything on the $route object
-watch(id, async () => {
-  if (id.value) {
-    console.log("id", id.value);
-    await findUser();
-  }
-});
-
-async function findUser() {
-  socket.emit("getUserProfile", { data: id.value });
+  findUser();
   socket.on("getUserProfile", (response) => {
     if (response) {
       user.value = response;
     } else {
-      //TODO not needed? as this match history will always be redirected from clicking an existing user
       toast.add({
         severity: "error",
         summary: "Error",
@@ -70,5 +53,20 @@ async function findUser() {
       });
     }
   });
+});
+
+onUnmounted(() => {
+  socket.off("getUserProfile");
+});
+
+//this is to watch anything on the $route object
+watch(id, async () => {
+  findUser();
+});
+
+function findUser() {
+  if (id.value) {
+    socket.emit("getUserProfile", { data: parseInt(id.value[0]) });
+  }
 }
 </script>
