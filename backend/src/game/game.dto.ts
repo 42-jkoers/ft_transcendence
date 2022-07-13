@@ -6,7 +6,7 @@ import {
 	IsString,
 	MinLength,
 } from 'class-validator';
-import User from 'src/user/user.entity';
+import { PlayerEntry } from './game.entity';
 
 export class CreateGameDto {
 	@IsNotEmpty()

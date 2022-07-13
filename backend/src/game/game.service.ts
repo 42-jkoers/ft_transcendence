@@ -122,7 +122,7 @@ export class GameService {
 	}
 
 	async getMatchHistory(UserId: number) {
-		// await this.seed(); //TODO this is for testing query purpose only, should be removed later
+		await this.seed(); //TODO this is for testing query purpose only, should be removed later
 		const matchHistories: GameResultEntity[] = await getRepository(
 			GameResultEntity,
 		)
