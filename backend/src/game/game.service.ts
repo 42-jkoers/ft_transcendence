@@ -98,7 +98,7 @@ export class GameService {
 		}
 	}
 
-	async getGameList(): Promise<GameEntity[]> {
+	async getOngoingGameList(): Promise<GameEntity[]> {
 		const games = await getRepository(GameEntity)
 			.createQueryBuilder('game')
 			.leftJoinAndSelect('game.players', 'player')
