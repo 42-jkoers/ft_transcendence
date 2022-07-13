@@ -218,11 +218,15 @@ export class GameService {
 
 	// render all the games' frames
 	async tick(): Promise<Game[]> {
+		const games: Game[] = [];
+
 		for (const game of this.inPlays) {
-			game.tick(); // render next frame
-			// if (game.status === GameStatus.COMPLETED)// TODO: save
+			if (game.status !== GameStatus.COMPLETED) {
+				game.tick(); // render next frame
+				games.push(game);
+			}
 		}
-		return this.inPlays;
+		return games;
 	}
 
 	// async getUserType(
@@ -354,13 +358,46 @@ export class GameService {
 	}
 
 	async endGame(gameId: number) {
+		// step 1: find the game
+		const game = this.inPlays.find((game) => {
+			if (game.id === gameId) return game;
+		});
+
+		if (!game) return;
+		// step2: set players status back to IDLE
 		const players = await this.getGamePlayers(gameId);
 		await this.setGameStatus(players[0].id, PlayerGameStatusType.IDLE);
 		await this.setGameStatus(players[1].id, PlayerGameStatusType.IDLE);
 
-		this.inPlays = this.inPlays.filter((p) => p.id !== gameId);
-		// TODO: to update Match History
-		const game = await this.findByID(gameId);
-		if (game) await this.gameResultEntityRepository.remove(game);
+		// step 3: create the 2 player entries.
+		const player1 = game.paddles[0];
+		const player2 = game.paddles[1];
+
+		const newPlayerEntry1 = this.entryRepository.create();
+		const newPlayerEntry2 = this.entryRepository.create();
+
+		newPlayerEntry1.score = player1.score;
+		newPlayerEntry2.score = player2.score;
+
+		newPlayerEntry1.player = await this.userService.getUserByID(
+			player1.userID,
+		);
+		newPlayerEntry2.player = await this.userService.getUserByID(
+			player2.userID,
+		);
+
+		const winnerId = game.getWinnerID();
+		newPlayerEntry1.result = winnerId === player1.userID ? 'won' : 'lost';
+		newPlayerEntry2.result = winnerId === player2.userID ? 'won' : 'lost';
+
+		const gameResult = await this.findByID(gameId);
+		newPlayerEntry1.game = gameResult;
+		newPlayerEntry2.game = gameResult;
+
+		await this.entryRepository.save(newPlayerEntry1);
+		await this.entryRepository.save(newPlayerEntry2);
+		// step 3: remove game from ongoing inPlays list.
+		this.inPlays = this.inPlays.filter((play) => play.id !== gameId);
+		console.log('>> endGame end');
 	}
 }
