@@ -70,7 +70,7 @@ class Paddle {
 				break;
 
 			case GameMode.fast:
-				this.speed = canvas.width * 0.02;
+				this.speed = canvas.width * 0.016;
 				break;
 		}
 		this.height = canvas.height * 0.2;
