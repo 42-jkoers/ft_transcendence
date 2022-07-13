@@ -37,91 +37,91 @@ export class GameService {
 	}
 
 	//TODO remove later, this is to simulate some data for query testing
-	async seed() {
-		//game1 Aileen vs Olga
-		const player1 = this.userRepository.create({
-			username: 'Aileen',
-			intraID: '20',
-			avatar: '/default_avatar.png',
-		});
-		const player2 = this.userRepository.create({
-			username: 'Olga',
-			intraID: '30',
-			avatar: '/default_avatar.png',
-		});
-		await this.userRepository.save(player1);
-		await this.userRepository.save(player2);
-		const game1 = this.gameResultEntityRepository.create({
-			created_at: '2022.07.1',
-			updated_at: '2022.07.1',
-		});
-		const entry1 = this.entryRepository.create({
-			score: 2,
-			result: Result.WON,
-		});
-		const entry2 = this.entryRepository.create({
-			score: 1,
-			result: Result.LOST,
-		});
-		entry1.player = player1;
-		entry2.player = player2;
-		await this.entryRepository.save(entry1);
-		await this.entryRepository.save(entry2);
-		game1.players = [player1, player2];
-		game1.playerEntry = [entry1, entry2];
-		await this.gameResultEntityRepository.save(game1);
-		//game2 Xiaojing vs Irem
-		const player3 = this.userRepository.create({
-			username: 'Xiaojing',
-			intraID: '40',
-			avatar: '/default_avatar.png',
-		});
-		const player4 = this.userRepository.create({
-			username: 'Irem',
-			intraID: '50',
-			avatar: '/default_avatar.png',
-		});
-		await this.userRepository.save(player3);
-		await this.userRepository.save(player4);
-		const game2 = this.gameResultEntityRepository.create({
-			created_at: '2022.07.2',
-			updated_at: '2022.07.4',
-		});
-		const entry3 = this.entryRepository.create({
-			score: 1,
-			result: Result.LOST,
-		});
-		const entry4 = this.entryRepository.create({
-			score: 4,
-			result: Result.WON,
-		});
-		entry3.player = player3;
-		entry4.player = player4;
-		await this.entryRepository.save(entry3);
-		await this.entryRepository.save(entry4);
-		game2.players = [player3, player4];
-		game2.playerEntry = [entry3, entry4];
-		await this.gameResultEntityRepository.save(game2);
-		const game3 = this.gameResultEntityRepository.create({
-			created_at: '2022.06.30',
-			updated_at: '2022.06.30',
-		});
-		const entry5 = this.entryRepository.create({
-			score: 4,
-			result: Result.LOST,
-		});
-		const entry6 = this.entryRepository.create({
-			score: 7,
-			result: Result.WON,
-		});
-		entry5.player = player1;
-		entry6.player = player3;
-		await this.entryRepository.save(entry5);
-		await this.entryRepository.save(entry6);
-		game3.playerEntry = [entry5, entry6];
-		game3.players = [player3, player1];
-		await this.gameResultEntityRepository.save(game3);
-	}
+	// async seed() {
+	// 	//game1 Aileen vs Olga
+	// 	const player1 = this.userRepository.create({
+	// 		username: 'Aileen',
+	// 		intraID: '20',
+	// 		avatar: '/default_avatar.png',
+	// 	});
+	// 	const player2 = this.userRepository.create({
+	// 		username: 'Olga',
+	// 		intraID: '30',
+	// 		avatar: '/default_avatar.png',
+	// 	});
+	// 	await this.userRepository.save(player1);
+	// 	await this.userRepository.save(player2);
+	// 	const game1 = this.gameResultEntityRepository.create({
+	// 		created_at: '2022.07.1',
+	// 		updated_at: '2022.07.1',
+	// 	});
+	// 	const entry1 = this.entryRepository.create({
+	// 		score: 2,
+	// 		result: Result.WON,
+	// 	});
+	// 	const entry2 = this.entryRepository.create({
+	// 		score: 1,
+	// 		result: Result.LOST,
+	// 	});
+	// 	entry1.player = player1;
+	// 	entry2.player = player2;
+	// 	await this.entryRepository.save(entry1);
+	// 	await this.entryRepository.save(entry2);
+	// 	game1.players = [player1, player2];
+	// 	game1.playerEntry = [entry1, entry2];
+	// 	await this.gameResultEntityRepository.save(game1);
+	// 	//game2 Xiaojing vs Irem
+	// 	const player3 = this.userRepository.create({
+	// 		username: 'Xiaojing',
+	// 		intraID: '40',
+	// 		avatar: '/default_avatar.png',
+	// 	});
+	// 	const player4 = this.userRepository.create({
+	// 		username: 'Irem',
+	// 		intraID: '50',
+	// 		avatar: '/default_avatar.png',
+	// 	});
+	// 	await this.userRepository.save(player3);
+	// 	await this.userRepository.save(player4);
+	// 	const game2 = this.gameResultEntityRepository.create({
+	// 		created_at: '2022.07.2',
+	// 		updated_at: '2022.07.4',
+	// 	});
+	// 	const entry3 = this.entryRepository.create({
+	// 		score: 1,
+	// 		result: Result.LOST,
+	// 	});
+	// 	const entry4 = this.entryRepository.create({
+	// 		score: 4,
+	// 		result: Result.WON,
+	// 	});
+	// 	entry3.player = player3;
+	// 	entry4.player = player4;
+	// 	await this.entryRepository.save(entry3);
+	// 	await this.entryRepository.save(entry4);
+	// 	game2.players = [player3, player4];
+	// 	game2.playerEntry = [entry3, entry4];
+	// 	await this.gameResultEntityRepository.save(game2);
+	// 	const game3 = this.gameResultEntityRepository.create({
+	// 		created_at: '2022.06.30',
+	// 		updated_at: '2022.06.30',
+	// 	});
+	// 	const entry5 = this.entryRepository.create({
+	// 		score: 4,
+	// 		result: Result.LOST,
+	// 	});
+	// 	const entry6 = this.entryRepository.create({
+	// 		score: 7,
+	// 		result: Result.WON,
+	// 	});
+	// 	entry5.player = player1;
+	// 	entry6.player = player3;
+	// 	await this.entryRepository.save(entry5);
+	// 	await this.entryRepository.save(entry6);
+	// 	game3.playerEntry = [entry5, entry6];
+	// 	game3.players = [player3, player1];
+	// 	await this.gameResultEntityRepository.save(game3);
+	// }
 
 	async getMatchHistory(UserId: number) {
 		// await this.seed(); //TODO this is for testing query purpose only, should be removed later
@@ -387,8 +387,10 @@ export class GameService {
 		);
 
 		const winnerId = game.getWinnerID();
-		newPlayerEntry1.result = winnerId === player1.userID ? 'won' : 'lost';
-		newPlayerEntry2.result = winnerId === player2.userID ? 'won' : 'lost';
+		newPlayerEntry1.result =
+			winnerId === player1.userID ? Result.WON : Result.LOST;
+		newPlayerEntry2.result =
+			winnerId === player2.userID ? Result.WON : Result.LOST;
 
 		const gameResult = await this.findByID(gameId);
 		newPlayerEntry1.game = gameResult;
