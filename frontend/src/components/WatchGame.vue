@@ -6,9 +6,9 @@
           <h3>Ongoing Games</h3>
         </div>
       </template>
-      <Column header="GameName" headerStyle="width: 40%">
+      <Column header="Game" headerStyle="width: 40%">
         <template #body="slotProps">
-          {{ slotProps.data.name }}
+          {{ slotProps.data.playerName1 }} vs {{ slotProps.data.playerName2 }}
         </template>
       </Column>
       <Column header="Watch" headerStyle="width: 10%">

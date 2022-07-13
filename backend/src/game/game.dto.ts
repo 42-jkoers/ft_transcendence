@@ -1,4 +1,12 @@
-import { IsEnum, IsNotEmpty, MinLength } from 'class-validator';
+import {
+	IsEnum,
+	IsNotEmpty,
+	IsNumber,
+	IsPositive,
+	IsString,
+	MinLength,
+} from 'class-validator';
+import User from 'src/user/user.entity';
 
 export class CreateGameDto {
 	@IsNotEmpty()
@@ -33,4 +41,19 @@ export enum GameMode {
 export class GameModeDto {
 	@IsEnum(GameMode)
 	gameMode: GameMode;
+}
+
+export class OngoingGameDto {
+	@IsNotEmpty()
+	@IsNumber()
+	@IsPositive()
+	id: number;
+
+	@IsNotEmpty()
+	@IsString()
+	playerName1: string;
+
+	@IsNotEmpty()
+	@IsString()
+	playerName2: string;
 }
