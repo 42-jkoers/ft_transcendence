@@ -60,11 +60,10 @@ async function gameLoop(server: Server, gameService: GameService) {
 			for (const socket of sockets) {
 				socket.leave(game.socketRoomID);
 			}
+			// send update game list to all connected socket
+			const gameList = await gameService.getOngoingGameList();
+			server.emit('getOngoingGameList', gameList);
 		}
-
-		// send update game list to all connected socket
-		const gameList = await gameService.getOngoingGameList();
-		server.emit('getOngoingGameList', gameList);
 	}
 }
 
