@@ -49,7 +49,7 @@
               <span class="p-float-label">
                 <Password
                   id="password"
-                  :v-model="passwordValue"
+                  v-model="passwordValue"
                   toggleMask
                   maxlength="64"
                 />
