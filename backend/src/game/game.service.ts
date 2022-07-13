@@ -398,7 +398,18 @@ export class GameService {
 
 		await this.entryRepository.save(newPlayerEntry1);
 		await this.entryRepository.save(newPlayerEntry2);
-		// step 3: remove game from ongoing inPlays list.
+
+		// step 4: save user ladder result
+		await this.userService.updateGameResult(
+			player1.userID,
+			newPlayerEntry1.result,
+		);
+		await this.userService.updateGameResult(
+			player2.userID,
+			newPlayerEntry2.result,
+		);
+
+		// step 5: remove game from ongoing inPlays list.
 		this.inPlays = this.inPlays.filter((play) => play.id !== gameId);
 		console.log('>> endGame end');
 	}

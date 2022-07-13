@@ -11,6 +11,7 @@ import { MessageEntity } from 'src/chat/message/message.entity';
 import { UserRole } from 'src/chat/room/enums/user.role.enum';
 import { PlayerGameStatusType } from 'src/game/playergamestatus.enum';
 import { GameMode } from 'src/game/game.dto';
+import { Result } from 'src/game/game.entity';
 
 @Injectable()
 export class UserService {
@@ -180,5 +181,22 @@ export class UserService {
 				gameStatus: PlayerGameStatusType.IDLE,
 			});
 		}
+	}
+
+	async updateGameResult(id: number, result: Result) {
+		const user = await this.getUserByID(id);
+		if (!user) {
+			return;
+		}
+		if (result === Result.WON) {
+			user.wins++;
+		} else {
+			user.loses++;
+		}
+		const ladder = (user.wins - user.loses) / 5;
+		if (ladder > 0) {
+			user.ladder = ladder;
+		}
+		await this.userRepository.save(user);
 	}
 }
