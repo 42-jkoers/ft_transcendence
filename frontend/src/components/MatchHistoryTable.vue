@@ -24,7 +24,7 @@
           }}
         </template>
       </Column>
-      <Column header="Component" headerStyle="width: 20%">
+      <Column header="Opponent" headerStyle="width: 20%">
         <template #body="slotProps">
           <Chip
             :label="slotProps.data.playerEntry[1].player.username"
