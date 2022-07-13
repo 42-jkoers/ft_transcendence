@@ -376,8 +376,6 @@ export class GameService {
 		await this.setGameStatus(players[0].id, PlayerGameStatusType.IDLE);
 		await this.setGameStatus(players[1].id, PlayerGameStatusType.IDLE);
 
-		// console.log('!!!!game', game);
-
 		// step 3: create the 2 player entries.
 		const player1 = game.paddles[0];
 		const player2 = game.paddles[1];

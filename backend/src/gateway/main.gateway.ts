@@ -48,7 +48,6 @@ async function gameLoop(
 	gameService: GameService,
 	userService: UserService,
 ) {
-	// console.log('>> gameLoop start');
 	const games = await gameService.tick();
 	for (const game of games) {
 		const frame = game.getFrame();
@@ -75,7 +74,6 @@ async function gameLoop(
 			server.emit('getOngoingGameList', gameList);
 		}
 	}
-	// console.log('>> gameLoop end');
 }
 
 @WebSocketGateway({
@@ -805,9 +803,9 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			id.data === client.data.user.id
 				? true
 				: await this.friendService.isFriends(
-					id.data,
-					client.data.user.id,
-				);
+						id.data,
+						client.data.user.id,
+				  );
 		const socketCount = (
 			await this.server.in(id.data.toString()).fetchSockets()
 		).length;
