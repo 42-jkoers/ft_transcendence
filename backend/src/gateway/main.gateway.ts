@@ -980,7 +980,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			receiver: user2.username,
 		});
 		client.join(game.socketRoomID);
-		console.log('getGame', id.data, game.socketRoomID);
 	}
 
 	@UsePipes(new ValidationPipe({ transform: true }))
