@@ -43,7 +43,7 @@ encrypt-secrets-file:
 
 clean:
 	@echo "$(MAGENTA)remove all containers/images/volumes...$(RESET)"
-	docker-compose down --rmi all --volumes --remove-orphans
+	docker-compose --project-name $(PROJECT) down --rmi all --volumes --remove-orphans
 
 fclean:
 	docker system prune -a -f --volumes
