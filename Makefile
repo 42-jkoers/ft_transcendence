@@ -45,7 +45,7 @@ clean:
 	@echo "$(MAGENTA)remove all containers/images/volumes...$(RESET)"
 	docker-compose down --rmi all --volumes --remove-orphans
 
-fclean: clean
+fclean:
 	docker system prune -a -f --volumes
 
 re: fclean all
