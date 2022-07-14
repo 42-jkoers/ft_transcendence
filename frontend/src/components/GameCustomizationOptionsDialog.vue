@@ -18,19 +18,37 @@
   </Dialog>
 </template>
 <script setup lang="ts">
-import { defineEmits, defineProps, inject, ref } from "vue";
+import {
+  defineEmits,
+  defineProps,
+  inject,
+  onMounted,
+  onUnmounted,
+  ref,
+} from "vue";
 import { Socket } from "socket.io-client";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 
 import SelectButton from "primevue/selectbutton";
+import { useStore } from "vuex";
 
 defineProps(["isDialogVisible"]);
 const emit = defineEmits(["update:isDialogVisible"]);
 
 const socket: Socket = inject("socketioInstance") as Socket;
 
-const gameModeOption = ref<string>("normal");
+const store = useStore();
+const gameModeOption = ref<string>(store.state.user.gameMode);
+
+onMounted(() => {
+  socket.emit("getUserCustomizationOptions");
+
+  socket.on("setUserCustomizationOptions", (gameMode) => {
+    gameModeOption.value = gameMode;
+  });
+});
+
 const options = ref(["normal", "fast"]);
 
 const saveNewGameSettings = () => {
@@ -38,6 +56,7 @@ const saveNewGameSettings = () => {
     gameMode: gameModeOption.value,
   });
   emit("update:isDialogVisible", false);
+  store.commit("updateGameMode", gameModeOption.value);
 };
 
 const handleClose = () => {

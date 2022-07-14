@@ -99,6 +99,11 @@ export class UserService {
 		}
 	}
 
+	async getGameCustomizationOptions(userId: number) {
+		const user = this.findByID(userId);
+		return (await user).gameMode;
+	}
+
 	async deleteUser(userId: number) {
 		await getConnection()
 			.createQueryBuilder()

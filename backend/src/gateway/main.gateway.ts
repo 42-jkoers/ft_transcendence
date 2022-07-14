@@ -975,7 +975,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			receiver: user2.username,
 		});
 		client.join(game.socketRoomID);
-		console.log('getGame', id.data, game.socketRoomID);
 	}
 
 	@UsePipes(new ValidationPipe({ transform: true }))
@@ -1043,5 +1042,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			socket.data.user.id,
 			mode.gameMode,
 		);
+	}
+
+	@SubscribeMessage('getUserCustomizationOptions')
+	async getUserCustomizationOptions(socket: Socket) {
+		const mode = await this.userService.getGameCustomizationOptions(
+			socket.data.user.id,
+		);
+		socket.emit('setUserCustomizationOptions', mode);
 	}
 }
