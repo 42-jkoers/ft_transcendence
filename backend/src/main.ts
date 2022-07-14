@@ -45,7 +45,6 @@ async function bootstrap() {
 	);
 	app.use(passport.initialize());
 	app.use(passport.session());
-	app.useGlobalPipes(new ValidationPipe()); //for validator and transformer
 	app.useGlobalInterceptors(
 		new ClassSerializerInterceptor(app.get(Reflector)),
 	); //for validator and transformer
