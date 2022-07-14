@@ -1010,7 +1010,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
 		if (user.gameStatus === PlayerGameStatusType.PLAYING) {
-			client.emit('errorMatchMaking', 'You are already in a queue');
+			client.emit('errorMatchMaking', 'You are already in a game.');
 			return;
 		}
 		// if user is not in quee
