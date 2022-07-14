@@ -5,8 +5,6 @@
         <template #header>
           <img
             :src="user?.avatar"
-            width="300"
-            height="300"
             style="width: 95%; margin-top: 5%; border-radius: 3%"
           />
         </template>
