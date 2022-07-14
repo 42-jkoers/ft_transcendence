@@ -403,6 +403,19 @@ export class RoomService {
 		);
 	}
 
+	async isOwner(currentUserId: number, roomId: number): Promise<boolean> {
+		const userToRoomEntity =
+			await this.userToroomEntityRepository.findOneOrFail({
+				where: {
+					userId: currentUserId,
+					roomId: roomId,
+				},
+			});
+		if (!userToRoomEntity) return false;
+		const currentUserRole = userToRoomEntity.role;
+		return currentUserRole === UserRole.OWNER;
+	}
+
 	async setUserRole(userId: number, roomId: number, newRole: UserRole) {
 		const result = await getConnection()
 			.createQueryBuilder()

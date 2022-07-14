@@ -723,6 +723,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				roomAndUser.roomName,
 			);
 		}
+		if (this.roomService.isOwner(user.id, room.id)) {
+			socket.emit('UnableToBanOwner', user.username);
+			return;
+		}
 		await this.roomService.banUserFromRoom(
 			user.id,
 			room,

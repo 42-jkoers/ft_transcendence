@@ -198,6 +198,15 @@ onMounted(() => {
     isUserBanned.value = response;
   });
 
+  socket.on("UnableToBanOwner", (username) => {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: `${username} is the chat owner and cannot be banned`,
+      life: 2000,
+    });
+  });
+
   socket.on(
     "userRoleChanged",
     (newUserRole: UserRole, username: string, roomName: string) => {
@@ -347,6 +356,7 @@ onUnmounted(() => {
   socket.off("setUserRoleFail");
   socket.off("blockUserResult");
   socket.off("unBlockUserResult");
+  socket.off("UnableToBanOwner");
 });
 
 const addUserToRoom = () => {
