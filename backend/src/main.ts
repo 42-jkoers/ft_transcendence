@@ -35,7 +35,7 @@ async function bootstrap() {
 	app.use(
 		session({
 			cookie: {
-				maxAge: 6000 * 60 * 24, // login cookie is 24 hours valid
+				maxAge: 60000 * 60 * 24, // login cookie is 24 hours valid
 			},
 			secret: configService.get('SESSION_SECRET'),
 			resave: false,
@@ -45,24 +45,25 @@ async function bootstrap() {
 	);
 	app.use(passport.initialize());
 	app.use(passport.session());
-	app.useGlobalPipes(new ValidationPipe());//TODO: for validator and transformer, check if actually needed
-	app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));//TODO: for validator and transformer, check if actually needed
+	app.useGlobalPipes(new ValidationPipe()); //for validator and transformer
+	app.useGlobalInterceptors(
+		new ClassSerializerInterceptor(app.get(Reflector)),
+	); //for validator and transformer
 	app.use(CookieParser());
 
 	//add error handler, to understand where the error is from
-	// app.use(require('body-parser').json()); 
+	// app.use(require('body-parser').json());
 	// app.use(require('body-parser').urlencoded({ extended: true }));
 
 	// app.use((err, req, res, next) => {
-    // // This check makes sure this is a JSON parsing issue, but it might be
-    // // coming from any middleware, not just body-parser:
+	// // This check makes sure this is a JSON parsing issue, but it might be
+	// // coming from any middleware, not just body-parser:
 	// 	if (err instanceof SyntaxError && 'body' in err) {
 	// 		console.error(err);
 	// 		return res.sendStatus(400); // Bad request
 	// 	}
-    // 	next();
+	// 	next();
 	// });
-
 
 	// listen to port
 	const port = configService.get('PORT') ?? 3000;
