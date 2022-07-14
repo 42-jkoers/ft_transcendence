@@ -22,12 +22,11 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, ref } from "vue";
+import { inject, ref } from "vue";
 import { Socket } from "socket.io-client";
 import InputText from "primevue/inputtext";
 
-const socket: Socket = inject("socketioInstance");
-// const games: ref<Array<GameI>>([]);
+const socket: Socket = inject("socketioInstance") as Socket;
 
 const newGameName = ref<string>("");
 const isValidGameName = ref<boolean>(true);
@@ -37,12 +36,7 @@ socket.on("BadRequestException", (response) => {
   invalidGameNameResponseMessage.value = response.message[0];
 });
 
-onMounted(() => {
-  console.log("mounted");
-});
-
 function createGame() {
-  console.log("createGame", newGameName.value);
   socket.emit("createGame", { name: newGameName.value });
 }
 </script>

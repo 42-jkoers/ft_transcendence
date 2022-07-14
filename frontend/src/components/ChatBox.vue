@@ -127,6 +127,7 @@ import ContextMenu from "primevue/contextmenu";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import ProgressSpinner from "primevue/progressspinner";
+import Room from "@/types/Room";
 
 const socket: Socket = inject("socketioInstance") as Socket;
 const messages = ref<Array<MessageI>>([]);
@@ -151,7 +152,9 @@ const displayAddUsersDialogue = ref(false);
 
 const store = useStore();
 const currentRoom = computed(() =>
-  store.state.roomsInfo.find((room: any) => room.name === route.params.roomName)
+  store.state.roomsInfo.find(
+    (room: Room) => room.name === route.params.roomName
+  )
 );
 
 const allowedToViewContent = ref<boolean>(false);

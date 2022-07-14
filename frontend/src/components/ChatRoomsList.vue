@@ -157,7 +157,7 @@ socket.on("messageAdded", (message: MessageI) => {
   }
 });
 
-const roomsClass = (roomData: any) => [
+const roomsClass = (roomData) => [
   {
     newMessageArrived:
       roomsWithNewMessage.value?.find((roomName) => {
