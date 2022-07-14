@@ -1009,6 +1009,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (user.gameStatus === PlayerGameStatusType.QUEUE) {
 			return;
 		}
+		if (user.gameStatus === PlayerGameStatusType.PLAYING) {
+			client.emit('errorMatchMaking', 'You are already in a queue');
+			return;
+		}
 		// if user is not in quee
 		const queue = await this.gameService.getGameQueue();
 		const component: UserI | undefined = queue.find(
@@ -1026,7 +1030,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				);
 				// step 2: notify current user in waiting room
 				client.emit('startGame', createdGame.id);
-				// step 5: notify the other user in waiting room
+				// step 3: notify the other user in waiting room
 				this.server
 					.to(component.id.toString())
 					.emit('startGame', createdGame.id);
