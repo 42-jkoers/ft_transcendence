@@ -911,11 +911,16 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	) {
 		this.removeGameInvite(senderId, client);
 		const sender = await this.userService.getUserByID(senderId.data);
+		const receiver = await this.userService.getUserByID(
+			client.data.user.id,
+		);
 		if (sender.gameStatus === PlayerGameStatusType.PLAYING) {
 			client.emit(
 				'errorMatchMaking',
 				'The other player is already in a game.',
 			);
+		} else if (receiver.gameStatus === PlayerGameStatusType.PLAYING) {
+			client.emit('errorMatchMaking', 'You are already in a game.');
 		} else {
 			this.server
 				.to(senderId.data.toString())
