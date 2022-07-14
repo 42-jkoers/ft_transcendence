@@ -119,6 +119,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('exitUserSocketRoom')
 	async exitUserSocketRoom(socket: Socket) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const socketRoom = socket.data.user.id.toString();
 		const sockets = await this.server.in(socketRoom).fetchSockets();
 		for (const socket_iterator of sockets) {
@@ -165,6 +172,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('addMessage') //allows to listen to incoming messages
 	async handleMessage(client: Socket, addMessageDto: AddMessageDto) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		const selectedRoom: RoomEntity = await this.roomService.findRoomByName(
 			addMessageDto.roomName,
 		);
@@ -242,6 +256,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('getAllRegisteredUsersExceptYourselfAndAdmin')
 	async getAllRegisteredUsersExceptYourselfAndAdmin(client: Socket) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		const user: UserI = await this.userService.findByID(
 			client.data.user.id,
 		);
@@ -263,6 +284,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() room: createRoomDto,
 		@ConnectedSocket() client: Socket,
 	) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		const response: { status: string; data: string } =
 			await this.roomService.createRoom(room, client.data.user.id);
 		client.emit('createRoom', response);
@@ -275,6 +303,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() dMRoom: directMessageDto,
 		@ConnectedSocket() socket: Socket,
 	) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		if (
 			await this.blockedUsersService.isDirectMessagingBlocked(
 				socket.data.user.id,
@@ -317,6 +352,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('setNewUserRole')
 	async handleSetNewUserRole(socket: Socket, setRoleDto: SetRoomRoleDto) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const room: RoomEntity = await this.roomService.findRoomByName(
 			setRoleDto.roomName,
 		);
@@ -376,6 +418,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() dataDto: RoomAndUserDTO,
 		@ConnectedSocket() socket: Socket,
 	) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const room: RoomEntity = await this.roomService.findRoomByName(
 			dataDto.roomName,
 		);
@@ -403,6 +452,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() dataDto: RoomAndUserDTO,
 		@ConnectedSocket() socket: Socket,
 	) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const room: RoomEntity = await this.roomService.findRoomByName(
 			dataDto.roomName,
 		);
@@ -508,6 +564,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('getBlockedList')
 	async handleGetBlockedUsersList(@ConnectedSocket() socket: Socket) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const blockedUsers = await this.blockedUsersService.getBlockedUsersList(
 			socket.data.user.id,
 		);
@@ -569,6 +632,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() userDto: UserIdDto,
 		@ConnectedSocket() socket: Socket,
 	) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const userToUnblock: UserI = await this.userService.findByID(
 			userDto.id,
 		);
@@ -635,6 +705,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() roomAndUser: RoomAndUserDTO,
 		@ConnectedSocket() socket: Socket,
 	) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const user: UserI = await this.userService.findByID(roomAndUser.userId);
 		const room = await this.roomService.findRoomByName(
 			roomAndUser.roomName,
@@ -679,6 +756,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() roomAndUser: RoomAndUserDTO,
 		@ConnectedSocket() socket: Socket,
 	) {
+		if (!socket.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
 		const user: UserI = await this.userService.findByID(roomAndUser.userId);
 		const room = await this.roomService.findRoomByName(
 			roomAndUser.roomName,
@@ -776,6 +860,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() id: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
+		if (!client.data.user) {
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		const user = await this.userService.getUserByID(id.data);
 		if (!user) {
 			client.emit('errorGetUserProfile', 'User does not exist.');
@@ -794,6 +884,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() id: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		const isSafe: boolean =
 			id.data === client.data.user.id
 				? true
@@ -825,6 +922,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() receiverId: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		const sender = await this.userService.getUserByID(client.data.user.id);
 		const receiver = await this.userService.getUserByID(receiverId.data);
 		if (!sender || !receiver) {
@@ -857,6 +961,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() senderId: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		const sender = await this.userService.getUserByID(senderId.data);
 		const receiver = await this.userService.getUserByID(
 			client.data.user.id,
@@ -909,6 +1020,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() senderId: IntegerDto,
 		@ConnectedSocket() client: Socket,
 	) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		this.removeGameInvite(senderId, client);
 		const sender = await this.userService.getUserByID(senderId.data);
 		const receiver = await this.userService.getUserByID(
@@ -991,6 +1109,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('quitQueue')
 	async quitQueue(client: Socket) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		const user = await this.userService.getUserByID(client.data.user.id);
 		switch (user.gameStatus) {
 			case PlayerGameStatusType.IDLE:
@@ -1008,6 +1133,13 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('matchPlayer')
 	async matchPlayer(client: Socket) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		// if user is already in queue
 		const user = await this.userService.getUserByID(client.data.user.id);
 		if (user.gameStatus === PlayerGameStatusType.QUEUE) {
@@ -1046,10 +1178,31 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@SubscribeMessage('saveUserCustomizationOptions')
-	async saveUserCustomizationOptions(socket: Socket, mode: GameModeDto) {
+	async saveUserCustomizationOptions(client: Socket, mode: GameModeDto) {
+		if (!client.data.user) {
+			// if requests were not on time to get user info
+			const user: UserI = await this.authService.getUserFromCookie(
+				client.handshake.headers.cookie,
+			);
+			client.data.user = user;
+		}
 		await this.userService.updateUserGameMode(
-			socket.data.user.id,
+			client.data.user.id,
 			mode.gameMode,
 		);
+	}
+
+	@SubscribeMessage('getUserCustomizationOptions')
+	async getUserCustomizationOptions(socket: Socket) {
+		if (!socket.data.user) {
+			const user: UserI = await this.authService.getUserFromCookie(
+				socket.handshake.headers.cookie,
+			);
+			socket.data.user = user;
+		}
+		const mode = await this.userService.getGameCustomizationOptions(
+			socket.data.user.id,
+		);
+		socket.emit('setUserCustomizationOptions', mode);
 	}
 }
