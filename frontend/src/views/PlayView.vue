@@ -29,7 +29,7 @@
         </div>
       </div>
       <canvas width="300" height="400" id="game"></canvas>
-      <!-- TODO: variable instead 300 400 magic number -->
+      <!-- 300 and 400 are placeholders -->
     </div>
   </div>
 </template>
@@ -126,7 +126,7 @@ onMounted(() => {
   const canvas = document.getElementById("game") as HTMLCanvasElement;
   const context = canvas.getContext("2d") as CanvasRenderingContext2D;
   const route = useRoute();
-  const scaler = 500;
+  let scaler = 500; // placeholder
   let gameInPlay: GameInPlay | undefined;
 
   socket.on("BadRequestException", (response) => {
@@ -137,6 +137,9 @@ onMounted(() => {
     console.log("usernames", usernames);
     senderUsername.value = usernames.sender;
     receiverUsername.value = usernames.receiver;
+    scaler =
+      Math.min(window.innerWidth - 50, scaler * game.canvas.width) /
+      game.canvas.width;
     scaleGame(game, scaler);
     gameInPlay = game;
     initCanvas(game, context);
