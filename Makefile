@@ -46,6 +46,7 @@ clean:
 	docker-compose down --rmi all --volumes --remove-orphans
 
 fclean: clean
+	docker system prune -a -f --volumes
 
 re: fclean all
 
