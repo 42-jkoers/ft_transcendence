@@ -14,7 +14,7 @@ SECRETSFILE_ENCRYPTED = $(SECRETSFILE).gpg
 ###### compilation ######
 all: $(SECRETSFILE)
 	@echo "$(MAGENTA)start docker-compose...$(RESET)"
-	docker-compose --project-name $(PROJECT) up --build -d
+	COMPOSE_HTTP_TIMEOUT=120 docker-compose --project-name $(PROJECT) up --build -d
 
 start: $(SECRETSFILE)
 	@echo "$(MAGENTA)start all containers...$(RESET)"
