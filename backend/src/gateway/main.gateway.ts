@@ -911,11 +911,16 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	) {
 		this.removeGameInvite(senderId, client);
 		const sender = await this.userService.getUserByID(senderId.data);
+		const receiver = await this.userService.getUserByID(
+			client.data.user.id,
+		);
 		if (sender.gameStatus === PlayerGameStatusType.PLAYING) {
 			client.emit(
 				'errorMatchMaking',
 				'The other player is already in a game.',
 			);
+		} else if (receiver.gameStatus === PlayerGameStatusType.PLAYING) {
+			client.emit('errorMatchMaking', 'You are already in a game.');
 		} else {
 			this.server
 				.to(senderId.data.toString())
@@ -975,7 +980,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			receiver: user2.username,
 		});
 		client.join(game.socketRoomID);
-		console.log('getGame', id.data, game.socketRoomID);
 	}
 
 	@UsePipes(new ValidationPipe({ transform: true }))
@@ -1009,6 +1013,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (user.gameStatus === PlayerGameStatusType.QUEUE) {
 			return;
 		}
+		if (user.gameStatus === PlayerGameStatusType.PLAYING) {
+			client.emit('errorMatchMaking', 'You are already in a game.');
+			return;
+		}
 		// if user is not in quee
 		const queue = await this.gameService.getGameQueue();
 		const component: UserI | undefined = queue.find(
@@ -1026,7 +1034,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				);
 				// step 2: notify current user in waiting room
 				client.emit('startGame', createdGame.id);
-				// step 5: notify the other user in waiting room
+				// step 3: notify the other user in waiting room
 				this.server
 					.to(component.id.toString())
 					.emit('startGame', createdGame.id);
