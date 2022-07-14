@@ -10,6 +10,7 @@ const storeUser = createStore({
       username: "",
       avatar: "",
       twoFactorEnabled: false,
+      gameMode: "normal",
     },
     roomsInfo: [],
   },
@@ -36,6 +37,9 @@ const storeUser = createStore({
     },
     unsetAuthenticated(state) {
       state.isAuthenticated = false;
+    },
+    updateGameMode(state, mode) {
+      state.user.gameMode = mode;
     },
     updateRoomsListInStore(state, updatedRoomsList) {
       state.roomsInfo = updatedRoomsList;
