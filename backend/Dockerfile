@@ -23,7 +23,7 @@ RUN npm run build
 EXPOSE 3000
 
 # Start nest in watch mode
-CMD npm run start:dev
+CMD npm run start:prod
 
 # production container
 # FROM node:18 as production
